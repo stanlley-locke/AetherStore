@@ -3,10 +3,12 @@
 
 from .encoder import process_upload
 from .auditor import audit_storage_health, repair_object, node_heartbeat
+from .decoder import process_download
 
 __all__ = [
     'process_upload',
     'audit_storage_health',
     'repair_object',
     'node_heartbeat',
+    'process_download',
 ]

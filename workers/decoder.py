@@ -17,7 +17,7 @@ def process_download(self, object_id, owner_did):
         from apps.storage.services.merkle_service import MerkleService
         from apps.storage.engine import get_erasure_engine
         from apps.core.merkle import MerkleDAG
-        from apps.storage.services.client_encryption import ClientEncryption
+        from apps.core.crypto import ClientEncryption
         from cryptography.hazmat.primitives.ciphers.aead import AESGCM
         
         # Setup temporary download location
