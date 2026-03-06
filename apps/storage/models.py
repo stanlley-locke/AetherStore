@@ -107,3 +107,78 @@ class Webhook(models.Model):
     
     class Meta:
         db_table = 'storage_webhook'
+
+
+# Add to apps/storage/models.py
+
+class EncryptedObject(models.Model):
+    """Encrypted file object with Merkle DAG"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    owner_did = models.CharField(max_length=255, db_index=True)
+    
+    # Encryption metadata
+    encryption_algorithm = models.CharField(max_length=50, default='AES-256-GCM')
+    key_hash = models.CharField(max_length=64, db_index=True)
+    
+    # Merkle DAG
+    root_hash = models.CharField(max_length=64, unique=True, db_index=True)
+    merkle_dag = models.JSONField(default=dict)
+    chunk_count = models.IntegerField(default=0)
+    chunk_size = models.IntegerField(default=262144)
+    
+    # Original file info
+    original_size = models.BigIntegerField()
+    original_hash = models.CharField(max_length=64)
+    mime_type = models.CharField(max_length=100)
+    filename = models.CharField(max_length=255, null=True)
+    
+    # Storage
+    bucket = models.ForeignKey(Bucket, on_delete=models.CASCADE, related_name='encrypted_objects')
+    shard_map = models.JSONField(default=dict)
+    
+    # Versioning
+    version = models.IntegerField(default=1)
+    previous_version = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='next_versions')
+    
+    # Status
+    is_deleted = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=False)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'storage_encrypted_object'
+        indexes = [
+            models.Index(fields=['owner_did', '-created_at']),
+            models.Index(fields=['root_hash']),
+            models.Index(fields=['bucket', 'is_deleted']),
+            models.Index(fields=['original_hash']),
+        ]
+    
+    def __str__(self):
+        return f"{self.filename or self.id} ({self.original_size} bytes)"
+
+
+class ObjectVersion(models.Model):
+    """File version history"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    object = models.ForeignKey(EncryptedObject, on_delete=models.CASCADE, related_name='versions')
+    version_number = models.IntegerField()
+    root_hash = models.CharField(max_length=64)
+    original_size = models.BigIntegerField()
+    original_hash = models.CharField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.CharField(max_length=255)
+    change_summary = models.TextField(null=True, blank=True)
+    
+    class Meta:
+        db_table = 'storage_object_version'
+        ordering = ['-version_number']
+        unique_together = ['object', 'version_number']
+        indexes = [
+            models.Index(fields=['object', '-version_number']),
+        ]
+    
+    def __str__(self):
+        return f"{self.object.id} v{self.version_number}"

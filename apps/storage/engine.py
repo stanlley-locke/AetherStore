@@ -12,16 +12,107 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Try to import reedsolomon with fallback
+# Try to import a Reed-Solomon library with fallback
 RS_AVAILABLE = False
+RS_IMPLEMENTATION = None
+
 try:
     import reedsolomon
-    RS_AVAILABLE = True
-    logger.info("ReedSolomon library loaded successfully")
-except ImportError:
-    logger.warning("ReedSolomon library not available. Using basic sharding only.")
+
+    # The PyPI reedsolomon package (0.0.3) does not expose a usable Encoder class.
+    # Check for the expected API; if missing, fall back to reedsolo.
+    if hasattr(reedsolomon, 'Encoder'):
+        RS_AVAILABLE = True
+        RS_IMPLEMENTATION = 'reedsolomon'
+        logger.info("ReedSolomon library (reedsolomon) loaded successfully")
+    else:
+        raise ImportError("reedsolomon missing Encoder class")
+
 except Exception as e:
-    logger.warning(f"ReedSolomon library error: {e}. Using basic sharding only.")
+    try:
+        import reedsolo
+
+        RS_AVAILABLE = True
+        RS_IMPLEMENTATION = 'reedsolo'
+        logger.info("ReedSolomon library (reedsolo) loaded successfully")
+    except Exception as e2:
+        RS_AVAILABLE = False
+        logger.warning("No Reed-Solomon library available. Using basic sharding only.")
+        logger.debug(f"ReedSolomon import errors: {e}; {e2}")
+
+
+class _ReedSoloEncoder:
+    """Simple Reed-Solomon wrapper using the `reedsolo` library."""
+
+    def __init__(self, data_shards: int, parity_shards: int):
+        from reedsolo import RSCodec
+
+        self.data_shards = data_shards
+        self.parity_shards = parity_shards
+        self.total_shards = data_shards + parity_shards
+        self.rs = RSCodec(nsym=parity_shards)
+
+    def encode(self, shards: List[bytes]) -> List[bytes]:
+        """Encode data shards into data+parity shards."""
+        if not shards:
+            return []
+
+        shard_size = len(shards[0])
+        # Ensure all data shards are same length
+        for s in shards:
+            if len(s) != shard_size:
+                raise ValueError("All shards must be the same length")
+
+        # Prepare parity shards (bytearrays for efficient assignment)
+        parity_shards = [bytearray(shard_size) for _ in range(self.parity_shards)]
+
+        # Encode per-column (per-byte across data shards)
+        for pos in range(shard_size):
+            column = bytes(shard[pos] for shard in shards)
+            encoded = self.rs.encode(column)
+            parity_bytes = encoded[-self.parity_shards:]
+            for i, b in enumerate(parity_bytes):
+                parity_shards[i][pos] = b
+
+        return shards + [bytes(p) for p in parity_shards]
+
+    def decode(self, shards: List[Optional[bytes]]):
+        """Reconstruct missing shards in-place (mutates the list)."""
+        # Determine shard length from available shards
+        shard_size = max((len(s) for s in shards if s is not None), default=0)
+
+        # Ensure we have a mutable buffer for each shard
+        shards_buf: List[bytearray] = [
+            bytearray(s) if s is not None else bytearray(shard_size)
+            for s in shards
+        ]
+
+        missing_indices = [i for i, s in enumerate(shards) if s is None]
+        if not missing_indices:
+            # Nothing to recover
+            return
+
+        for pos in range(shard_size):
+            column = bytearray(self.total_shards)
+            for idx in range(self.total_shards):
+                shard = shards_buf[idx]
+                column[idx] = shard[pos] if pos < len(shard) else 0
+
+            try:
+                decoded_full = self.rs.decode(bytes(column), erase_pos=missing_indices)
+                # Reedsolo returns tuple (message, message+ecc, errata_pos)
+                decoded = decoded_full[0]
+            except Exception as e:
+                logger.debug(f"ReedSolo decode failed at pos {pos}: {e}")
+                continue
+
+            for mi in missing_indices:
+                if mi < len(decoded):
+                    shards_buf[mi][pos] = decoded[mi]
+
+        # Write reconstructed shards back into the original list
+        for idx in missing_indices:
+            shards[idx] = bytes(shards_buf[idx])
 
 
 class ErasureCodingEngine:
@@ -29,19 +120,21 @@ class ErasureCodingEngine:
     Reed-Solomon Erasure Coding with streaming support
     Falls back to simple sharding if ReedSolomon unavailable
     """
-    
+
     def __init__(self, data_shards: int = None, parity_shards: int = None):
         self.data_shards = data_shards or getattr(settings, 'RS_DATA_SHARDS', 6)
         self.parity_shards = parity_shards or getattr(settings, 'RS_PARITY_SHARDS', 3)
         self.total_shards = self.data_shards + self.parity_shards
-        
+
         # Initialize Reed-Solomon encoder
         self.rs = None
         if RS_AVAILABLE:
             try:
-                # Correct API: reedsolomon.Encoder
-                self.rs = reedsolomon.Encoder(self.data_shards, self.parity_shards)
-                logger.info(f"ReedSolomon initialized: {self.data_shards}+{self.parity_shards}")
+                if RS_IMPLEMENTATION == 'reedsolomon':
+                    self.rs = reedsolomon.Encoder(self.data_shards, self.parity_shards)
+                elif RS_IMPLEMENTATION == 'reedsolo':
+                    self.rs = _ReedSoloEncoder(self.data_shards, self.parity_shards)
+                logger.info(f"ReedSolomon initialized: {self.data_shards}+{self.parity_shards} ({RS_IMPLEMENTATION})")
             except Exception as e:
                 logger.warning(f"Failed to initialize ReedSolomon: {e}")
                 self.rs = None

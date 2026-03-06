@@ -101,14 +101,69 @@ class ConsistentHashRing:
         
         return result
     
-    def get_all_nodes_for_object(self, content_hash: str, total_shards: int) -> Dict[int, List[Tuple[str, str]]]:
-        """Get all nodes for all shards of an object"""
+    def get_all_nodes_for_object(self, content_hash: str, total_shards: int, replicas: int = 2) -> Dict[int, List[Tuple[str, str]]]:
+        """
+        Get nodes for all shards of an object.
+        Ensures that primary nodes for shards are distributed to distinct physical nodes
+        to avoid multiple shards landing on the same node and triggering upload faults.
+        
+        Args:
+            content_hash: The root hash or chunk hash
+            total_shards: Total number of shards (e.g. 5)
+            replicas: Number of fallback replica nodes per shard (default 2)
+        """
+        if not self.ring:
+            self._rebuild()
+            
+        if not self.nodes:
+            return {}
+            
+        # Hash the object key ONCE to find a base starting point
+        hash_value = self._hash(content_hash)
+        
+        idx = bisect.bisect_right(self.sorted_keys, hash_value)
+        if idx >= len(self.sorted_keys):
+            idx = 0
+            
         shard_map = {}
+        distinct_nodes_found = []
+        seen_node_ids = set()
+        seen_endpoints = set()
         
+        # Traverse the ring to establish a sequence of distinct physical nodes (by endpoint)
+        start_idx = idx
+        
+        # Count total unique endpoints in the ring so we know when to stop
+        total_unique_endpoints = len(set(self.nodes.values()))
+        
+        while len(distinct_nodes_found) < total_unique_endpoints:
+            _, node_id = self.ring[idx]
+            
+            if node_id in self.nodes:
+                endpoint = self.nodes[node_id]
+                
+                if node_id not in seen_node_ids and endpoint not in seen_endpoints:
+                    seen_node_ids.add(node_id)
+                    seen_endpoints.add(endpoint)
+                    distinct_nodes_found.append((node_id, endpoint))
+                
+            idx = (idx + 1) % len(self.ring)
+            if idx == start_idx:
+                break
+                
+        # Now round-robin distribute the shards across the available distinct nodes.
+        # This guarantees shard 0 -> node A, shard 1 -> node B, etc.
         for i in range(total_shards):
-            # Get 2 replicas per shard for redundancy
-            shard_map[i] = self.get_nodes_for_shard(content_hash, i, replicas=2)
-        
+            shard_nodes = []
+            
+            # Start index for this shard shifts by `i` to stagger primaries
+            for r in range(replicas):
+                node_idx = (i + r) % len(distinct_nodes_found)
+                node = distinct_nodes_found[node_idx]
+                shard_nodes.append(node)
+                
+            shard_map[i] = shard_nodes
+            
         return shard_map
     
     def invalidate(self):

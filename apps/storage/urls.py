@@ -23,13 +23,13 @@ urlpatterns = [
     
     # Upload/Download
     path('upload/<str:bucket_name>/', UploadView.as_view(), name='upload'),
-    path('download/<int:object_id>/', DownloadView.as_view(), name='download'),
+    path('download/<uuid:object_id>/', DownloadView.as_view(), name='download'),
     path('download/presigned/<str:token>/', PresignedDownloadView.as_view(), name='presigned-download'),
     
     # Object management
-    path('object/<int:object_id>/', ObjectDetailView.as_view(), name='object-detail'),
+    path('object/<uuid:object_id>/', ObjectDetailView.as_view(), name='object-detail'),
     path('objects/', ObjectListView.as_view(), name='object-list'),
-    path('object/<int:object_id>/presigned/', PresignedURLView.as_view(), name='object-presigned'),
+    path('object/<uuid:object_id>/presigned/', PresignedURLView.as_view(), name='object-presigned'),
     
     # System endpoints
     path('health/', HealthView.as_view(), name='health'),
