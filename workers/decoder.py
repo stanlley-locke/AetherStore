@@ -82,21 +82,26 @@ def process_download(self, object_id, owner_did):
         metadata = obj.merkle_dag.get('metadata', {}) or {}
         
         salt_b64 = metadata.get('salt') or base64.b64encode(encryption.salt).decode('utf-8')
-        salt = base64.b64decode(salt_b64)
         
-        nonce_b64 = metadata.get('nonce')
-        tag_b64 = metadata.get('tag')
-        if not nonce_b64 or not tag_b64:
-            raise Exception("Missing encryption metadata (nonce/tag)")
+        # Normalize encrypted data (stored as base64 string or bytes of base64 string)
+        encrypted_data_str = (
+            encrypted_data.decode('utf-8')
+            if isinstance(encrypted_data, (bytes, bytearray))
+            else str(encrypted_data)
+        )
+        
+        # Build the package for decryption (ClientEncryption handles fallback parsing)
+        encrypted_package = {
+            'encrypted_data': encrypted_data_str,
+            'salt': salt_b64,
+        }
+        
+        if metadata.get('nonce'):
+            encrypted_package['nonce'] = metadata['nonce']
+        if metadata.get('auth_tag'):
+            encrypted_package['auth_tag'] = metadata['auth_tag']
             
-        nonce = base64.b64decode(nonce_b64)
-        tag = base64.b64decode(tag_b64)
-        
-        key = encryption._derive_key(obj.owner_did.encode('utf-8'), salt)
-        aesgcm = AESGCM(key)
-        
-        # Append tag to ciphertext as required by cryptography lib
-        plaintext = aesgcm.decrypt(nonce, encrypted_data + tag, None)
+        plaintext = encryption.decrypt(encrypted_package)
         
         # Write to local cache for streaming
         with open(output_path, 'wb') as f:
