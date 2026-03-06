@@ -41,13 +41,35 @@ curl -s -X GET "http://localhost:8000/api/v1/objects/?page=1&page_size=3&sort=-c
 
 ## Test #3: Download Reassembly
 
-Insert your `id` string block from step #2 into the placeholder below to pull your text file out:
+Because downloading large P2P files requires gathering dozens of network shards and decrypting them simultaneously, the download is processed asynchronously using Celery.
+
+### Step 3a: Initiate Download
+Insert your `id` string block from step #2 into the placeholder below to queue the background download algorithm:
 
 ```bash
 # Set your target UUID here
 OBJ_ID="fcbb884c-eeee-4695-9935-216b91aa0e88"
 
 curl -X GET "http://localhost:8000/api/v1/download/${OBJ_ID}/" \
+  -H "Authorization: $(get_auth)"
+```
+**Expectation:** The server responds with `202 Accepted` and yields your unique `"task_id"`.
+
+### Step 3b: Poll Download Status
+Substitute your `task_id` into this request to monitor the cluster's progress:
+```bash
+TASK_ID="your-background-task-id-here"
+
+curl -X GET "http://localhost:8000/api/v1/download/status/${TASK_ID}/" \
+  -H "Authorization: $(get_auth)"
+```
+**Expectation:** Check the `"status"` field. Once it transitions from `"processing"` to `"success"`, proceed to the final step.
+
+### Step 3c: Save the Target File
+Now that the server has fully reconstructed your file in its memory buffers, safely stream it out to your device:
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/download/file/${TASK_ID}/" \
   -H "Authorization: $(get_auth)" \
   -o downloaded_shakespear.txt
 ```

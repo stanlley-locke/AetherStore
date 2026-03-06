@@ -5,6 +5,8 @@ from .views import (
     StorageNodeViewSet,
     UploadView,
     DownloadView,
+    DownloadStatusView,
+    DownloadFileView,
     PresignedDownloadView,
     ObjectDetailView,
     ObjectListView,
@@ -24,6 +26,8 @@ urlpatterns = [
     # Upload/Download
     path('upload/<str:bucket_name>/', UploadView.as_view(), name='upload'),
     path('download/<uuid:object_id>/', DownloadView.as_view(), name='download'),
+    path('download/status/<str:task_id>/', DownloadStatusView.as_view(), name='download-status'),
+    path('download/file/<str:task_id>/', DownloadFileView.as_view(), name='download-file'),
     path('download/presigned/<str:token>/', PresignedDownloadView.as_view(), name='presigned-download'),
     
     # Object management

@@ -53,11 +53,38 @@ Lists all the user's successfully encrypted P2P objects.
 }
 ```
 
-### 3. Download Object
+### 3. Initiate Download
 `GET /api/v1/download/{object_id}/`
-Instructs the server to query the DHT, pull the erasure shards from the P2P cluster, rebuild the file chunks via Reed-Solomon, validate the MAC Auth tags, and decrypt the plaintext directly to your machine stream.
+Instructs the server to asynchronously query the DHT, pull the erasure shards from the P2P cluster, rebuild the file chunks via Reed-Solomon, validate the MAC Auth tags, and decrypt the plaintext.
 
-**Response:** binary file blob stream attached with metadata boundaries.
+**Response:** `202 Accepted`
+```json
+{
+  "task_id": "8b7ce2b...",
+  "status": "processing",
+  "file_size": 5436474,
+  "filename": "my_file.txt",
+  "message": "Download queued for background reassembly and decryption"
+}
+```
+
+### 4. Check Download Status
+`GET /api/v1/download/status/{task_id}/`
+Poll this endpoint to monitor the progress of your background decryption task.
+
+**Response:** `200 OK`
+```json
+{
+  "task_id": "8b7ce2b...",
+  "status": "success",
+  "output_path": "data/downloads/8b7ce2b....bin",
+  "size": 5436474
+}
+```
+
+### 5. Retrieve Downloaded File
+`GET /api/v1/download/file/{task_id}/`
+Once the status is `success`, hit this endpoint to retrieve the fully decrypted, reassembled binary payload streamed directly to your machine.
 
 ---
 

@@ -714,10 +714,8 @@ class DownloadView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request, object_id):
-        from apps.storage.models import EncryptedObject, StorageNode
-        from apps.storage.services.merkle_service import MerkleService
-        from apps.storage.engine import get_erasure_engine
-        import httpx
+        from apps.storage.models import EncryptedObject
+        from workers.decoder import process_download
         
         try:
             obj = EncryptedObject.objects.get(id=object_id, is_deleted=False)
@@ -728,150 +726,18 @@ class DownloadView(APIView):
                 logger.warning(f"Access denied for {owner_did} on object {object_id}")
                 return Response({'error': 'Access denied', 'code': 'ACCESS_DENIED'}, status=403)
             
-            logger.info(f"Download requested for object {object_id} ({obj.original_size}) bytes by {owner_did}")
-            logger.info(f"Merkle root: {obj.root_hash[:16]}..., chunks: {obj.chunk_count}, shards: {len(obj.shard_map)}")
+            logger.info(f"Async download triggered for object {object_id}")
             
-            # Fetch and decode shards for all chunks
-            engine = get_erasure_engine()
-            chunks = {}
+            # Dispatch Celery task
+            task = process_download.delay(str(obj.id), owner_did)
             
-            with httpx.Client(timeout=30.0) as client:
-                for chunk_index in range(obj.chunk_count):
-                    chunk_shards = {}
-                    
-                    # Fetch shards for this chunk
-                    for key, node_id in obj.shard_map.items():
-                        stored_chunk_idx, stored_shard_idx = map(int, key.split(':'))
-                        if stored_chunk_idx == chunk_index:
-                            try:
-                                node = StorageNode.objects.get(node_id=node_id, is_active=True)
-                                resp = client.get(
-                                    f"{node.endpoint}/shard/{obj.root_hash}/{chunk_index}/{stored_shard_idx}"
-                                )
-                                if resp.status_code == 200:
-                                    chunk_shards[stored_shard_idx] = resp.content
-                                    logger.debug(f"Fetched shard {stored_shard_idx} for chunk {chunk_index} from node {node_id}")
-                            except Exception as e:
-                                logger.warning(f"Failed to fetch shard from {node_id}: {e}")
-                    
-                    # Decode chunk from shards
-                    if len(chunk_shards) >= engine.data_shards:
-                        shard_list = [chunk_shards.get(i, None) for i in range(max(chunk_shards.keys()) + 1)]
-                        chunk_data = engine.decode(shard_list)
-                        chunks[chunk_index] = chunk_data
-                        logger.debug(f"Decoded chunk {chunk_index} with {len(chunk_data)} bytes")
-                    else:
-                        error_msg = f"Insufficient shards for chunk {chunk_index}: {len(chunk_shards)} found, {engine.data_shards} needed"
-                        logger.error(error_msg)
-                        return Response(
-                            {'error': error_msg, 'code': 'INSUFFICIENT_SHARDS'},
-                            status=500
-                        )
-            
-            logger.info(f"Fetched {len(chunks)}/{obj.chunk_count} chunks")
-
-            # Verify Merkle root
-            merkle_dag = MerkleDAG.from_dict(obj.merkle_dag)
-            if not MerkleService.verify_chunks(merkle_dag, chunks):
-                logger.error("Merkle verification failed!")
-                return Response({'error': 'Merkle verification failed', 'code': 'VERIFICATION_FAILED' }, status=500)
-            
-            logger.info("Merkle verification: Pass")
-            
-            # Reassemble encrypted data using the Merkle DAG's total size (which is the size of the encrypted payload)
-            encrypted_data = MerkleService.reassemble_file(chunks, merkle_dag.total_size)
-            logger.info(f"Reassembled encrypted {len(encrypted_data)} bytes")
-            
-            # Decrypt using the per-user salt cached by ClientEncryption
-            encryption = ClientEncryption.for_user(owner_did)
-
-            # Encrypted_data is already the ciphertext (base64 decoded)
-            # Need to construct the proper package
-            try:
-                # Get encryption metadata that was stored during upload.
-                metadata = obj.merkle_dag.get('metadata', {}) or {}
-
-                # Ensure we have a valid salt to derive the key (falls back to per-user salt)
-                salt_b64 = metadata.get('salt') or base64.b64encode(encryption.salt).decode('utf-8')
-                try:
-                    base64.b64decode(salt_b64)
-                except Exception as e:
-                    raise ValueError(f"Invalid salt encoding: {e}")
-
-                # Normalize encrypted data (it is stored as bytes of a base64 string)
-                encrypted_data_str = (
-                    encrypted_data.decode('utf-8')
-                    if isinstance(encrypted_data, (bytes, bytearray))
-                    else str(encrypted_data)
-                )
-
-                # Build the package for decryption.
-                # If nonce/auth_tag are missing, ClientEncryption.decrypt will attempt to recover
-                # them from the combined payload.
-                encrypted_package = {
-                    'encrypted_data': encrypted_data_str,
-                    'salt': salt_b64,
-                }
-                if metadata.get('nonce'):
-                    encrypted_package['nonce'] = metadata['nonce']
-                if metadata.get('auth_tag'):
-                    encrypted_package['auth_tag'] = metadata['auth_tag']
-
-                decrypted_data = encryption.decrypt(encrypted_package)
-                logger.info(f"Decrypted {len(decrypted_data)} bytes")
-            except Exception as e:
-                logger.error(f"Decryption failed: {e}")
-                logger.error(f"Meta {metadata}")
-                return Response({'error': f'Decryption failed: {str(e)}',  'code': 'DECRYPTION_FAILED'}, status=500)
-            
-            
-
-            # Handle range requests
-            range_header = request.META.get('HTTP_RANGE')
-            
-            if range_header:
-                range_spec = range_header.replace('bytes=', '').split('-')
-                start = int(range_spec[0]) if range_spec[0] else 0
-                end = int(range_spec[1]) if range_spec[1] else len(decrypted_data) - 1
-                
-                start = max(0, start)
-                end = min(len(decrypted_data) - 1, end)
-                chunk = decrypted_data[start:end + 1]
-                
-                response = StreamingHttpResponse(
-                    io.BytesIO(chunk),
-                    content_type=obj.mime_type,
-                    status=206
-                )
-                response['Content-Range'] = f'bytes {start}-{end}/{len(decrypted_data)}'
-                response['Content-Length'] = str(len(chunk))
-                bytes_transferred = len(chunk)
-                logger.info(f"Serving partial content: {bytes_transferred} bytes ({start}-{end})")
-            else:
-                response = StreamingHttpResponse(
-                    io.BytesIO(decrypted_data),
-                    content_type=obj.mime_type
-                )
-                response['Content-Length'] = str(len(decrypted_data))
-                bytes_transferred = len(decrypted_data)
-                logger.info(f"Serving full file: {bytes_transferred} bytes")
-            
-            response['Accept-Ranges'] = 'bytes'
-            response['Content-Disposition'] = f'attachment; filename="{obj.filename or object_id}"'
-            response['Cache-Control'] = 'public, max-age=31536000'
-
-            # Log access 
-            from apps.storage.models import AccessLog
-            AccessLog.objects.create(
-                object=None,  # AccessLog expects StorageObject, but obj is an EncryptedObject here
-                user_did=owner_did,
-                action='download',
-                bytes_transferred=bytes_transferred,
-                ip_address=request.META.get('REMOTE_ADDR'),
-                status_code=response.status_code
-            )
-            
-            return response
+            return Response({
+                'task_id': task.id,
+                'status': 'processing',
+                'file_size': obj.original_size,
+                'filename': obj.filename or str(obj.id),
+                'message': 'Download queued for background reassembly and decryption'
+            }, status=202)
             
         except EncryptedObject.DoesNotExist:
             logger.warning(f"Object {object_id} not found")
@@ -879,3 +745,65 @@ class DownloadView(APIView):
         except Exception as e:
             logger.error(f"Download error: {e}", exc_info=True)
             return Response({'error': str(e), 'code': 'DOWNLOAD_ERROR'}, status=500)
+
+class DownloadStatusView(APIView):
+    """Check status of a background download task"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, task_id):
+        from celery.result import AsyncResult
+        
+        task = AsyncResult(task_id)
+        response_data = {'task_id': task_id, 'status': task.status.lower()}
+        
+        if task.successful():
+            result = task.result
+            if isinstance(result, dict):
+                response_data.update(result)
+        elif task.failed():
+            response_data['error'] = str(task.result)
+            
+        return Response(response_data)
+
+class DownloadFileView(APIView):
+    """Stream the completely decrypted file to the client"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, task_id):
+        from celery.result import AsyncResult
+        from django.http import FileResponse
+        import os
+        
+        task = AsyncResult(task_id)
+        if not task.successful():
+            return Response({'error': 'Task not completed', 'code': 'NOT_READY'}, status=400)
+            
+        result = task.result
+        if not isinstance(result, dict) or 'output_path' not in result:
+            return Response({'error': 'Invalid task result', 'code': 'INVALID_RESULT'}, status=500)
+            
+        file_path = result['output_path']
+        if not os.path.exists(file_path):
+            return Response({'error': 'File not found on disk', 'code': 'FILE_NOT_FOUND'}, status=404)
+            
+        try:
+            # FileResponse automatically streams and closes the file pointer
+            response = FileResponse(open(file_path, 'rb'), as_attachment=True, filename=result.get('filename', task_id))
+            
+            # Log access
+            from apps.storage.models import AccessLog
+            owner_did = getattr(request.user, 'did', str(request.user))
+            AccessLog.objects.create(
+                object=None,
+                user_did=owner_did,
+                action='download',
+                bytes_transferred=result.get('size', 0),
+                ip_address=request.META.get('REMOTE_ADDR'),
+                status_code=200
+            )
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"File serving error: {e}")
+            return Response({'error': 'Failed to serve file', 'code': 'SERVE_ERROR'}, status=500)
