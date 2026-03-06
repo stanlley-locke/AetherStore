@@ -184,3 +184,45 @@ class ObjectVersion(models.Model):
     
     def __str__(self):
         return f"{self.object.id} v{self.version_number}"
+
+
+class UploadSession(models.Model):
+    """Tracks a multipart upload session"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    owner_did = models.CharField(max_length=255, db_index=True)
+    bucket = models.ForeignKey(Bucket, on_delete=models.CASCADE, related_name='upload_sessions')
+    filename = models.CharField(max_length=255)
+    mime_type = models.CharField(max_length=100)
+    total_size = models.BigIntegerField(null=True, blank=True)
+    
+    # Status: 'initialized', 'uploading', 'processing', 'completed', 'failed'
+    status = models.CharField(max_length=20, default='initialized')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True)
+    
+    class Meta:
+        db_table = 'storage_upload_session'
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"Upload {self.id} ({self.status})"
+
+
+class UploadPart(models.Model):
+    """Tracks individual parts of a multipart upload"""
+    id = models.BigAutoField(primary_key=True)
+    session = models.ForeignKey(UploadSession, on_delete=models.CASCADE, related_name='parts')
+    part_number = models.IntegerField()
+    size = models.IntegerField()
+    content_hash = models.CharField(max_length=64)
+    temp_filepath = models.CharField(max_length=512)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'storage_upload_part'
+        unique_together = ['session', 'part_number']
+        ordering = ['part_number']
+        
+    def __str__(self):
+        return f"Part {self.part_number} of {self.session.id}"

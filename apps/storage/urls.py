@@ -14,6 +14,9 @@ from .views import (
     HealthView,
     MetricsView,
     StatsView,
+    MultipartInitView,
+    MultipartUploadPartView,
+    MultipartCompleteView,
 )
 
 router = DefaultRouter()
@@ -25,6 +28,10 @@ urlpatterns = [
     
     # Upload/Download
     path('upload/<str:bucket_name>/', UploadView.as_view(), name='upload'),
+    path('upload/multipart/init/', MultipartInitView.as_view(), name='multipart-init'),
+    path('upload/multipart/<uuid:upload_id>/part/<int:part_number>/', MultipartUploadPartView.as_view(), name='multipart-part'),
+    path('upload/multipart/<uuid:upload_id>/complete/', MultipartCompleteView.as_view(), name='multipart-complete'),
+    
     path('download/<uuid:object_id>/', DownloadView.as_view(), name='download'),
     path('download/status/<str:task_id>/', DownloadStatusView.as_view(), name='download-status'),
     path('download/file/<str:task_id>/', DownloadFileView.as_view(), name='download-file'),

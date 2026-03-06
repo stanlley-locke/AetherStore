@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=60)
-def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did, filename=None):
+def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did, filename=None, filepath=None, upload_session_id=None):
     """
     Process file upload with encryption, Merkle DAG, and shard distribution
     """
@@ -23,8 +23,13 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
         import httpx
         import base64
         
-        # Decode base64 encoded string back to raw bytes
-        if isinstance(data_bytes, str):
+        import os
+        
+        # Decode base64 encoded string back to raw bytes or read from file
+        if filepath and os.path.exists(filepath):
+            with open(filepath, 'rb') as f:
+                data_bytes = f.read()
+        elif isinstance(data_bytes, str):
             data_bytes = base64.b64decode(data_bytes)
             
         logger.info(f"Processing encrypted upload for bucket {bucket_id}, size {len(data_bytes)} bytes")
@@ -196,6 +201,18 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
         
         logger.info(f"✓ Upload complete: {merkle_dag.root_hash[:16]}")
         
+        # Cleanup temp directory if this was a multipart upload
+        if upload_session_id:
+            try:
+                import shutil
+                from apps.storage.models import UploadSession
+                temp_dir = os.path.join('data', 'temp_uploads', str(upload_session_id))
+                if os.path.exists(temp_dir):
+                    shutil.rmtree(temp_dir)
+                UploadSession.objects.filter(id=upload_session_id).update(status='completed')
+            except Exception as e:
+                logger.error(f"Cleanup failed for session {upload_session_id}: {e}")
+                
         return {
             'status': 'success',
             'object_id': str(obj.id),
@@ -205,5 +222,9 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
         }
         
     except Exception as exc:
+        if 'upload_session_id' in locals() and upload_session_id:
+            from apps.storage.models import UploadSession
+            UploadSession.objects.filter(id=upload_session_id).update(status='failed')
+            
         logger.error(f"Upload failed: {exc}", exc_info=True)
         raise self.retry(exc=exc)
