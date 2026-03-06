@@ -49,8 +49,8 @@
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/aetherstore.git
-cd aetherstore
+git clone https://github.com/stanlley-locke/AetherStore.git
+cd AetherStore 
 ```
 
 ### Step 2: Create a Virtual Environment
