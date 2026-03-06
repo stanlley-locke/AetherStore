@@ -21,8 +21,8 @@ fi
 
 echo "Task ID: $TASK_ID"
 
-# Poll status
-for i in {1..15}; do
+# Poll status (up to 120 seconds for large files)
+for i in {1..60}; do
     echo "Polling status... attempt $i"
     STATUS_RESP=$(curl -s -X GET "http://localhost:8000/api/v1/download/status/${TASK_ID}/" -H "Authorization: $(get_auth)")
     echo "Status: $STATUS_RESP"
