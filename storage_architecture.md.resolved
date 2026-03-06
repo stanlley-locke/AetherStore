@@ -1,0 +1,39 @@
+# How Files Are Stored in AetherStore
+
+AetherStore does not store files natively as complete blobs like a traditional filesystem or S3. Instead, it uses a pipeline of **Chunking, Encryption, Merkle DAG hashing, and Erasure Coding**.
+
+When a file (e.g., the 5.4MB [shakespear.txt](file:///c:/Users/stanl/Desktop/vscodeworkspace/pythonplayground/aetherstore/shakespear.txt)) is uploaded, it goes through the following multi-step journey:
+
+## 1. Chunking
+The file is sliced into uniform **256KB chunks**. For a 5.4MB file, this roughly translates to **21 individual chunks**.
+*Why?* Chunking allows nodes to parallelize downloads, simplifies streaming video, and ensures that a single changed byte in a massive file only requires you to re-upload that specific 256KB chunk (Data Deduplication).
+
+## 2. Client-Side Encryption
+Before the chunks leave the security of the upload pipeline, **each 256KB chunk is encrypted individually** using AES-256-GCM encryption. The encryption key is derived from the user's DID/password and a salt.
+A random secure Nonce and an Authentication Tag are generated for each chunk. AetherStore nodes never see the plaintext!
+
+## 3. The Merkle DAG
+Every chunk is then passed through a cryptographic hash function (SHA-256). These hashes are arranged in a tree-like structure called a **Merkle DAG (Directed Acyclic Graph)**. 
+- The hashes of the chunks form the "leaves" of the tree.
+- These hashes are hashed together until they form a single "Root Hash".
+This Root Hash elegantly represents your entire 5.4MB file. If any storage node alters even a single bit of your data, the hash won't match, and the client will instantly detect the corruption or tampering.
+
+## 4. Reed-Solomon Erasure Coding
+Storing a single encrypted chunk on a single node is dangerous—if that node goes offline, your data is gone forever.
+AetherStore takes each encrypted 256KB chunk and feeds it through an **Erasure Coding Engine** (using the `reedsolo` algorithm).
+It splits the 256KB chunk into **3 Data Shards** and magically calculates **2 Parity Shards**.
+- This means your single 256KB chunk is expanded into **5 Shards** (each roughly 85KB).
+- You now only need **ANY 3** of these 5 shards to completely rebuild the original 256KB chunk!
+
+## 5. Peer-to-Peer Distribution (The Hash Ring)
+Finally, where do these 5 shards physically go?
+The system utilizes a **Consistent Hash Ring**. It maps the `Root Hash` of the file to 5 physically distinct storage nodes (e.g., `Node-1` through `Node-5`).
+- The 5 shards of Chunk 0 are `PUT` onto the 5 distinct nodes.
+- The 5 shards of Chunk 1 are `PUT` onto the 5 distinct nodes.
+- ...and so on.
+
+In our [shakespear.txt](file:///c:/Users/stanl/Desktop/vscodeworkspace/pythonplayground/aetherstore/shakespear.txt) example consisting of 21 chunks:
+- Each node will receive 1 shard per chunk.
+- Every node essentially stores exactly 21 physical `.shard` files in its local `data/shards/{root_hash}/...` directory.
+
+When you **Download** the file, AetherStore concurrently queries the DHT (Distributed Hash Table) for the node locations, fetches any 3 of the 5 shards for each chunk, math-repairs them if necessary, glues the chunks back together via the Merkle DAG, validates the GCM tag, and decrypts the stream directly to your machine.

@@ -1,0 +1,546 @@
+ 
+ -------------- celery@stanlley v5.6.2 (recovery)
+--- ***** ----- 
+-- ******* ---- Windows-11-10.0.26200-SP0 2026-03-06 23:53:02
+- *** --- * --- 
+- ** ---------- [config]
+- ** ---------- .> app:         aetherstore:0x2679947c1a0
+- ** ---------- .> transport:   redis://localhost:6379/0
+- ** ---------- .> results:     redis://localhost:6379/0
+- *** --- * --- .> concurrency: 8 (solo)
+-- ******* ---- .> task events: OFF (enable -E to monitor tasks in this worker)
+--- ***** ----- 
+ -------------- [queues]
+                .> celery           exchange=celery(direct) key=celery
+                
+
+[tasks]
+  . aetherstore.celery.debug_task
+  . workers.auditor.audit_storage_health
+  . workers.auditor.node_heartbeat
+  . workers.auditor.repair_object
+  . workers.encoder.process_upload
+
+[2026-03-06 23:53:02,935: INFO/MainProcess] Connected to redis://localhost:6379/0
+[2026-03-06 23:53:02,947: INFO/MainProcess] mingle: searching for neighbors
+[2026-03-06 23:53:04,008: INFO/MainProcess] mingle: all alone
+[2026-03-06 23:53:04,082: INFO/MainProcess] celery@stanlley ready.
+[2026-03-06 23:53:44,212: INFO/MainProcess] Task workers.encoder.process_upload[4f0ed549-bff7-416f-af87-8e2ac7fff81b] received
+[2026-03-06 23:53:44,258: INFO/MainProcess] Processing encrypted upload for bucket 7, size 5436474 bytes
+[2026-03-06 23:53:44,259: INFO/MainProcess] Checking node availability...
+[2026-03-06 23:53:44,259: INFO/MainProcess] ReedSolomon initialized: 5+2 (reedsolo)
+[2026-03-06 23:53:55,013: INFO/MainProcess] \u2713 5 healthy nodes available
+[2026-03-06 23:53:55,014: INFO/MainProcess] Encrypting data...
+[2026-03-06 23:53:55,128: INFO/MainProcess] Encrypted size: 7248672 bytes
+[2026-03-06 23:53:55,128: INFO/MainProcess] Building Merkle DAG...
+[2026-03-06 23:53:55,137: INFO/MainProcess] Merkle root: 53d4dcfc366479b0...
+[2026-03-06 23:53:55,151: INFO/MainProcess] Original file hash: 9e48af1c26fa3bb9...
+[2026-03-06 23:54:05,897: INFO/MainProcess] Using 5 nodes
+[2026-03-06 23:54:09,491: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/0/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:12,067: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/0/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:14,628: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/0/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:17,207: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/0/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:19,892: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/0/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:22,405: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/0/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:24,980: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/0/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:25,458: INFO/MainProcess] Chunk 0/28 done
+[2026-03-06 23:54:29,436: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/1/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:32,303: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/1/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:35,049: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/1/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:37,891: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/1/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:40,591: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/1/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:43,116: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/1/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:45,791: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/1/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:46,337: INFO/MainProcess] Chunk 1/28 done
+[2026-03-06 23:54:49,607: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/2/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:52,209: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/2/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:54,836: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/2/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:54:57,586: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/2/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:00,209: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/2/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:02,985: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/2/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:05,754: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/2/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:06,312: INFO/MainProcess] Chunk 2/28 done
+[2026-03-06 23:55:09,872: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/3/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:12,729: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/3/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:15,742: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/3/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:18,470: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/3/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:21,130: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/3/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:23,930: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/3/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:26,514: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/3/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:27,110: INFO/MainProcess] Chunk 3/28 done
+[2026-03-06 23:55:30,964: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/4/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:33,716: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/4/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:36,589: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/4/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:39,474: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/4/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:42,342: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/4/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:45,092: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/4/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:47,669: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/4/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:48,179: INFO/MainProcess] Chunk 4/28 done
+[2026-03-06 23:55:51,361: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/5/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:54,035: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/5/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:56,589: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/5/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:55:59,146: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/5/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:01,693: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/5/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:04,446: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/5/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:07,110: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/5/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:07,828: INFO/MainProcess] Chunk 5/28 done
+[2026-03-06 23:56:11,206: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/6/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:13,963: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/6/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:16,627: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/6/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:19,430: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/6/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:22,012: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/6/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:24,791: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/6/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:27,617: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/6/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:28,254: INFO/MainProcess] Chunk 6/28 done
+[2026-03-06 23:56:31,737: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/7/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:34,460: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/7/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:37,140: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/7/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:39,865: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/7/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:42,520: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/7/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:45,191: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/7/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:47,936: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/7/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:48,448: INFO/MainProcess] Chunk 7/28 done
+[2026-03-06 23:56:52,029: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/8/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:54,685: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/8/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:56:57,352: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/8/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:00,074: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/8/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:02,817: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/8/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:05,549: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/8/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:08,267: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/8/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:08,790: INFO/MainProcess] Chunk 8/28 done
+[2026-03-06 23:57:12,169: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/9/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:14,864: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/9/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:17,536: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/9/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:20,124: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/9/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:22,682: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/9/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:25,245: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/9/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:27,820: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/9/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:28,455: INFO/MainProcess] Chunk 9/28 done
+[2026-03-06 23:57:31,790: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/10/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:34,439: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/10/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:37,025: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/10/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:39,798: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/10/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:42,394: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/10/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:45,120: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/10/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:47,743: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/10/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:48,450: INFO/MainProcess] Chunk 10/28 done
+[2026-03-06 23:57:51,835: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/11/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:54,590: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/11/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:57,194: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/11/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:57:59,893: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/11/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:02,481: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/11/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:05,038: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/11/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:07,649: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/11/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:08,216: INFO/MainProcess] Chunk 11/28 done
+[2026-03-06 23:58:11,795: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/12/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:14,506: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/12/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:17,523: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/12/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:20,435: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/12/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:23,230: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/12/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:25,902: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/12/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:28,585: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/12/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:29,350: INFO/MainProcess] Chunk 12/28 done
+[2026-03-06 23:58:33,047: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/13/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:35,822: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/13/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:38,635: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/13/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:41,375: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/13/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:44,246: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/13/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:46,928: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/13/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:49,788: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/13/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:50,402: INFO/MainProcess] Chunk 13/28 done
+[2026-03-06 23:58:53,908: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/14/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:56,701: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/14/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:58:59,386: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/14/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:02,032: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/14/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:04,625: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/14/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:07,250: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/14/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:09,923: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/14/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:10,959: INFO/MainProcess] Chunk 14/28 done
+[2026-03-06 23:59:14,503: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/15/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:17,154: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/15/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:19,964: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/15/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:22,747: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/15/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:25,440: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/15/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:28,117: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/15/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:30,828: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/15/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:31,406: INFO/MainProcess] Chunk 15/28 done
+[2026-03-06 23:59:35,739: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/16/0 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:38,545: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/16/1 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:41,453: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/16/2 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:44,533: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/16/3 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:47,305: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/16/4 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:50,237: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/16/5 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:52,909: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/16/6 "HTTP/1.1 200 OK"
+[2026-03-06 23:59:53,669: INFO/MainProcess] Chunk 16/28 done
+[2026-03-06 23:59:57,428: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/17/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:00,324: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/17/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:02,990: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/17/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:05,709: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/17/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:08,403: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/17/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:11,077: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/17/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:13,787: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/17/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:14,347: INFO/MainProcess] Chunk 17/28 done
+[2026-03-07 00:00:17,738: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/18/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:20,387: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/18/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:22,941: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/18/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:25,470: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/18/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:28,027: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/18/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:30,611: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/18/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:33,154: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/18/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:33,673: INFO/MainProcess] Chunk 18/28 done
+[2026-03-07 00:00:37,126: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/19/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:39,712: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/19/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:42,278: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/19/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:44,843: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/19/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:47,565: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/19/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:50,197: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/19/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:53,008: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/19/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:53,524: INFO/MainProcess] Chunk 19/28 done
+[2026-03-07 00:00:56,865: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/20/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:00:59,401: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/20/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:02,036: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/20/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:04,622: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/20/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:07,169: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/20/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:09,795: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/20/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:12,426: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/20/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:12,899: INFO/MainProcess] Chunk 20/28 done
+[2026-03-07 00:01:16,159: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/21/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:18,694: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/21/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:21,379: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/21/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:23,952: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/21/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:26,514: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/21/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:29,052: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/21/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:31,602: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/21/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:32,179: INFO/MainProcess] Chunk 21/28 done
+[2026-03-07 00:01:35,483: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/22/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:38,016: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/22/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:40,625: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/22/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:43,262: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/22/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:45,824: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/22/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:48,345: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/22/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:50,891: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/22/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:51,376: INFO/MainProcess] Chunk 22/28 done
+[2026-03-07 00:01:54,533: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/23/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:57,082: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/23/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:01:59,777: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/23/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:02,394: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/23/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:04,950: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/23/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:07,644: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/23/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:10,194: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/23/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:10,771: INFO/MainProcess] Chunk 23/28 done
+[2026-03-07 00:02:13,901: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/24/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:16,438: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/24/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:18,979: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/24/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:21,568: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/24/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:24,091: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/24/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:26,647: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/24/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:29,199: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/24/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:29,674: INFO/MainProcess] Chunk 24/28 done
+[2026-03-07 00:02:32,847: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/25/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:35,374: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/25/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:37,945: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/25/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:40,467: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/25/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:43,038: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/25/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:45,573: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/25/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:48,098: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/25/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:48,561: INFO/MainProcess] Chunk 25/28 done
+[2026-03-07 00:02:51,752: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/26/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:54,290: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/26/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:56,853: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/26/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:02:59,409: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/26/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:03:01,972: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/26/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:03:04,506: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/26/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:03:07,071: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/26/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:03:07,553: INFO/MainProcess] Chunk 26/28 done
+[2026-03-07 00:03:10,568: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/27/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:03:13,070: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/27/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:03:15,650: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/27/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:03:18,226: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/27/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:03:20,765: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/27/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:03:23,304: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/27/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:03:25,887: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085/27/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:03:26,362: INFO/MainProcess] Chunk 27/28 done
+[2026-03-07 00:03:26,363: INFO/MainProcess] \u2713 Stored 196 shards
+[2026-03-07 00:03:26,392: INFO/MainProcess] \u2713 Upload complete: 53d4dcfc366479b0
+[2026-03-07 00:03:26,432: INFO/MainProcess] Task workers.encoder.process_upload[4f0ed549-bff7-416f-af87-8e2ac7fff81b] succeeded in 582.204117900008s: {'status': 'success', 'object_id': '1dd68fa1-346b-42df-a796-6d6b4a5b1e33', 'root_hash': '53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085', 'chunk_count': 28, 'shards_stored': 196}
+[2026-03-07 00:16:34,206: INFO/MainProcess] Task workers.encoder.process_upload[a69ac68e-d17f-4257-a5a9-eab292072ada] received
+[2026-03-07 00:16:34,207: INFO/MainProcess] Processing encrypted upload for bucket 4, size 33 bytes
+[2026-03-07 00:16:34,207: INFO/MainProcess] Checking node availability...
+[2026-03-07 00:16:45,008: INFO/MainProcess] \u2713 5 healthy nodes available
+[2026-03-07 00:16:45,008: INFO/MainProcess] Encrypting data...
+[2026-03-07 00:16:45,049: INFO/MainProcess] Encrypted size: 84 bytes
+[2026-03-07 00:16:45,049: INFO/MainProcess] Building Merkle DAG...
+[2026-03-07 00:16:45,049: INFO/MainProcess] Merkle root: 0af35e8b3e8b8f64...
+[2026-03-07 00:16:45,058: INFO/MainProcess] Original file hash: 43f65eae0b9498b0...
+[2026-03-07 00:16:55,769: INFO/MainProcess] Using 5 nodes
+[2026-03-07 00:16:58,271: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/0af35e8b3e8b8f647c0270c5f85fabc600a3abd5287c8f935903b16c3b2ba99e/0/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:17:00,850: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/0af35e8b3e8b8f647c0270c5f85fabc600a3abd5287c8f935903b16c3b2ba99e/0/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:17:03,419: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/0af35e8b3e8b8f647c0270c5f85fabc600a3abd5287c8f935903b16c3b2ba99e/0/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:17:06,090: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/0af35e8b3e8b8f647c0270c5f85fabc600a3abd5287c8f935903b16c3b2ba99e/0/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:17:08,628: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/0af35e8b3e8b8f647c0270c5f85fabc600a3abd5287c8f935903b16c3b2ba99e/0/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:17:11,370: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/0af35e8b3e8b8f647c0270c5f85fabc600a3abd5287c8f935903b16c3b2ba99e/0/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:17:13,925: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/0af35e8b3e8b8f647c0270c5f85fabc600a3abd5287c8f935903b16c3b2ba99e/0/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:17:14,439: INFO/MainProcess] Chunk 0/1 done
+[2026-03-07 00:17:14,439: INFO/MainProcess] \u2713 Stored 7 shards
+[2026-03-07 00:17:14,458: INFO/MainProcess] \u2713 Upload complete: 0af35e8b3e8b8f64
+[2026-03-07 00:17:14,463: INFO/MainProcess] Task workers.encoder.process_upload[a69ac68e-d17f-4257-a5a9-eab292072ada] succeeded in 40.256440099998144s: {'status': 'success', 'object_id': '7cbef810-9530-4ae4-a541-f84950777a92', 'root_hash': '0af35e8b3e8b8f647c0270c5f85fabc600a3abd5287c8f935903b16c3b2ba99e', 'chunk_count': 1, 'shards_stored': 7}
+[2026-03-07 00:17:19,462: INFO/MainProcess] Task workers.encoder.process_upload[5ca2d90b-1ca3-49e5-9c32-baa95b4235b3] received
+[2026-03-07 00:17:19,487: INFO/MainProcess] Processing encrypted upload for bucket 8, size 5436474 bytes
+[2026-03-07 00:17:19,487: INFO/MainProcess] Checking node availability...
+[2026-03-07 00:17:30,217: INFO/MainProcess] \u2713 5 healthy nodes available
+[2026-03-07 00:17:30,217: INFO/MainProcess] Encrypting data...
+[2026-03-07 00:17:30,300: INFO/MainProcess] Encrypted size: 7248672 bytes
+[2026-03-07 00:17:30,300: INFO/MainProcess] Building Merkle DAG...
+[2026-03-07 00:17:30,309: INFO/MainProcess] Merkle root: 6fe5ac588e913a34...
+[2026-03-07 00:17:30,324: INFO/MainProcess] Original file hash: 9e48af1c26fa3bb9...
+[2026-03-07 00:17:41,066: INFO/MainProcess] Using 5 nodes
+[2026-03-07 00:17:44,289: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/0/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:17:46,882: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/0/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:17:49,504: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/0/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:17:52,168: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/0/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:17:54,765: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/0/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:17:57,522: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/0/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:00,095: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/0/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:00,735: INFO/MainProcess] Chunk 0/28 done
+[2026-03-07 00:18:04,012: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/1/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:06,549: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/1/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:09,088: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/1/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:11,790: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/1/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:14,384: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/1/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:17,079: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/1/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:19,606: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/1/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:20,141: INFO/MainProcess] Chunk 1/28 done
+[2026-03-07 00:18:23,661: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/2/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:26,221: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/2/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:29,021: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/2/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:31,589: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/2/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:34,175: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/2/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:36,837: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/2/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:39,469: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/2/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:40,071: INFO/MainProcess] Chunk 2/28 done
+[2026-03-07 00:18:43,527: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/3/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:46,197: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/3/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:48,719: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/3/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:51,329: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/3/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:53,916: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/3/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:56,530: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/3/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:59,278: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/3/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:18:59,845: INFO/MainProcess] Chunk 3/28 done
+[2026-03-07 00:19:03,298: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/4/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:05,975: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/4/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:08,694: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/4/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:11,330: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/4/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:13,929: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/4/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:16,474: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/4/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:19,013: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/4/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:19,810: INFO/MainProcess] Chunk 4/28 done
+[2026-03-07 00:19:23,529: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/5/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:26,216: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/5/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:28,792: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/5/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:31,584: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/5/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:34,194: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/5/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:36,829: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/5/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:39,410: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/5/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:40,065: INFO/MainProcess] Chunk 5/28 done
+[2026-03-07 00:19:43,727: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/6/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:46,325: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/6/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:48,956: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/6/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:51,485: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/6/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:54,065: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/6/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:56,600: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/6/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:59,270: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/6/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:19:59,840: INFO/MainProcess] Chunk 6/28 done
+[2026-03-07 00:20:03,285: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/7/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:05,866: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/7/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:08,450: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/7/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:11,040: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/7/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:13,578: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/7/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:16,139: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/7/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:18,692: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/7/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:19,247: INFO/MainProcess] Chunk 7/28 done
+[2026-03-07 00:20:22,474: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/8/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:25,039: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/8/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:27,550: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/8/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:30,193: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/8/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:32,757: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/8/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:35,407: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/8/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:37,951: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/8/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:38,557: INFO/MainProcess] Chunk 8/28 done
+[2026-03-07 00:20:41,876: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/9/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:44,432: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/9/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:46,906: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/9/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:49,416: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/9/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:51,960: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/9/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:54,495: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/9/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:57,271: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/9/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:20:57,751: INFO/MainProcess] Chunk 9/28 done
+[2026-03-07 00:21:00,936: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/10/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:03,612: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/10/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:06,117: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/10/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:08,766: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/10/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:11,286: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/10/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:13,958: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/10/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:16,490: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/10/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:17,050: INFO/MainProcess] Chunk 10/28 done
+[2026-03-07 00:21:20,260: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/11/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:22,890: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/11/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:25,420: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/11/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:27,966: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/11/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:30,490: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/11/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:33,234: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/11/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:35,821: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/11/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:36,280: INFO/MainProcess] Chunk 11/28 done
+[2026-03-07 00:21:39,531: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/12/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:42,065: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/12/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:44,623: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/12/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:47,170: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/12/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:49,770: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/12/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:52,291: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/12/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:54,934: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/12/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:21:55,453: INFO/MainProcess] Chunk 12/28 done
+[2026-03-07 00:21:58,656: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/13/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:01,376: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/13/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:03,920: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/13/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:06,444: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/13/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:09,012: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/13/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:11,556: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/13/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:14,079: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/13/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:14,545: INFO/MainProcess] Chunk 13/28 done
+[2026-03-07 00:22:17,836: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/14/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:20,331: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/14/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:22,956: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/14/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:25,475: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/14/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:28,079: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/14/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:30,581: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/14/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:33,132: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/14/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:33,619: INFO/MainProcess] Chunk 14/28 done
+[2026-03-07 00:22:36,755: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/15/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:39,268: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/15/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:41,743: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/15/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:44,270: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/15/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:46,754: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/15/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:49,402: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/15/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:51,910: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/15/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:52,444: INFO/MainProcess] Chunk 15/28 done
+[2026-03-07 00:22:55,585: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/16/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:22:58,106: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/16/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:00,610: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/16/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:03,130: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/16/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:05,602: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/16/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:08,284: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/16/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:10,832: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/16/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:11,283: INFO/MainProcess] Chunk 16/28 done
+[2026-03-07 00:23:14,530: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/17/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:17,068: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/17/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:19,647: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/17/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:22,139: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/17/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:24,655: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/17/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:27,154: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/17/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:29,697: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/17/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:30,147: INFO/MainProcess] Chunk 17/28 done
+[2026-03-07 00:23:33,231: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/18/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:35,729: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/18/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:38,205: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/18/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:40,745: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/18/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:43,267: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/18/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:45,778: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/18/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:48,248: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/18/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:48,694: INFO/MainProcess] Chunk 18/28 done
+[2026-03-07 00:23:51,817: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/19/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:54,361: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/19/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:56,867: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/19/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:23:59,326: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/19/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:01,843: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/19/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:04,450: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/19/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:07,037: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/19/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:07,510: INFO/MainProcess] Chunk 19/28 done
+[2026-03-07 00:24:11,212: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/20/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:14,082: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/20/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:16,667: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/20/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:19,466: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/20/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:22,191: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/20/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:24,822: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/20/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:27,617: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/20/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:28,298: INFO/MainProcess] Chunk 20/28 done
+[2026-03-07 00:24:32,058: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/21/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:34,604: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/21/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:37,225: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/21/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:39,750: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/21/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:42,304: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/21/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:44,848: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/21/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:47,389: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/21/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:47,896: INFO/MainProcess] Chunk 21/28 done
+[2026-03-07 00:24:51,261: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/22/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:53,935: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/22/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:56,576: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/22/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:24:59,102: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/22/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:01,750: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/22/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:04,328: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/22/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:06,842: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/22/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:07,550: INFO/MainProcess] Chunk 22/28 done
+[2026-03-07 00:25:10,887: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/23/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:13,472: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/23/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:16,015: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/23/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:18,534: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/23/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:21,131: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/23/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:23,671: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/23/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:26,157: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/23/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:26,659: INFO/MainProcess] Chunk 23/28 done
+[2026-03-07 00:25:29,834: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/24/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:32,376: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/24/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:34,893: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/24/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:37,408: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/24/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:39,949: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/24/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:42,446: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/24/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:44,999: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/24/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:45,429: INFO/MainProcess] Chunk 24/28 done
+[2026-03-07 00:25:48,546: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/25/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:51,405: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/25/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:54,012: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/25/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:56,609: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/25/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:25:59,252: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/25/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:01,782: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/25/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:04,722: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/25/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:05,302: INFO/MainProcess] Chunk 25/28 done
+[2026-03-07 00:26:08,766: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/26/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:11,460: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/26/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:14,042: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/26/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:16,701: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/26/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:19,269: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/26/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:21,897: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/26/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:24,438: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/26/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:25,039: INFO/MainProcess] Chunk 26/28 done
+[2026-03-07 00:26:28,110: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/27/0 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:30,667: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/27/1 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:33,220: INFO/MainProcess] HTTP Request: PUT http://localhost:8001/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/27/2 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:35,750: INFO/MainProcess] HTTP Request: PUT http://localhost:8005/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/27/3 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:38,292: INFO/MainProcess] HTTP Request: PUT http://localhost:8002/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/27/4 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:40,928: INFO/MainProcess] HTTP Request: PUT http://localhost:8003/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/27/5 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:43,501: INFO/MainProcess] HTTP Request: PUT http://localhost:8004/shard/6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc/27/6 "HTTP/1.1 200 OK"
+[2026-03-07 00:26:43,995: INFO/MainProcess] Chunk 27/28 done
+[2026-03-07 00:26:43,995: INFO/MainProcess] \u2713 Stored 196 shards
+[2026-03-07 00:26:44,018: INFO/MainProcess] \u2713 Upload complete: 6fe5ac588e913a34
+[2026-03-07 00:26:44,024: INFO/MainProcess] Task workers.encoder.process_upload[5ca2d90b-1ca3-49e5-9c32-baa95b4235b3] succeeded in 564.5522123999981s: {'status': 'success', 'object_id': '1eec52c9-efd0-4d7e-bce9-2c761802276d', 'root_hash': '6fe5ac588e913a34ce37ff73b6e29f6f9dda510e4dd9a17752ff151bb1059ccc', 'chunk_count': 28, 'shards_stored': 196}
+[2026-03-07 00:35:36,835: ERROR/MainProcess] Received unregistered task of type 'workers.decoder.process_download'.
+The message has been ignored and discarded.
+
+Did you remember to import the module containing this task?
+Or maybe you're using relative imports?
+
+Please see
+https://docs.celeryq.dev/en/latest/internals/protocol.html
+for more information.
+
+The full contents of the message body was:
+b'[["1dd68fa1-346b-42df-a796-6d6b4a5b1e33", "did:example:test_user"], {}, {"callbacks": null, "errbacks": null, "chain": null, "chord": null}]' (140b)
+
+The full contents of the message headers:
+{'lang': 'py', 'task': 'workers.decoder.process_download', 'id': 'd8cf4479-3501-4fa1-bd0b-7e4b3a9dd6de', 'shadow': None, 'eta': None, 'expires': None, 'group': None, 'group_index': None, 'retries': 0, 'timelimit': [None, None], 'root_id': 'd8cf4479-3501-4fa1-bd0b-7e4b3a9dd6de', 'parent_id': None, 'argsrepr': "('1dd68fa1-346b-42df-a796-6d6b4a5b1e33', 'did:example:test_user')", 'kwargsrepr': '{}', 'origin': 'gen19432@stanlley', 'ignore_result': False, 'replaced_task_nesting': 0, 'stamped_headers': None, 'stamps': {}}
+
+The delivery info for this task is:
+{'exchange': '', 'routing_key': 'celery'}
+Traceback (most recent call last):
+  File "C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\.venv\Lib\site-packages\celery\worker\consumer\consumer.py", line 668, in on_task_received
+    strategy = strategies[type_]
+               ~~~~~~~~~~^^^^^^^
+KeyError: 'workers.decoder.process_download'

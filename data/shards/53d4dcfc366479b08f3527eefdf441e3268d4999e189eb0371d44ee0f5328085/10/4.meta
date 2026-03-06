@@ -1,0 +1,10 @@
+{
+  "content_hash": "53d4dcfc366479b08f3527eefdf441e3268d4999e189eb0371d44ee0f5328085",
+  "chunk_index": "10",
+  "shard_index": "4",
+  "size": 52429,
+  "hash": "805ab2e2616943cf468a69f307a012f0efbbb234e4e5f3f8179d4f93d21cc08c",
+  "node_id": "node-2",
+  "stored_at": "2026-03-06T23:57:42.389107",
+  "received_from": "127.0.0.1"
+}

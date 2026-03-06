@@ -1,0 +1,154 @@
+# AetherStore Setup and Testing Guide
+
+This guide provides the step-by-step commands to set up the AetherStore environment, run its various components (Django server, Celery workers, and P2P storage nodes), and test the API endpoints.
+
+---
+
+## 1. Prerequisites
+
+AetherStore requires Redis to be running for Celery task queuing and caching. If you have Docker installed, you can start a local Redis container:
+
+```bash
+docker run -d --name aether-redis -p 6379:6379 redis:7-alpine
+```
+
+Make sure your virtual environment is activated before proceeding with the remaining commands:
+- **Windows**: `.venv\Scripts\activate`
+- **Linux/Mac**: `source .venv/bin/activate`
+
+---
+
+## 2. Django Server Setup
+
+Initialize the database, apply migrations, and start the Django development server. Run these commands from the root of the project:
+
+```bash
+# Make and apply database migrations
+python manage.py makemigrations
+python manage.py migrate
+
+# Start the Django development server
+python manage.py runserver 0.0.0.0:8000
+```
+
+---
+
+## 3. P2P Storage Nodes Setup
+
+AetherStore uses an Erasure Coding scheme that splits files into multiple data and parity shards. By default, it requires at least **5 storage nodes** (3 data shards + 2 parity shards).
+
+Open **5 separate terminal windows**, activate the virtual environment in each, and run a node on a different port:
+
+```bash
+# Terminal 1
+python apps/p2p/storage_node.py 8001
+
+# Terminal 2
+python apps/p2p/storage_node.py 8002
+
+# Terminal 3
+python apps/p2p/storage_node.py 8003
+
+# Terminal 4
+python apps/p2p/storage_node.py 8004
+
+# Terminal 5
+python apps/p2p/storage_node.py 8005
+```
+
+---
+
+## 4. Celery Worker Setup
+
+Open another terminal to start the Celery worker, which handles the background encryption, Merkle DAG building, and sharding process.
+
+> **Windows Users**: Multiprocessing with Celery on Windows often causes `PermissionError` or `WinError 6` on `billiard` objects. It is highly recommended to run Celery with the `--pool=solo` flag locally on Windows.
+
+```bash
+# On Windows
+celery -A aetherstore worker --pool=solo --loglevel=info
+
+# On Linux/MacOS
+celery -A aetherstore worker --loglevel=info
+```
+
+*(Optional)* Run the Celery Beat scheduler in another terminal if you want to test node health checks, storage audits, and file repair tasks:
+```bash
+celery -A aetherstore beat --loglevel=info
+```
+
+---
+
+## 5. Testing API Endpoints
+
+Once all services (Redis, Django, 5 P2P Nodes, and Celery) are running, you can test the APIs in a new terminal. AetherStore uses Decentralized Identifiers (DIDs) for authentication. We spoof a DID signature below.
+
+### Setup Test Variables
+
+Create a sample file and set up our authentication variables:
+
+```bash
+# Create a test file
+echo "Hello AetherStore - Decentralized Storage" > test_file.txt
+
+# Generate DID signature headers
+TIMESTAMP=$(date +%s)
+NONCE="test$(date +%s%N)"
+AUTH_HEADER="DID-Signature did:example:test_user:fakesig:${TIMESTAMP}:${NONCE}"
+```
+
+### 1. Upload a File
+
+Uploads process asynchronously. The initial request queues the job to Celery.
+
+```bash
+curl -X POST http://localhost:8000/api/v1/upload/mybucket/ \
+  -H "Authorization: ${AUTH_HEADER}" \
+  -F "file=@test_file.txt"
+```
+*Take note of the `task_id` returned in the response.*
+
+Wait a few seconds for Celery to finish processing the encryption and distributing the shards to the P2P nodes (you will see the output in the Celery terminal).
+
+### 2. List Your Objects
+
+Fetch your stored objects to get the actual `object_id`:
+
+```bash
+curl -s -X GET "http://localhost:8000/api/v1/objects/?page=1&page_size=5&sort=-created_at" \
+  -H "Authorization: ${AUTH_HEADER}"
+```
+*Find the `"id"` field of the object you just uploaded.*
+
+### 3. Download a File
+
+Use the `object_id` from the previous step to download and decrypt the file. Replace `<YOUR_OBJECT_ID>` below.
+
+```bash
+OBJ_ID="<YOUR_OBJECT_ID>"
+
+curl -X GET "http://localhost:8000/api/v1/download/${OBJ_ID}/" \
+  -H "Authorization: ${AUTH_HEADER}" \
+  -o downloaded_test.txt
+
+# Verify content matches
+cat downloaded_test.txt
+```
+
+### 4. Test Deduplication
+
+AetherStore checks the Merkle Root of encrypted files to deduplicate storage. If you upload the exact same file again, it will instantly link it without generating new shards.
+
+```bash
+curl -X POST http://localhost:8000/api/v1/upload/mybucket/ \
+  -H "Authorization: ${AUTH_HEADER}" \
+  -F "file=@test_file.txt"
+```
+*Notice in the JSON response that `"deduplicated": true` will appear and the `status` is already `completed.*
+
+### 5. Test Erasure Stability (Node Failure)
+
+AetherStore's Reed-Solomon encoding allows data recovery even if nodes go offline.
+1. Return to your terminal running `Node 8003` and kill it (`Ctrl+C`).
+2. Run the **Download** command again.
+3. The file should *still* successfully assemble and decrypt using the Parity shards provided by the remaining active nodes!
