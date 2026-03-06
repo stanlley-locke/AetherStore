@@ -4,6 +4,7 @@
 from .encoder import process_upload
 from .auditor import audit_storage_health, repair_object, node_heartbeat
 from .decoder import process_download
+from .garbage_collector import process_garbage_collection
 
 __all__ = [
     'process_upload',
@@ -11,4 +12,5 @@ __all__ = [
     'repair_object',
     'node_heartbeat',
     'process_download',
+    'process_garbage_collection',
 ]

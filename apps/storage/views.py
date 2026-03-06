@@ -174,11 +174,10 @@ class ObjectDetailView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request, object_id):
-        from apps.storage.models import StorageObject
-        from apps.storage.serializers import StorageObjectSerializer
-        
+        from apps.storage.models import EncryptedObject
+        # Temporarily use basic serialization since we haven't updated serializers.py for EncryptedObject yet
         try:
-            obj = StorageObject.objects.get(id=object_id, is_deleted=False)
+            obj = EncryptedObject.objects.get(id=object_id, is_deleted=False)
             owner_did = getattr(request.user, 'did', str(request.user))
             
             if obj.owner_did != owner_did and not request.user.is_staff:
@@ -187,20 +186,32 @@ class ObjectDetailView(APIView):
                     status=status.HTTP_403_FORBIDDEN
                 )
             
-            serializer = StorageObjectSerializer(obj)
-            return Response(serializer.data)
+            return Response({
+                'id': str(obj.id),
+                'content_hash': obj.original_hash,
+                'bucket': obj.bucket.name if obj.bucket else None,
+                'mime_type': obj.mime_type,
+                'size': obj.original_size,
+                'filename': obj.filename,
+                'encrypted': True,
+                'chunks': obj.chunk_count,
+                'created_at': obj.created_at.isoformat(),
+                'updated_at': obj.updated_at.isoformat()
+            })
             
-        except StorageObject.DoesNotExist:
+        except EncryptedObject.DoesNotExist:
             return Response(
                 {'error': 'Object not found', 'code': 'NOT_FOUND'},
                 status=status.HTTP_404_NOT_FOUND
             )
     
     def delete(self, request, object_id):
-        from apps.storage.models import StorageObject
+        from apps.storage.models import EncryptedObject
+        from workers.garbage_collector import process_garbage_collection
+        from django.utils import timezone
         
         try:
-            obj = StorageObject.objects.get(id=object_id)
+            obj = EncryptedObject.objects.get(id=object_id, is_deleted=False)
             owner_did = getattr(request.user, 'did', str(request.user))
             
             if obj.owner_did != owner_did and not request.user.is_staff:
@@ -210,16 +221,20 @@ class ObjectDetailView(APIView):
                 )
             
             obj.is_deleted = True
+            obj.deleted_at = timezone.now()
             obj.save()
             
             logger.info(f"Object {object_id} soft-deleted by {owner_did}")
             
+            # Fire and forget background deletion of chunks across the network
+            process_garbage_collection.delay(str(obj.id))
+            
             return Response(
-                {'status': 'deleted', 'object_id': str(obj.id)},
-                status=status.HTTP_200_OK
+                {'status': 'deleted', 'object_id': str(obj.id), 'message': 'Object queued for network deletion'},
+                status=status.HTTP_202_ACCEPTED
             )
             
-        except StorageObject.DoesNotExist:
+        except EncryptedObject.DoesNotExist:
             return Response(
                 {'error': 'Object not found', 'code': 'NOT_FOUND'},
                 status=status.HTTP_404_NOT_FOUND

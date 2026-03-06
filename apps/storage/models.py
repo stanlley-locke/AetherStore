@@ -29,6 +29,7 @@ class StorageObject(models.Model):
     owner_did = models.CharField(max_length=255)
     shard_map = models.JSONField(default=dict)
     is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -142,6 +143,7 @@ class EncryptedObject(models.Model):
     
     # Status
     is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
     is_public = models.BooleanField(default=False)
     
     created_at = models.DateTimeField(auto_now_add=True)
