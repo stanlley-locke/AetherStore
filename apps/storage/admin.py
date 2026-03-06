@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Bucket, StorageObject, StorageNode, StorageQuota, AccessLog, Webhook
+from .models import Bucket, StorageObject, StorageNode, StorageQuota, AccessLog, Webhook, EncryptedObject, ObjectVersion
 
 @admin.register(Bucket)
 class BucketAdmin(admin.ModelAdmin):
@@ -37,3 +37,17 @@ class WebhookAdmin(admin.ModelAdmin):
     list_display = ['id', 'owner_did', 'url', 'is_active', 'created_at']
     search_fields = ['owner_did', 'url']
     list_filter = ['is_active']
+
+@admin.register(EncryptedObject)
+class EncryptedObjectAdmin(admin.ModelAdmin):
+    list_display = ['id', 'filename', 'owner_did', 'bucket', 'original_size', 'chunk_count', 'created_at']
+    search_fields = ['owner_did', 'root_hash', 'original_hash']
+    list_filter = ['is_deleted', 'is_public', 'created_at']
+    readonly_fields = ['id', 'created_at', 'updated_at']
+
+@admin.register(ObjectVersion)
+class ObjectVersionAdmin(admin.ModelAdmin):
+    list_display = ['id', 'object', 'version_number', 'original_size', 'created_at', 'created_by']
+    search_fields = ['object__id', 'root_hash']
+    list_filter = ['created_at']
+    readonly_fields = ['id', 'created_at']
