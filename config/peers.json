@@ -1,0 +1,30 @@
+{
+    "bootstrap_node": {
+        "node_id": "node-1",
+        "endpoint": "http://localhost:8001",
+        "description": "Primary bootstrap node"
+    },
+    "default_peers": [
+        {
+            "node_id": "node-1",
+            "endpoint": "http://localhost:8001",
+            "description": "Storage node 1"
+        },
+        {
+            "node_id": "node-2",
+            "endpoint": "http://localhost:8002",
+            "description": "Storage node 2"
+        },
+        {
+            "node_id": "node-3",
+            "endpoint": "http://localhost:8003",
+            "description": "Storage node 3"
+        }
+    ],
+    "gossip_config": {
+        "interval_seconds": 10,
+        "fanout": 2,
+        "node_timeout_seconds": 60,
+        "max_peers": 100
+    }
+}

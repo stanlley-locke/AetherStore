@@ -1,0 +1,247 @@
+1. Distributed Hash Table (DHT) ⚠️ HIGH PRIORITY
+Benefits:
+True decentralized peer discovery
+No single point of failure
+Scales to 1000+ nodes
+
+2. Client-Side Encryption/decryption ⚠️ CRITICAL
+Benefits:
+Zero-knowledge storage
+Nodes can't read user data
+Compliance with privacy regulations
+
+3. Merkle DAG for Large Files ⚠️ HIGH PRIORITY
+Benefits:
+Efficient large file handling
+Partial verification
+Deduplication at chunk level
+Parallel download/upload
+
+4. Incentive Mechanism ⚠️ MEDIUM PRIORITY
+Benefits:
+Encourages node participation
+Sustainable network growth
+Competitive storage pricing
+
+5. Reputation/Trust System ⚠️ MEDIUM PRIORITY
+Benefits:
+Route around unreliable nodes
+Incentivize good behavior
+Better user experience
+
+6. File Versioning ⚠️ MEDIUM PRIORITY
+Benefits:
+Recover previous versions
+Audit trail
+Collaboration support
+
+7. Human-Readable Naming (IPNS-style) ⚠️ LOW PRIORITY
+Benefits:
+User-friendly URLs
+Mutable pointers to content
+Website hosting support
+
+aetherstore/
+├── aetherstore/
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── celery.py
+│   ├── settings.py              # Updated with new apps
+│   ├── urls.py                  # Updated with new routes
+│   └── wsgi.py
+├── apps/
+│   ├── __init__.py
+│   │
+│   ├── accounts/                # User accounts & wallets
+│   │   ├── migrations/
+│   │   │   ├── 0001_initial.py
+│   │   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── authentication.py
+│   │   ├── backends.py
+│   │   ├── middleware.py
+│   │   ├── models.py            # Updated with wallet fields
+│   │   └── wallet.py            # NEW: Crypto wallet management
+│   │
+│   ├── core/                    # Core blockchain features
+│   │   ├── migrations/
+│   │   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── crypto.py            # NEW: Client-side encryption
+│   │   ├── merkle.py            # NEW: Merkle DAG implementation
+│   │   ├── dht.py               # NEW: Distributed Hash Table
+│   │   ├── middleware.py
+│   │   ├── throttling.py
+│   │   └── views.py
+│   │
+│   ├── p2p/                     # P2P networking (upgraded)
+│   │   ├── management/
+│   │   │   └── commands/
+│   │   │       ├── run_node.py
+│   │   │       ├── run_storage_node.py
+│   │   │       └── run_dht_node.py          # NEW: DHT bootstrap node
+│   │   ├── migrations/
+│   │   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── gossip.py            # Updated with reputation
+│   │   ├── peer_config.py
+│   │   ├── ring.py              # Updated consistent hashing
+│   │   ├── network.py           # NEW: P2P network layer
+│   │   ├── discovery.py         # NEW: Peer discovery protocol
+│   │   ├── reputation.py        # NEW: Node reputation system
+│   │   └── storage_node.py      # Updated with encryption support
+│   │
+│   ├── storage/                 # Storage operations (upgraded)
+│   │   ├── management/
+│   │   │   └── commands/
+│   │   │       ├── backup.py
+│   │   │       ├── restore.py
+│   │   │       ├── verify_integrity.py      # NEW: Merkle verification
+│   │   │       └── cleanup_orphans.py       # NEW: Cleanup unused shards
+│   │   ├── migrations/
+│   │   │   ├── 0001_initial.py
+│   │   │   ├── 0002_encrypted_object.py     # NEW: Encrypted objects
+│   │   │   ├── 0003_storage_contract.py     # NEW: Smart contracts
+│   │   │   ├── 0004_node_reputation.py      # NEW: Reputation system
+│   │   │   ├── 0005_name_record.py          # NEW: Human-readable names
+│   │   │   ├── 0006_object_version.py       # NEW: File versioning
+│   │   │   └── __init__.py
+│   │   ├── services/
+│   │   │   ├── __init__.py
+│   │   │   ├── upload_service.py            # Updated with encryption
+│   │   │   ├── download_service.py          # Updated with decryption
+│   │   │   ├── encryption_service.py        # NEW: Encryption operations
+│   │   │   ├── merkle_service.py            # NEW: Merkle DAG operations
+│   │   │   ├── dht_service.py               # NEW: DHT operations
+│   │   │   ├── contract_service.py          # NEW: Smart contract mgmt
+│   │   │   └── reputation_service.py        # NEW: Reputation calculations
+│   │   ├── blockchain/
+│   │   │   ├── __init__.py
+│   │   │   ├── ledger.py                    # NEW: Storage ledger
+│   │   │   ├── contracts.py                 # NEW: Smart contracts
+│   │   │   └── tokens.py                    # NEW: Token/credit system
+│   │   ├── __init__.py
+│   │   ├── admin.py                         # Updated with new models
+│   │   ├── apps.py
+│   │   ├── engine.py                        # Updated for chunked encoding
+│   │   ├── models.py                        # Updated with new models
+│   │   ├── serializers.py                   # Updated for new fields
+│   │   ├── services.py
+│   │   ├── urls.py                          # Updated with new endpoints
+│   │   └── views.py                         # Updated with encryption
+│   │
+│   ├── incentives/              # NEW: Incentive & token system
+│   │   ├── migrations/
+│   │   │   ├── 0001_initial.py
+│   │   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── models.py            # Token, rewards, payments
+│   │   ├── services.py          # Reward calculations
+│   │   ├── tasks.py             # Periodic reward distribution
+│   │   └── views.py             # Token balance, transfers
+│   │
+│   └── naming/                  # NEW: Human-readable naming (IPNS-style)
+│       ├── migrations/
+│       │   ├── 0001_initial.py
+│       │   └── __init__.py
+│       ├── __init__.py
+│       ├── admin.py
+│       ├── apps.py
+│       ├── models.py            # Name records
+│       ├── services.py          # Name resolution
+│       ├── urls.py              # Gateway endpoints
+│       └── views.py             # Name registration, resolution
+│
+├── blockchain/                  # NEW: Blockchain core (optional Ethereum integration)
+│   ├── __init__.py
+│   ├── chain.py                 # Blockchain implementation
+│   ├── transactions.py          # Transaction handling
+│   ├── validators.py            # Node validation
+│   └── consensus.py             # Consensus mechanisms
+│
+├── config/
+│   ├── peers.json               # Updated with DHT bootstrap nodes
+│   ├── dht_config.json          # NEW: DHT configuration
+│   └── network_config.json      # NEW: Network parameters
+│
+├── data/
+│   └── shards/
+│       └── [content_hash]/
+│           ├── [chunk_index].[shard_index].shard    # Updated naming
+│           └── [chunk_index].[shard_index].meta
+│
+├── docs/                        # NEW: Documentation
+│   ├── ARCHITECTURE.md
+│   ├── BLOCKCHAIN.md
+│   ├── CRYPTO.md
+│   ├── DHT.md
+│   ├── INCENTIVES.md
+│   └── API.md
+│
+├── keys/                        # NEW: Key storage (gitignored)
+│   ├── .gitkeep
+│   └── README.md                # Security instructions
+│
+├── media/
+│   └── .gitkeep
+│
+├── static/
+│   └── .gitkeep
+│
+├── staticfiles/
+│   ├── admin/
+│   └── rest_framework/
+│
+├── templates/
+│   ├── base.html
+│   ├── gateway/                 # NEW: Public gateway templates
+│   │   ├── index.html
+│   │   ├── file.html
+│   │   └── error.html
+│   └── .gitkeep
+│
+├── tests/
+│   ├── __init__.py
+│   ├── test_upload.py
+│   ├── test_encryption.py       # NEW: Encryption tests
+│   ├── test_merkle.py           # NEW: Merkle DAG tests
+│   ├── test_dht.py              # NEW: DHT tests
+│   ├── test_contracts.py        # NEW: Smart contract tests
+│   └── test_reputation.py       # NEW: Reputation tests
+│
+├── workers/
+│   ├── __init__.py
+│   ├── auditor.py               # Updated with Merkle verification
+│   ├── encoder.py               # Updated with encryption & chunks
+│   ├── verifier.py              # NEW: Integrity verification
+│   ├── rewards.py               # NEW: Reward distribution
+│   └── reputation.py            # NEW: Reputation updates
+│
+├── tools/                       # NEW: Utility scripts
+│   ├── encrypt_file.py          # Standalone encryption
+│   ├── decrypt_file.py          # Standalone decryption
+│   ├── verify_integrity.py      # Verify Merkle root
+│   ├── dht_bootstrap.py         # Bootstrap DHT network
+│   └── migrate_data.py          # Migrate old objects to new format
+│
+├── .env
+├── .env.example                 # Updated with new variables
+├── .gitignore                   # Updated for keys/
+├── .python-version
+├── docker-compose.yml           # Updated with new services
+├── manage.py
+├── pyproject.toml
+├── README.md                    # Updated with new features
+├── SETUP.md                     # NEW: Setup guide
+├── API.md                       # NEW: API documentation
+├── requirements.txt             # Updated with new dependencies
+├── requirements-blockchain.txt  # NEW: Blockchain dependencies
+└── uv.lock
