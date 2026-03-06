@@ -1,27 +1,30 @@
 from rest_framework.views import APIView
+from apps.core.merkle import MerkleDAG
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
+from apps.storage.models import AccessLog
 from rest_framework import status, permissions
 from rest_framework.decorators import action
-from django.http import StreamingHttpResponse, HttpResponse
+from django.http import StreamingHttpResponse
 from django.utils import timezone
 from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.db.models import Q, Sum, Count, Avg, Max, Min
+from django.db.models import Q, Sum, Max, Min
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from apps.core.crypto import ClientEncryption
 import io
-import json
 import logging
 import hashlib
 from datetime import timedelta
+import base64
 
 logger = logging.getLogger(__name__)
 
 
 @method_decorator([csrf_exempt], name='dispatch')
 class UploadView(APIView):
-    """Handle file uploads with erasure coding"""
+    """Handle file uploads with encryption and Merkle DAG"""
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request, bucket_name):
@@ -41,16 +44,10 @@ class UploadView(APIView):
             
             file_obj = request.FILES.get('file')
             if not file_obj:
-                return Response(
-                    {'error': 'No file provided', 'code': 'NO_FILE'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                return Response({'error': 'No file provided', 'code': 'NO_FILE'}, status=400)
             
             if file_obj.size == 0:
-                return Response(
-                    {'error': 'Empty file not allowed', 'code': 'EMPTY_FILE'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                return Response({'error': 'Empty file not allowed', 'code': 'EMPTY_FILE'}, status=400)
             
             quota, _ = StorageQuota.objects.get_or_create(
                 owner_did=owner_did,
@@ -59,25 +56,27 @@ class UploadView(APIView):
             
             if not quota.check_quota(file_obj.size):
                 logger.warning(f"Quota exceeded for {owner_did}")
-                return Response(
-                    {
-                        'error': 'Storage quota exceeded',
-                        'code': 'QUOTA_EXCEEDED',
-                        'used': quota.used_bytes,
-                        'quota': quota.quota_bytes
-                    },
-                    status=status.HTTP_403_FORBIDDEN
-                )
+                return Response({
+                    'error': 'Storage quota exceeded',
+                    'code': 'QUOTA_EXCEEDED',
+                    'used': quota.used_bytes,
+                    'quota': quota.quota_bytes
+                }, status=403)
             
             data = file_obj.read()
             file_hash = hashlib.sha256(data).hexdigest()
             
+            import base64
+            # Encode raw bytes to base64 string because Celery uses JSON serialization
+            data_b64 = base64.b64encode(data).decode('utf-8')
+            
             task = process_upload.delay(
                 object_id=None,
-                data_bytes=data,
+                data_bytes=data_b64,
                 mime_type=file_obj.content_type or 'application/octet-stream',
                 bucket_id=str(bucket.id),
-                owner_did=owner_did
+                owner_did=owner_did,
+                filename=file_obj.name
             )
             
             AccessLog.objects.create(
@@ -91,248 +90,20 @@ class UploadView(APIView):
             
             logger.info(f"Upload queued: {file_obj.name} ({len(data)} bytes) -> {bucket_name}")
             
-            return Response(
-                {
-                    'task_id': task.id,
-                    'status': 'processing',
-                    'size': len(data),
-                    'bucket': bucket_name,
-                    'mime_type': file_obj.content_type,
-                    'filename': file_obj.name,
-                    'hash': file_hash,
-                    'message': 'Upload queued for processing'
-                },
-                status=status.HTTP_202_ACCEPTED
-            )
+            return Response({
+                'task_id': task.id,
+                'status': 'processing',
+                'size': len(data),
+                'bucket': bucket_name,
+                'mime_type': file_obj.content_type,
+                'filename': file_obj.name,
+                'hash': file_hash,
+                'message': 'Upload queued for processing'
+            }, status=202)
             
         except Exception as e:
             logger.error(f"Upload error: {e}", exc_info=True)
-            return Response(
-                {'error': str(e), 'code': 'UPLOAD_ERROR'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-
-@method_decorator([csrf_exempt], name='dispatch')
-class BatchUploadView(APIView):
-    """Handle multiple file uploads in a single request"""
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def post(self, request, bucket_name):
-        from apps.storage.models import Bucket, StorageQuota, AccessLog
-        from workers.encoder import process_upload
-        
-        try:
-            owner_did = getattr(request.user, 'did', str(request.user))
-            
-            bucket, _ = Bucket.objects.get_or_create(
-                name=bucket_name,
-                defaults={'owner_did': owner_did}
-            )
-            
-            files = request.FILES.getlist('files')
-            if not files:
-                return Response(
-                    {'error': 'No files provided', 'code': 'NO_FILES'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            if len(files) > 100:
-                return Response(
-                    {'error': 'Maximum 100 files per batch', 'code': 'TOO_MANY_FILES'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            quota, _ = StorageQuota.objects.get_or_create(
-                owner_did=owner_did,
-                defaults={'quota_bytes': 10737418240}
-            )
-            
-            total_size = sum(f.size for f in files)
-            if not quota.check_quota(total_size):
-                return Response(
-                    {'error': 'Storage quota exceeded', 'code': 'QUOTA_EXCEEDED'},
-                    status=status.HTTP_403_FORBIDDEN
-                )
-            
-            task_ids = []
-            successful = 0
-            failed = 0
-            
-            for file_obj in files:
-                try:
-                    data = file_obj.read()
-                    task = process_upload.delay(
-                        object_id=None,
-                        data_bytes=data,
-                        mime_type=file_obj.content_type or 'application/octet-stream',
-                        bucket_id=str(bucket.id),
-                        owner_did=owner_did
-                    )
-                    task_ids.append({
-                        'filename': file_obj.name,
-                        'task_id': task.id,
-                        'size': len(data)
-                    })
-                    successful += 1
-                    
-                    AccessLog.objects.create(
-                        object=None,
-                        user_did=owner_did,
-                        action='batch_upload',
-                        bytes_transferred=len(data),
-                        status_code=202
-                    )
-                except Exception as e:
-                    logger.error(f"Batch upload failed for {file_obj.name}: {e}")
-                    failed += 1
-            
-            logger.info(f"Batch upload: {successful} successful, {failed} failed")
-            
-            return Response(
-                {
-                    'tasks': task_ids,
-                    'status': 'processing',
-                    'file_count': len(files),
-                    'successful': successful,
-                    'failed': failed,
-                    'total_size': total_size
-                },
-                status=status.HTTP_202_ACCEPTED
-            )
-            
-        except Exception as e:
-            logger.error(f"Batch upload error: {e}", exc_info=True)
-            return Response(
-                {'error': str(e), 'code': 'BATCH_UPLOAD_ERROR'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-
-@method_decorator([csrf_exempt], name='dispatch')
-class DownloadView(APIView):
-    """Handle file downloads with range request support"""
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def get(self, request, object_id):
-        from apps.storage.models import StorageObject, AccessLog, StorageNode
-        from apps.storage.engine import get_erasure_engine
-        import httpx
-        
-        try:
-            obj = StorageObject.objects.get(id=object_id, is_deleted=False)
-            owner_did = getattr(request.user, 'did', str(request.user))
-            
-            if obj.owner_did != owner_did and not request.user.is_staff:
-                logger.warning(f"Access denied: {owner_did} tried to access {object_id}")
-                return Response(
-                    {'error': 'Access denied', 'code': 'ACCESS_DENIED'},
-                    status=status.HTTP_403_FORBIDDEN
-                )
-            
-            engine = get_erasure_engine()
-            
-            logger.info(f"Download request for object {object_id} ({obj.size} bytes)")
-            logger.info(f"Shard map: {obj.shard_map}")
-            logger.info(f"Need {engine.data_shards} shards for decoding")
-            
-            shards_dict = {}
-            failed_nodes = []
-            
-            with httpx.Client(timeout=30.0) as client:
-                for node_id, shard_index in obj.shard_map.items():
-                    try:
-                        node = StorageNode.objects.get(node_id=node_id, is_active=True)
-                        logger.info(f"Fetching shard {shard_index} from {node_id} ({node.endpoint})")
-                        
-                        resp = client.get(f"{node.endpoint}/shard/{obj.content_hash}/{shard_index}")
-                        
-                        if resp.status_code == 200:
-                            shards_dict[shard_index] = resp.content
-                            logger.info(f"Successfully fetched shard {shard_index} ({len(resp.content)} bytes)")
-                        else:
-                            error_msg = f"Node {node_id} returned {resp.status_code}"
-                            logger.warning(error_msg)
-                            failed_nodes.append({'node': node_id, 'error': error_msg})
-                            
-                    except Exception as e:
-                        error_msg = f"Failed to fetch from {node_id}: {str(e)}"
-                        logger.warning(error_msg)
-                        failed_nodes.append({'node': node_id, 'error': error_msg})
-            
-            if not shards_dict:
-                raise Exception("No shards could be fetched from any node")
-            
-            max_index = max(shards_dict.keys())
-            shards_list = [shards_dict.get(i, None) for i in range(max_index + 1)]
-            
-            available_count = sum(1 for s in shards_list if s is not None)
-            logger.info(f"Fetched {available_count}/{len(shards_list)} shards. Indices: {list(shards_dict.keys())}")
-            
-            if available_count < engine.data_shards:
-                error_msg = f"Insufficient shards: {available_count}/{engine.data_shards} needed"
-                logger.error(error_msg)
-                raise Exception(error_msg)
-            
-            data = engine.decode(shards_list)
-            logger.info(f"Successfully decoded {len(data)} bytes")
-            
-            range_header = request.META.get('HTTP_RANGE')
-            
-            if range_header:
-                range_spec = range_header.replace('bytes=', '').split('-')
-                start = int(range_spec[0]) if range_spec[0] else 0
-                end = int(range_spec[1]) if range_spec[1] else len(data) - 1
-                
-                start = max(0, start)
-                end = min(len(data) - 1, end)
-                chunk = data[start:end + 1]
-                
-                response = StreamingHttpResponse(
-                    io.BytesIO(chunk),
-                    content_type=obj.mime_type,
-                    status=206
-                )
-                response['Content-Range'] = f'bytes {start}-{end}/{len(data)}'
-                response['Content-Length'] = str(len(chunk))
-                bytes_transferred = len(chunk)
-                logger.info(f"Serving partial content: {bytes_transferred} bytes ({start}-{end})")
-            else:
-                response = StreamingHttpResponse(
-                    io.BytesIO(data),
-                    content_type=obj.mime_type
-                )
-                response['Content-Length'] = str(len(data))
-                bytes_transferred = len(data)
-                logger.info(f"Serving full file: {bytes_transferred} bytes")
-            
-            response['Accept-Ranges'] = 'bytes'
-            response['Content-Disposition'] = f'attachment; filename="{object_id}"'
-            response['Cache-Control'] = 'public, max-age=31536000'
-            
-            AccessLog.objects.create(
-                object=obj,
-                user_did=owner_did,
-                action='download',
-                bytes_transferred=bytes_transferred,
-                ip_address=request.META.get('REMOTE_ADDR'),
-                status_code=response.status_code
-            )
-            
-            return response
-            
-        except StorageObject.DoesNotExist:
-            logger.warning(f"Object {object_id} not found")
-            return Response(
-                {'error': 'Object not found', 'code': 'NOT_FOUND'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except Exception as e:
-            logger.error(f"Download error: {e}", exc_info=True)
-            return Response(
-                {'error': str(e), 'code': 'DOWNLOAD_ERROR'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({'error': str(e), 'code': 'UPLOAD_ERROR'}, status=500)
 
 
 @method_decorator([csrf_exempt], name='dispatch')
@@ -455,18 +226,20 @@ class ObjectDetailView(APIView):
             )
 
 
+
 @method_decorator([csrf_exempt], name='dispatch')
 class ObjectListView(APIView):
     """List objects with filtering and pagination"""
     permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request):
-        from apps.storage.models import StorageObject
+        from apps.storage.models import EncryptedObject  # Changed from StorageObject
         
         try:
             owner_did = getattr(request.user, 'did', str(request.user))
             
-            queryset = StorageObject.objects.filter(
+            # Query EncryptedObject instead of StorageObject
+            queryset = EncryptedObject.objects.filter(
                 is_deleted=False,
                 owner_did=owner_did
             ).select_related('bucket')
@@ -482,8 +255,9 @@ class ObjectListView(APIView):
             search = request.query_params.get('search')
             if search:
                 queryset = queryset.filter(
-                    Q(content_hash__icontains=search) |
-                    Q(mime_type__icontains=search)
+                    Q(original_hash__icontains=search) |
+                    Q(mime_type__icontains=search) |
+                    Q(filename__icontains=search)
                 )
             
             sort = request.query_params.get('sort', '-created_at')
@@ -508,16 +282,19 @@ class ObjectListView(APIView):
             except EmptyPage:
                 page_obj = paginator.get_page(paginator.num_pages)
             
-            total_size = queryset.aggregate(total=Sum('size'))['total'] or 0
+            total_size = queryset.aggregate(total=Sum('original_size'))['total'] or 0
             
             return Response({
                 'objects': [
                     {
                         'id': obj.id,
-                        'content_hash': obj.content_hash,
+                        'content_hash': obj.original_hash,  # Changed from content_hash
                         'bucket': obj.bucket.name if obj.bucket else None,
                         'mime_type': obj.mime_type,
-                        'size': obj.size,
+                        'size': obj.original_size,  # Changed from size
+                        'filename': obj.filename,
+                        'encrypted': True,
+                        'chunks': obj.chunk_count,
                         'created_at': obj.created_at.isoformat(),
                         'updated_at': obj.updated_at.isoformat()
                     }
@@ -930,3 +707,175 @@ class StatsView(APIView):
             unit_index += 1
         
         return f"{size:.2f} {units[unit_index]}"
+    
+@method_decorator([csrf_exempt], name='dispatch')
+class DownloadView(APIView):
+    """Handle encrypted file downloads with Merkle verification"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, object_id):
+        from apps.storage.models import EncryptedObject, StorageNode
+        from apps.storage.services.merkle_service import MerkleService
+        from apps.storage.engine import get_erasure_engine
+        import httpx
+        
+        try:
+            obj = EncryptedObject.objects.get(id=object_id, is_deleted=False)
+            owner_did = getattr(request.user, 'did', str(request.user))
+            
+            # Check ownership
+            if obj.owner_did != owner_did and not request.user.is_staff:
+                logger.warning(f"Access denied for {owner_did} on object {object_id}")
+                return Response({'error': 'Access denied', 'code': 'ACCESS_DENIED'}, status=403)
+            
+            logger.info(f"Download requested for object {object_id} ({obj.original_size}) bytes by {owner_did}")
+            logger.info(f"Merkle root: {obj.root_hash[:16]}..., chunks: {obj.chunk_count}, shards: {len(obj.shard_map)}")
+            
+            # Fetch and decode shards for all chunks
+            engine = get_erasure_engine()
+            chunks = {}
+            
+            with httpx.Client(timeout=30.0) as client:
+                for chunk_index in range(obj.chunk_count):
+                    chunk_shards = {}
+                    
+                    # Fetch shards for this chunk
+                    for key, node_id in obj.shard_map.items():
+                        stored_chunk_idx, stored_shard_idx = map(int, key.split(':'))
+                        if stored_chunk_idx == chunk_index:
+                            try:
+                                node = StorageNode.objects.get(node_id=node_id, is_active=True)
+                                resp = client.get(
+                                    f"{node.endpoint}/shard/{obj.root_hash}/{chunk_index}/{stored_shard_idx}"
+                                )
+                                if resp.status_code == 200:
+                                    chunk_shards[stored_shard_idx] = resp.content
+                                    logger.debug(f"Fetched shard {stored_shard_idx} for chunk {chunk_index} from node {node_id}")
+                            except Exception as e:
+                                logger.warning(f"Failed to fetch shard from {node_id}: {e}")
+                    
+                    # Decode chunk from shards
+                    if len(chunk_shards) >= engine.data_shards:
+                        shard_list = [chunk_shards.get(i, None) for i in range(max(chunk_shards.keys()) + 1)]
+                        chunk_data = engine.decode(shard_list)
+                        chunks[chunk_index] = chunk_data
+                        logger.debug(f"Decoded chunk {chunk_index} with {len(chunk_data)} bytes")
+                    else:
+                        error_msg = f"Insufficient shards for chunk {chunk_index}: {len(chunk_shards)} found, {engine.data_shards} needed"
+                        logger.error(error_msg)
+                        return Response(
+                            {'error': error_msg, 'code': 'INSUFFICIENT_SHARDS'},
+                            status=500
+                        )
+            
+            logger.info(f"Fetched {len(chunks)}/{obj.chunk_count} chunks")
+
+            # Verify Merkle root
+            merkle_dag = MerkleDAG.from_dict(obj.merkle_dag)
+            if not MerkleService.verify_chunks(merkle_dag, chunks):
+                logger.error("Merkle verification failed!")
+                return Response({'error': 'Merkle verification failed', 'code': 'VERIFICATION_FAILED' }, status=500)
+            
+            logger.info("Merkle verification: Pass")
+            
+            # Reassemble encrypted data using the Merkle DAG's total size (which is the size of the encrypted payload)
+            encrypted_data = MerkleService.reassemble_file(chunks, merkle_dag.total_size)
+            logger.info(f"Reassembled encrypted {len(encrypted_data)} bytes")
+            
+            # Decrypt using the per-user salt cached by ClientEncryption
+            encryption = ClientEncryption.for_user(owner_did)
+
+            # Encrypted_data is already the ciphertext (base64 decoded)
+            # Need to construct the proper package
+            try:
+                # Get encryption metadata that was stored during upload.
+                metadata = obj.merkle_dag.get('metadata', {}) or {}
+
+                # Ensure we have a valid salt to derive the key (falls back to per-user salt)
+                salt_b64 = metadata.get('salt') or base64.b64encode(encryption.salt).decode('utf-8')
+                try:
+                    base64.b64decode(salt_b64)
+                except Exception as e:
+                    raise ValueError(f"Invalid salt encoding: {e}")
+
+                # Normalize encrypted data (it is stored as bytes of a base64 string)
+                encrypted_data_str = (
+                    encrypted_data.decode('utf-8')
+                    if isinstance(encrypted_data, (bytes, bytearray))
+                    else str(encrypted_data)
+                )
+
+                # Build the package for decryption.
+                # If nonce/auth_tag are missing, ClientEncryption.decrypt will attempt to recover
+                # them from the combined payload.
+                encrypted_package = {
+                    'encrypted_data': encrypted_data_str,
+                    'salt': salt_b64,
+                }
+                if metadata.get('nonce'):
+                    encrypted_package['nonce'] = metadata['nonce']
+                if metadata.get('auth_tag'):
+                    encrypted_package['auth_tag'] = metadata['auth_tag']
+
+                decrypted_data = encryption.decrypt(encrypted_package)
+                logger.info(f"Decrypted {len(decrypted_data)} bytes")
+            except Exception as e:
+                logger.error(f"Decryption failed: {e}")
+                logger.error(f"Meta {metadata}")
+                return Response({'error': f'Decryption failed: {str(e)}',  'code': 'DECRYPTION_FAILED'}, status=500)
+            
+            
+
+            # Handle range requests
+            range_header = request.META.get('HTTP_RANGE')
+            
+            if range_header:
+                range_spec = range_header.replace('bytes=', '').split('-')
+                start = int(range_spec[0]) if range_spec[0] else 0
+                end = int(range_spec[1]) if range_spec[1] else len(decrypted_data) - 1
+                
+                start = max(0, start)
+                end = min(len(decrypted_data) - 1, end)
+                chunk = decrypted_data[start:end + 1]
+                
+                response = StreamingHttpResponse(
+                    io.BytesIO(chunk),
+                    content_type=obj.mime_type,
+                    status=206
+                )
+                response['Content-Range'] = f'bytes {start}-{end}/{len(decrypted_data)}'
+                response['Content-Length'] = str(len(chunk))
+                bytes_transferred = len(chunk)
+                logger.info(f"Serving partial content: {bytes_transferred} bytes ({start}-{end})")
+            else:
+                response = StreamingHttpResponse(
+                    io.BytesIO(decrypted_data),
+                    content_type=obj.mime_type
+                )
+                response['Content-Length'] = str(len(decrypted_data))
+                bytes_transferred = len(decrypted_data)
+                logger.info(f"Serving full file: {bytes_transferred} bytes")
+            
+            response['Accept-Ranges'] = 'bytes'
+            response['Content-Disposition'] = f'attachment; filename="{obj.filename or object_id}"'
+            response['Cache-Control'] = 'public, max-age=31536000'
+
+            # Log access 
+            from apps.storage.models import AccessLog
+            AccessLog.objects.create(
+                object=None,  # AccessLog expects StorageObject, but obj is an EncryptedObject here
+                user_did=owner_did,
+                action='download',
+                bytes_transferred=bytes_transferred,
+                ip_address=request.META.get('REMOTE_ADDR'),
+                status_code=response.status_code
+            )
+            
+            return response
+            
+        except EncryptedObject.DoesNotExist:
+            logger.warning(f"Object {object_id} not found")
+            return Response({'error': 'Object not found', 'code': 'NOT_FOUND'}, status=404)
+        except Exception as e:
+            logger.error(f"Download error: {e}", exc_info=True)
+            return Response({'error': str(e), 'code': 'DOWNLOAD_ERROR'}, status=500)

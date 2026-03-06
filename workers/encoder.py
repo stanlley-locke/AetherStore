@@ -1,121 +1,209 @@
-"""
-Celery tasks for file upload processing
-"""
-
 from celery import shared_task
 from django.db import transaction
 import hashlib
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=60)
-def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did):
+def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did, filename=None):
     """
-    Process file upload with erasure coding and shard distribution
+    Process file upload with encryption, Merkle DAG, and shard distribution
     """
     try:
-        from apps.storage.models import StorageObject, Bucket, StorageQuota
+        from apps.storage.models import EncryptedObject, Bucket, StorageNode
+        from apps.storage.services.encryption_service import EncryptionService
+        from apps.storage.services.merkle_service import MerkleService
+        from apps.core.dht import dht_service
+        from apps.p2p.services.node_monitor import node_monitor
         from apps.storage.engine import get_erasure_engine
         from apps.p2p.ring import get_hash_ring
         import httpx
+        import base64
         
-        logger.info(f"Processing upload for bucket {bucket_id}, size {len(data_bytes)} bytes")
+        # Decode base64 encoded string back to raw bytes
+        if isinstance(data_bytes, str):
+            data_bytes = base64.b64decode(data_bytes)
+            
+        logger.info(f"Processing encrypted upload for bucket {bucket_id}, size {len(data_bytes)} bytes")
         
+        # 1. Verify enough healthy nodes
+        logger.info("Checking node availability...")
         engine = get_erasure_engine()
-        content_hash = engine.compute_content_hash(data_bytes)
+        node_verification = node_monitor.verify_enough_nodes(required_count=engine.data_shards)
         
-        # Check deduplication
-        if StorageObject.objects.filter(content_hash=content_hash, is_deleted=False).exists():
-            logger.info(f"Deduplication hit for {content_hash[:16]}")
-            existing = StorageObject.objects.get(content_hash=content_hash, is_deleted=False)
+        if not node_verification['success']:
+            error_msg = f"Insufficient nodes: {node_verification['message']}"
+            logger.error(error_msg)
+            raise Exception(error_msg)
+        
+        logger.info(f"✓ {node_verification['available_nodes']} healthy nodes available")
+        
+        # 2. Encrypt data FIRST (before any deduplication)
+        logger.info("Encrypting data...")
+        encrypted_package = EncryptionService.encrypt_file(data_bytes, owner_did, metadata={
+            'filename': filename,
+            'mime_type': mime_type
+        })
+        encrypted_data = encrypted_package['encrypted_data'].encode('utf-8')
+        logger.info(f"Encrypted size: {len(encrypted_data)} bytes")
+        
+        # 3. Build Merkle DAG on encrypted data
+        logger.info("Building Merkle DAG...")
+        merkle_dag = MerkleService.build_merkle_dag(encrypted_data)
+        logger.info(f"Merkle root: {merkle_dag.root_hash[:16]}...")
+        
+        # 4. Check deduplication on ENCRYPTED root hash (NOT original)
+        if EncryptedObject.objects.filter(
+            root_hash=merkle_dag.root_hash,  # Check encrypted Merkle root
+            is_deleted=False
+        ).exists():
+            logger.info(f"Deduplication hit for {merkle_dag.root_hash[:16]}")
+            existing = EncryptedObject.objects.get(
+                root_hash=merkle_dag.root_hash,
+                is_deleted=False
+            )
             return {
                 'status': 'deduplicated',
                 'object_id': str(existing.id),
-                'content_hash': content_hash
+                'root_hash': merkle_dag.root_hash
             }
         
-        # Encode
-        logger.info(f"Encoding data into {engine.total_shards} shards...")
-        shards = engine.encode(data_bytes)
+        # 5. Compute original hash for metadata only
+        original_hash = hashlib.sha256(data_bytes).hexdigest()
+        logger.info(f"Original file hash: {original_hash[:16]}...")
         
-        # Get nodes from hash ring
+        # 6. Get healthy nodes
+        healthy_nodes = node_monitor.get_healthy_nodes()
+        logger.info(f"Using {len(healthy_nodes)} nodes")
+        
+        # 7. Encode and distribute shards
+        dht = dht_service.get_node()
         ring = get_hash_ring()
-        shard_map = ring.get_all_nodes_for_object(content_hash, len(shards))
         
-        available_nodes = len(ring.nodes)
-        logger.info(f"Hash ring has {available_nodes} nodes: {list(ring.nodes.keys())}")
+        shard_map = {}
+        shards_stored = 0
         
-        # Adjust minimum shards based on available nodes
-        min_shards_needed = min(engine.data_shards, available_nodes)
-        logger.info(f"Minimum shards needed: {min_shards_needed} (adjusted from {engine.data_shards})")
+        for chunk_meta in merkle_dag.chunks:
+            chunk_index = chunk_meta.index
+            
+            chunk = MerkleService.get_chunk_from_data(
+                encrypted_data, 
+                chunk_index, 
+                merkle_dag.chunk_size
+            )
+            
+            shards = engine.encode(chunk)
+            
+            chunk_shard_map = ring.get_all_nodes_for_object(
+                f"{merkle_dag.root_hash}:{chunk_index}",
+                len(shards)
+            )
+            
+            with httpx.Client(timeout=30.0) as client:
+                for shard_index, shard_data in enumerate(shards):
+                    nodes = chunk_shard_map.get(shard_index, [])
+                    stored = False
+                    
+                    for node_id, endpoint in nodes:
+                        try:
+                            response = client.put(
+                                f"{endpoint}/shard/{merkle_dag.root_hash}/{chunk_index}/{shard_index}",
+                                content=shard_data,
+                                timeout=30.0
+                            )
+                            
+                            if response.status_code == 200:
+                                key = f"{chunk_index}:{shard_index}"
+                                shard_map[key] = node_id
+                                shards_stored += 1
+                                stored = True
+                                
+                                dht.store_shard_location(
+                                    merkle_dag.root_hash,
+                                    chunk_index,
+                                    shard_index,
+                                    node_id
+                                )
+                                logger.debug(f"Shard {chunk_index}:{shard_index} -> {node_id}")
+                                break
+                                
+                        except Exception as e:
+                            logger.warning(f"Node {node_id} failed: {e}")
+                            continue
+                    
+                    if not stored:
+                        logger.error(f"Failed to store shard {chunk_index}:{shard_index}")
+            
+            logger.info(f"Chunk {chunk_index}/{merkle_dag.chunk_count} done")
         
-        # Distribute shards
-        result_shard_map = {}
+        # 8. Verify minimum shards
+        min_required = merkle_dag.chunk_count * engine.data_shards
+        if shards_stored < min_required:
+            error_msg = f"Insufficient shards: {shards_stored}/{min_required}"
+            logger.error(error_msg)
+            raise Exception(error_msg)
         
-        with httpx.Client(timeout=30.0) as client:
-            for shard_index, shard_data in enumerate(shards):
-                nodes = shard_map.get(shard_index, [])
-                
-                if not nodes:
-                    logger.warning(f"No nodes available for shard {shard_index}")
-                    continue
-                
-                for node_id, endpoint in nodes:
-                    try:
-                        response = client.put(
-                            f"{endpoint}/shard/{content_hash}/{shard_index}",
-                            content=shard_data,
-                            timeout=30.0
-                        )
-                        
-                        if response.status_code == 200:
-                            result_shard_map[node_id] = shard_index
-                            logger.debug(f"Shard {shard_index} stored on {node_id}")
-                            break
-                    except Exception as e:
-                        logger.warning(f"Node {node_id} failed: {e}")
-                        continue
+        logger.info(f"✓ Stored {shards_stored} shards")
         
-        # Check if we have minimum shards
-        if len(result_shard_map) < min_shards_needed:
-            logger.warning(f"Only {len(result_shard_map)} shards stored, need {min_shards_needed}. Retrying...")
-            raise Exception(f"Only {len(result_shard_map)} shards stored, need {min_shards_needed}")
-        
-        # Save metadata
+        # 9. Save to database
         with transaction.atomic():
             bucket = Bucket.objects.get(id=bucket_id)
-            
-            obj = StorageObject.objects.create(
-                content_hash=content_hash,
-                bucket=bucket,
+
+            # Store encryption metadata in merkle_dag for decryption
+            merkle_dag_dict = merkle_dag.to_dict()
+            merkle_dag_dict.setdefault('metadata', {})
+            merkle_dag_dict['metadata'].update({
+                'nonce': encrypted_package.get('nonce'),
+                'salt': encrypted_package.get('salt'),
+                'auth_tag': encrypted_package.get('auth_tag'),
+                'algorithm': encrypted_package.get('algorithm', 'AES-256-GCM')
+            })
+
+            # Validate that the required metadata was generated
+            missing_meta = [k for k in ('nonce', 'salt', 'auth_tag') if not merkle_dag_dict['metadata'].get(k)]
+            if missing_meta:
+                raise ValueError(f"Missing encryption metadata after encrypting: {missing_meta}")
+
+            obj = EncryptedObject.objects.create(
+                owner_did=owner_did,
+                encryption_algorithm='AES-256-GCM',
+                key_hash=encrypted_package['key_hash'],
+                root_hash=merkle_dag.root_hash,
+                merkle_dag=merkle_dag_dict,
+                chunk_count=merkle_dag.chunk_count,
+                chunk_size=merkle_dag.chunk_size,
+                original_size=len(data_bytes),
+                original_hash=original_hash,
                 mime_type=mime_type,
-                size=len(data_bytes),
-                owner_did=owner_did,
-                shard_map=result_shard_map,
+                filename=filename,
+                bucket=bucket,
+                shard_map=shard_map,
+                version=1
             )
             
-            # Update quota
-            quota, _ = StorageQuota.objects.get_or_create(
-                owner_did=owner_did,
-                defaults={'quota_bytes': 10737418240}
+            from apps.storage.models import ObjectVersion
+            ObjectVersion.objects.create(
+                object=obj,
+                version_number=1,
+                root_hash=merkle_dag.root_hash,
+                original_size=len(data_bytes),
+                original_hash=original_hash,
+                created_by=owner_did
             )
-            quota.used_bytes += len(data_bytes)
-            quota.save()
         
-        logger.info(f"✅ Upload complete: {content_hash[:16]} ({len(data_bytes)} bytes, {len(result_shard_map)} shards on {len(result_shard_map)} nodes)")
+        logger.info(f"✓ Upload complete: {merkle_dag.root_hash[:16]}")
         
         return {
             'status': 'success',
             'object_id': str(obj.id),
-            'content_hash': content_hash,
-            'size': len(data_bytes),
-            'shards_stored': len(result_shard_map),
-            'nodes_used': len(set(result_shard_map.keys())),
-            'erasure_coding': engine.has_erasure_coding,
+            'root_hash': merkle_dag.root_hash,
+            'chunk_count': merkle_dag.chunk_count,
+            'shards_stored': shards_stored
         }
         
     except Exception as exc:
-        logger.error(f"Upload failed: {exc}")
+        logger.error(f"Upload failed: {exc}", exc_info=True)
         raise self.retry(exc=exc)
