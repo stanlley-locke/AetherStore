@@ -33,10 +33,24 @@ def process_download(self, object_id, owner_did):
             raise Exception("Access Denied")
             
         engine = get_erasure_engine()
-        chunks = {}
+        decrypted_chunks = {}
+        encrypted_chunks = {}
         merkle_dag = MerkleDAG.from_dict(obj.merkle_dag)
         
-        logger.info(f"Fetching {obj.chunk_count} chunks...")
+        metadata = obj.merkle_dag.get('metadata', {}) or {}
+        strategy = metadata.get('encryption_strategy', 'legacy')
+        
+        # Setup decryption for per-chunk or legacy
+        salt_b64 = metadata.get('salt')
+        if not salt_b64:
+            # Fallback for old files without explicit salt
+            encryption_fallback = ClientEncryption.for_user(owner_did)
+            salt_b64 = base64.b64encode(encryption_fallback.salt).decode('utf-8')
+            
+        salt = base64.b64decode(salt_b64)
+        encryption = ClientEncryption(password=f'{owner_did}:{salt.hex()}', salt=salt)
+        
+        logger.info(f"Fetching {obj.chunk_count} chunks (strategy: {strategy})...")
         with httpx.Client(timeout=30.0) as client:
             for chunk_index in range(obj.chunk_count):
                 chunk_shards = {}
@@ -54,54 +68,65 @@ def process_download(self, object_id, owner_did):
                             logger.warning(f"Failed to fetch shard {stored_shard_idx} from {node_id}: {e}")
                 
                 if len(chunk_shards) < engine.data_shards:
-                    raise Exception(f"Insufficient shards for chunk {chunk_index}")
+                    raise Exception(f"Insufficient shards for chunk {chunk_index}. Found {len(chunk_shards)}/{engine.data_shards}")
                     
                 # Decode chunk from available shards
                 shard_list = [chunk_shards.get(i, None) for i in range(max(chunk_shards.keys()) + 1)]
-                chunk_data = engine.decode(shard_list)
+                padded_encrypted_chunk = engine.decode(shard_list)
                 
-                # BUG FIX: Erasure coding pads data to be divisible by data_shards.
-                # Trim the padding bytes before Merkle validation.
                 chunk_meta = merkle_dag.chunks[chunk_index]
-                chunk_data = chunk_data[:chunk_meta.size]
                 
-                chunks[chunk_index] = chunk_data
-                logger.info(f"Successfully decoded chunk {chunk_index} ({len(chunk_data)} bytes)")
+                if strategy == 'per-chunk':
+                    # AES-GCM adds exactly 28 bytes (12 nonce + 16 auth_tag)
+                    encrypted_chunk_size = chunk_meta.size + 28
+                    encrypted_chunk = padded_encrypted_chunk[:encrypted_chunk_size]
+                    
+                    encrypted_package = {
+                        'encrypted_data': base64.b64encode(encrypted_chunk).decode('utf-8'),
+                        'salt': salt_b64
+                    }
+                    plaintext_chunk = encryption.decrypt(encrypted_package)
+                    decrypted_chunks[chunk_index] = plaintext_chunk
+                    logger.info(f"Successfully decoded and decrypted chunk {chunk_index}")
+                else:
+                    # Legacy: chunk_meta mapped to the encrypted chunk directly
+                    encrypted_chunk_size = chunk_meta.size
+                    encrypted_chunk = padded_encrypted_chunk[:encrypted_chunk_size]
+                    encrypted_chunks[chunk_index] = encrypted_chunk
+                    logger.info(f"Successfully decoded legacy chunk {chunk_index}")
 
         # Verify Integrity
         logger.info("Verifying Merkle DAG...")
-        if not MerkleService.verify_chunks(merkle_dag, chunks):
-            raise Exception("Merkle verification failed: Tampered or corrupted chunks detected")
+        if strategy == 'per-chunk':
+            if not MerkleService.verify_chunks(merkle_dag, decrypted_chunks):
+                raise Exception("Merkle verification failed: Tampered or corrupted chunks detected")
             
-        # Reassemble
-        encrypted_data = MerkleService.reassemble_file(chunks, merkle_dag.total_size)
-        logger.info(f"Reassembled core structure, decrypting {len(encrypted_data)} bytes...")
-        
-        # Decrypt
-        encryption = ClientEncryption.for_user(owner_did)
-        metadata = obj.merkle_dag.get('metadata', {}) or {}
-        
-        salt_b64 = metadata.get('salt') or base64.b64encode(encryption.salt).decode('utf-8')
-        
-        # Normalize encrypted data (stored as base64 string or bytes of base64 string)
-        encrypted_data_str = (
-            encrypted_data.decode('utf-8')
-            if isinstance(encrypted_data, (bytes, bytearray))
-            else str(encrypted_data)
-        )
-        
-        # Build the package for decryption (ClientEncryption handles fallback parsing)
-        encrypted_package = {
-            'encrypted_data': encrypted_data_str,
-            'salt': salt_b64,
-        }
-        
-        if metadata.get('nonce'):
-            encrypted_package['nonce'] = metadata['nonce']
-        if metadata.get('auth_tag'):
-            encrypted_package['auth_tag'] = metadata['auth_tag']
+            # Reassemble plaintext directly
+            plaintext = MerkleService.reassemble_file(decrypted_chunks, merkle_dag.total_size)
+        else:
+            if not MerkleService.verify_chunks(merkle_dag, encrypted_chunks):
+                raise Exception("Merkle verification failed: Tampered or corrupted chunks detected")
             
-        plaintext = encryption.decrypt(encrypted_package)
+            # Reassemble encrypted blob then decrypt
+            encrypted_data = MerkleService.reassemble_file(encrypted_chunks, merkle_dag.total_size)
+            logger.info(f"Reassembled legacy core structure, decrypting {len(encrypted_data)} bytes...")
+            
+            encrypted_data_str = (
+                encrypted_data.decode('utf-8')
+                if isinstance(encrypted_data, (bytes, bytearray))
+                else str(encrypted_data)
+            )
+            
+            encrypted_package = {
+                'encrypted_data': encrypted_data_str,
+                'salt': salt_b64,
+            }
+            if metadata.get('nonce'):
+                encrypted_package['nonce'] = metadata['nonce']
+            if metadata.get('auth_tag'):
+                encrypted_package['auth_tag'] = metadata['auth_tag']
+                
+            plaintext = encryption.decrypt(encrypted_package)
         
         # Write to local cache for streaming
         with open(output_path, 'wb') as f:

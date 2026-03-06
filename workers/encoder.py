@@ -46,38 +46,35 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
         
         logger.info(f"✓ {node_verification['available_nodes']} healthy nodes available")
         
-        # 2. Encrypt data FIRST (before any deduplication)
-        logger.info("Encrypting data...")
-        encrypted_package = EncryptionService.encrypt_file(data_bytes, owner_did, metadata={
-            'filename': filename,
-            'mime_type': mime_type
-        })
-        encrypted_data = encrypted_package['encrypted_data'].encode('utf-8')
-        logger.info(f"Encrypted size: {len(encrypted_data)} bytes")
+        # 2. Extract salt for user encryption
+        logger.info("Setting up encryption...")
+        from apps.core.crypto import ClientEncryption
+        salt = EncryptionService.get_user_salt(owner_did)
+        encryption = ClientEncryption(password=f'{owner_did}:{salt.hex()}', salt=salt)
         
-        # 3. Build Merkle DAG on encrypted data
+        # 3. Build Merkle DAG on PLAINTEXT data
         logger.info("Building Merkle DAG...")
-        merkle_dag = MerkleService.build_merkle_dag(encrypted_data)
+        merkle_dag = MerkleService.build_merkle_dag(data_bytes)
         logger.info(f"Merkle root: {merkle_dag.root_hash[:16]}...")
         
-        # 4. Check deduplication on ENCRYPTED root hash (NOT original)
+        # 4. Check deduplication on PLAINTEXT root hash
         if EncryptedObject.objects.filter(
-            root_hash=merkle_dag.root_hash,  # Check encrypted Merkle root
+            original_hash=merkle_dag.root_hash,
             is_deleted=False
         ).exists():
             logger.info(f"Deduplication hit for {merkle_dag.root_hash[:16]}")
-            existing = EncryptedObject.objects.get(
-                root_hash=merkle_dag.root_hash,
+            existing = EncryptedObject.objects.filter(
+                original_hash=merkle_dag.root_hash,
                 is_deleted=False
-            )
+            ).first()
             return {
                 'status': 'deduplicated',
                 'object_id': str(existing.id),
                 'root_hash': merkle_dag.root_hash
             }
         
-        # 5. Compute original hash for metadata only
-        original_hash = hashlib.sha256(data_bytes).hexdigest()
+        # 5. Assign original hash
+        original_hash = merkle_dag.root_hash
         logger.info(f"Original file hash: {original_hash[:16]}...")
         
         # 6. Get healthy nodes
@@ -94,13 +91,18 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
         for chunk_meta in merkle_dag.chunks:
             chunk_index = chunk_meta.index
             
-            chunk = MerkleService.get_chunk_from_data(
-                encrypted_data, 
+            plaintext_chunk = MerkleService.get_chunk_from_data(
+                data_bytes, 
                 chunk_index, 
                 merkle_dag.chunk_size
             )
             
-            shards = engine.encode(chunk)
+            # --- PER-CHUNK ENCRYPTION ---
+            encrypted_package = encryption.encrypt(plaintext_chunk)
+            encrypted_chunk = base64.b64decode(encrypted_package['encrypted_data'])
+            
+            # Erasure code the encrypted chunk
+            shards = engine.encode(encrypted_chunk)
             
             chunk_shard_map = ring.get_all_nodes_for_object(
                 f"{merkle_dag.root_hash}:{chunk_index}",
@@ -157,25 +159,19 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
         with transaction.atomic():
             bucket = Bucket.objects.get(id=bucket_id)
 
-            # Store encryption metadata in merkle_dag for decryption
+            # Store encryption metadata. We omit nonce & auth_tag as they are embedded inside the chunks!
             merkle_dag_dict = merkle_dag.to_dict()
             merkle_dag_dict.setdefault('metadata', {})
             merkle_dag_dict['metadata'].update({
-                'nonce': encrypted_package.get('nonce'),
-                'salt': encrypted_package.get('salt'),
-                'auth_tag': encrypted_package.get('auth_tag'),
-                'algorithm': encrypted_package.get('algorithm', 'AES-256-GCM')
+                'salt': base64.b64encode(salt).decode('utf-8'),
+                'algorithm': 'AES-256-GCM',
+                'encryption_strategy': 'per-chunk'
             })
-
-            # Validate that the required metadata was generated
-            missing_meta = [k for k in ('nonce', 'salt', 'auth_tag') if not merkle_dag_dict['metadata'].get(k)]
-            if missing_meta:
-                raise ValueError(f"Missing encryption metadata after encrypting: {missing_meta}")
 
             obj = EncryptedObject.objects.create(
                 owner_did=owner_did,
                 encryption_algorithm='AES-256-GCM',
-                key_hash=encrypted_package['key_hash'],
+                key_hash=encryption.get_key_hash(),
                 root_hash=merkle_dag.root_hash,
                 merkle_dag=merkle_dag_dict,
                 chunk_count=merkle_dag.chunk_count,

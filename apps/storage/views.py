@@ -822,3 +822,130 @@ class DownloadFileView(APIView):
         except Exception as e:
             logger.error(f"File serving error: {e}")
             return Response({'error': 'Failed to serve file', 'code': 'SERVE_ERROR'}, status=500)
+
+
+@method_decorator([csrf_exempt], name='dispatch')
+class StreamFileView(APIView):
+    """Dynamically streams file directly from P2P swarm, supporting HTTP Range requests"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, object_id):
+        from apps.storage.models import EncryptedObject, StorageNode, AccessLog
+        from apps.storage.engine import get_erasure_engine
+        from apps.core.merkle import MerkleDAG
+        from apps.core.crypto import ClientEncryption
+        from django.http import StreamingHttpResponse, HttpResponse
+        import httpx
+        import base64
+        import re
+        
+        try:
+            owner_did = getattr(request.user, 'did', str(request.user))
+            obj = EncryptedObject.objects.get(id=object_id, is_deleted=False)
+            
+            if obj.owner_did != owner_did:
+                return Response({'error': 'Access denied'}, status=403)
+                
+            merkle_dag = MerkleDAG.from_dict(obj.merkle_dag)
+            total_size = merkle_dag.total_size
+            chunk_size = merkle_dag.chunk_size
+            
+            # Parse Range header
+            range_header = request.META.get('HTTP_RANGE', '').strip()
+            range_match = re.match(r'bytes=(\d+)-(\d*)', range_header)
+            
+            start_byte = 0
+            end_byte = total_size - 1
+            
+            if range_match:
+                start_byte = int(range_match.group(1))
+                if range_match.group(2):
+                    end_byte = int(range_match.group(2))
+                    
+            if start_byte >= total_size:
+                return HttpResponse(status=416) # Range Not Satisfiable
+                
+            end_byte = min(end_byte, total_size - 1)
+            content_length = end_byte - start_byte + 1
+            
+            # Determine which chunks to pull
+            start_chunk = start_byte // chunk_size
+            end_chunk = end_byte // chunk_size
+            
+            metadata = obj.merkle_dag.get('metadata', {}) or {}
+            strategy = metadata.get('encryption_strategy', 'legacy')
+            
+            if strategy == 'legacy':
+                return Response({'error': 'Instant seeking is not mathematically possible for legacy whole-file encryption. Use standard download.'}, status=400)
+                
+            salt_b64 = metadata.get('salt')
+            salt = base64.b64decode(salt_b64)
+            encryption = ClientEncryption(password=f'{owner_did}:{salt.hex()}', salt=salt)
+            engine = get_erasure_engine()
+            
+            def stream_generator():
+                bytes_yielded = 0
+                max_bytes = content_length
+                current_byte_pos = start_byte
+                
+                with httpx.Client(timeout=30.0) as client:
+                    for chunk_index in range(start_chunk, end_chunk + 1):
+                        chunk_shards = {}
+                        for key, node_id in obj.shard_map.items():
+                            stored_chunk_idx, stored_shard_idx = map(int, key.split(':'))
+                            if stored_chunk_idx == chunk_index:
+                                try:
+                                    node = StorageNode.objects.get(node_id=node_id, is_active=True)
+                                    resp = client.get(f"{node.endpoint}/shard/{obj.root_hash}/{chunk_index}/{stored_shard_idx}")
+                                    if resp.status_code == 200:
+                                        chunk_shards[stored_shard_idx] = resp.content
+                                except Exception:
+                                    pass
+                                    
+                        if len(chunk_shards) < engine.data_shards:
+                             break  # Stream will abort early if data unavailable
+                             
+                        shard_list = [chunk_shards.get(i, None) for i in range(max(chunk_shards.keys()) + 1)]
+                        padded_encrypted_chunk = engine.decode(shard_list)
+                        
+                        chunk_meta = merkle_dag.chunks[chunk_index]
+                        encrypted_chunk_size = chunk_meta.size + 28
+                        encrypted_chunk = padded_encrypted_chunk[:encrypted_chunk_size]
+                        
+                        encrypted_package = {
+                            'encrypted_data': base64.b64encode(encrypted_chunk).decode('utf-8'),
+                            'salt': salt_b64
+                        }
+                        
+                        try:
+                            plaintext_chunk = encryption.decrypt(encrypted_package)
+                        except Exception:
+                            break
+                            
+                        # Slice the plaintext based on what we need
+                        chunk_start_byte = chunk_index * chunk_size
+                        slice_start = max(0, current_byte_pos - chunk_start_byte)
+                        remaining_bytes_needed = max_bytes - bytes_yielded
+                        slice_end = min(len(plaintext_chunk), slice_start + remaining_bytes_needed)
+                        
+                        chunk_to_yield = plaintext_chunk[slice_start:slice_end]
+                        yield chunk_to_yield
+                        
+                        bytes_yielded += len(chunk_to_yield)
+                        current_byte_pos += len(chunk_to_yield)
+                        
+                        if bytes_yielded >= max_bytes:
+                            break
+            
+            response = StreamingHttpResponse(stream_generator(), status=206 if range_header else 200, content_type=obj.mime_type)
+            response['Content-Length'] = str(content_length)
+            response['Accept-Ranges'] = 'bytes'
+            if range_header:
+                response['Content-Range'] = f'bytes {start_byte}-{end_byte}/{total_size}'
+                
+            return response
+            
+        except EncryptedObject.DoesNotExist:
+            return Response({'error': 'Object not found'}, status=404)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)

@@ -17,6 +17,7 @@ from .views import (
     MultipartInitView,
     MultipartUploadPartView,
     MultipartCompleteView,
+    StreamFileView,
 )
 
 router = DefaultRouter()
@@ -31,6 +32,8 @@ urlpatterns = [
     path('upload/multipart/init/', MultipartInitView.as_view(), name='multipart-init'),
     path('upload/multipart/<uuid:upload_id>/part/<int:part_number>/', MultipartUploadPartView.as_view(), name='multipart-part'),
     path('upload/multipart/<uuid:upload_id>/complete/', MultipartCompleteView.as_view(), name='multipart-complete'),
+    
+    path('stream/<uuid:object_id>/', StreamFileView.as_view(), name='stream-file'),
     
     path('download/<uuid:object_id>/', DownloadView.as_view(), name='download'),
     path('download/status/<str:task_id>/', DownloadStatusView.as_view(), name='download-status'),
