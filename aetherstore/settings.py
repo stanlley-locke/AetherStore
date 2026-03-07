@@ -33,6 +33,10 @@ INSTALLED_APPS = [
     'apps.p2p',
     'apps.accounts',
     'apps.core',
+    'apps.billing',
+    'apps.messaging',
+    # Phase 11: WebSocket support (graceful if not installed)
+    *(['channels'] if __import__('importlib').util.find_spec('channels') else []),
 ]
 
 MIDDLEWARE = [
@@ -184,3 +188,43 @@ CSRF_EXEMPT_PATHS = [
     r'^health/',
     r'^metrics/',
 ]
+
+# File Upload Limits
+# Must be large enough to handle multipart part bodies (e.g. half of a 5.4MB file = ~2.7MB)
+# The multipart view streams via wsgi.input, but Django parses headers first
+DATA_UPLOAD_MAX_MEMORY_SIZE = 500 * 1024 * 1024  # 500MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 500 * 1024 * 1024  # 500MB
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
+
+# ASGI application (Phase 11: WebSocket support)
+ASGI_APPLICATION = 'aetherstore.asgi.application'
+
+# Django Channels — Redis channel layer for WebSocket group messaging
+# Falls back gracefully if channels not installed
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [(os.environ.get('REDIS_HOST', '127.0.0.1'), 6379)],
+        },
+    },
+}
+
+# Celery Beat Schedule
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'daily-billing-and-payouts': {
+        'task': 'workers.payout_calculator.calculate_payouts',
+        'schedule': crontab(hour=0, minute=0),
+    },
+    'periodic-node-audit': {
+        'task': 'workers.storage_auditor.audit_nodes',
+        'schedule': crontab(minute='*/15'),
+    },
+    # Phase 14: Hourly auto-expiry of old messages
+    'expire-old-messages': {
+        'task': 'workers.message_delivery.expire_old_messages',
+        'schedule': crontab(minute=0),  # Every hour
+    },
+}

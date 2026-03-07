@@ -15,6 +15,12 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional
 import os
+import sys
+import time
+
+# Ensure project root is in path so we can import apps
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+from apps.core.dht import DHTNode, Peer
 
 # Configure logging
 logging.basicConfig(
@@ -38,13 +44,21 @@ class StorageNodeServer:
     - Storage statistics and monitoring
     """
     
-    def __init__(self, node_id: str, port: int, storage_path: str = './data/shards'):
+    def __init__(self, node_id: str, port: int, storage_path: str = './data/shards', bootstrap_node: str = None):
         self.node_id = node_id
         self.port = port
         self.storage_path = Path(storage_path)
+        self.dht_path = self.storage_path / 'dht_state.json'
+        self.bootstrap_node = bootstrap_node
         self.storage_path.mkdir(parents=True, exist_ok=True)
-        self.app = web.Application()
+        self.app = web.Application(client_max_size=256 * 1024 * 1024)  # 256MB max body
         self._setup_routes()
+        
+        # Ensure node_id is a valid hex string for Kademlia XOR metric
+        self.dht_node_id = hashlib.sha1(node_id.encode()).hexdigest()
+        
+        # Initialize DHT Node
+        self.dht = DHTNode(node_id=self.dht_node_id, address='127.0.0.1', port=port)
         
         # Metrics
         self.stats = {
@@ -59,6 +73,9 @@ class StorageNodeServer:
         
         logger.info(f"Initializing storage node {node_id} on port {port}")
         logger.info(f"Storage path: {self.storage_path.absolute()}")
+        
+        # Load previous DHT state if exists
+        self._load_dht_state()
     
     def _setup_routes(self):
         # NEW: Chunk-based URLs for Merkle DAG support
@@ -77,6 +94,12 @@ class StorageNodeServer:
         self.app.router.add_post('/gossip', self.gossip_handler)
         self.app.router.add_get('/shards', self.list_shards)
         self.app.router.add_delete('/shards/{content_hash}', self.delete_all_shards)
+        
+        # DHT Endpoints
+        self.app.router.add_get('/dht/ping', self.dht_ping)
+        self.app.router.add_post('/dht/store', self.dht_store)
+        self.app.router.add_get('/dht/get/{key}', self.dht_get)
+        self.app.router.add_post('/dht/find_node', self.dht_find_node)
     
     #  UPLOAD ENDPOINTS 
     
@@ -367,6 +390,7 @@ class StorageNodeServer:
         
         return web.json_response({
             'node_id': self.node_id,
+            'dht_node_id': self.dht_node_id, # Added for DHT node ID
             'port': self.port,
             'shard_count': shard_count,
             'chunk_count': chunk_count,
@@ -391,7 +415,7 @@ class StorageNodeServer:
     async def get_metrics(self, request: web.Request) -> web.Response:
         """Prometheus-style metrics"""
         metrics = [
-            f'aether_node_info{{node_id="{self.node_id}",port="{self.port}"}} 1',
+            f'aether_node_info{{node_id="{self.node_id}",dht_node_id="{self.dht_node_id}",port="{self.port}"}} 1', # Added dht_node_id
             f'aether_node_shards_total {self._count_shards()}',
             f'aether_node_storage_bytes {self._get_storage_size()}',
             f'aether_node_uploads_total {self.stats["uploads"]}',
@@ -428,6 +452,7 @@ class StorageNodeServer:
         
         return web.json_response({
             'node_id': self.node_id,
+            'dht_node_id': self.dht_node_id, # Added for DHT node ID
             'total_shards': len(shards),
             'shards': shards[:100]  # Limit to first 100
         })
@@ -444,13 +469,13 @@ class StorageNodeServer:
             logger.info(f"[GOSSIP] From {node_id} (action: {action}, peers: {len(peers)})")
             
             # Return peer list excluding self and requesting node
-            all_peers = [p for p in peers if p != self.node_id and p != node_id]
+            all_peers = [p for p in peers if p != self.dht_node_id and p != node_id] # Use dht_node_id
             
             logger.info(f"[GOSSIP] Returning {len(all_peers)} peers")
             
             return web.json_response({
                 'status': 'received',
-                'node_id': self.node_id,
+                'node_id': self.dht_node_id, # Use dht_node_id
                 'peers': all_peers,
                 'version': 1
             })
@@ -459,7 +484,86 @@ class StorageNodeServer:
             logger.error(f"[GOSSIP] Error: {e}")
             return web.json_response({'error': str(e)}, status=500)
     
-    #  HELPER METHODS 
+    #  DHT ENDPOINTS 
+    
+    async def dht_ping(self, request: web.Request) -> web.Response:
+        """Respond to DHT ping and update sender in our routing table if info provided"""
+        sender_id = request.query.get('node_id')
+        sender_port = request.query.get('port')
+        
+        if sender_id and sender_port:
+            peer = Peer(
+                node_id=sender_id,
+                address=request.remote,
+                port=int(sender_port)
+            )
+            self.dht.add_peer(peer)
+            
+        return web.json_response({
+            'status': 'pong',
+            'node_id': self.dht_node_id # Use dht_node_id
+        })
+        
+    async def dht_store(self, request: web.Request) -> web.Response:
+        """Store key-value in DHT"""
+        try:
+            data = await request.json()
+            key = data['key']
+            value = data['value']
+            ttl = data.get('ttl', 3600)
+            
+            # Update peer if publisher info is present
+            publisher = data.get('publisher')
+            publisher_port = data.get('publisher_port')
+            if publisher and publisher_port:
+                logger.info(f"[DHT] Registering publisher peer: {publisher} at {request.remote}:{publisher_port}")
+                self.dht.add_peer(Peer(node_id=publisher, address=request.remote, port=int(publisher_port)))
+                
+            logger.info(f"[DHT] STORE Key: {key[:16]}... from {publisher or request.remote}")
+            self.dht.data_store[key] = {
+                'value': value,
+                'expires': time.time() + ttl,
+                'publisher': publisher or 'unknown',
+                'created_at': time.time()
+            }
+            # Save state periodically or on change
+            self._save_dht_state()
+            return web.json_response({'status': 'stored'})
+        except Exception as e:
+            return web.json_response({'error': str(e)}, status=400)
+            
+    async def dht_get(self, request: web.Request) -> web.Response:
+        """Get value from DHT"""
+        key = request.match_info['key']
+        logger.info(f"[DHT] GET Key: {key[:16]}... from {request.remote}")
+        value = self.dht.get(key)
+        if value is not None:
+            return web.json_response({'found': True, 'value': value})
+        else:
+            return web.json_response({'found': False}, status=404)
+            
+    async def dht_find_node(self, request: web.Request) -> web.Response:
+        """Find closest nodes to target ID"""
+        try:
+            data = await request.json()
+            target_id = data['target_id']
+            count = data.get('count', 20)
+            
+            sender_id = data.get('node_id')
+            sender_port = data.get('port')
+            if sender_id and sender_port:
+                self.dht.add_peer(Peer(node_id=sender_id, address=request.remote, port=int(sender_port)))
+            
+            logger.info(f"[DHT] FIND_NODE Target: {target_id[:16]}... from {sender_id or request.remote}")
+            closest_peers = self.dht.find_closest_peers(target_id, count=count)
+            return web.json_response({
+                'node_id': self.dht_node_id, # Added for DHT node ID
+                'closest_peers': [p.to_dict() for p in closest_peers] # Changed 'peers' to 'closest_peers'
+            })
+        except Exception as e:
+            return web.json_response({'error': str(e)}, status=400)
+    
+    #  HELPER METHODS
     
     def _count_shards(self) -> int:
         """Count total shards"""
@@ -473,8 +577,83 @@ class StorageNodeServer:
             return 0
         return sum(f.stat().st_size for f in self.storage_path.rglob('*.shard'))
     
+    async def _dht_maintenance_loop(self):
+        """Periodically ping peers and refresh buckets"""
+        # If we have a bootstrap node, ping it first to join network
+        if self.bootstrap_node:
+            bootstrap_ip, bootstrap_port = self.bootstrap_node.split(':')
+            logger.info(f"[DHT] Bootstrapping to {bootstrap_ip}:{bootstrap_port}")
+            import httpx
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                try:
+                    # Ping bootstrap node to introduce ourselves
+                    await client.get(
+                        f"http://{bootstrap_ip}:{bootstrap_port}/dht/ping",
+                        params={'node_id': self.dht_node_id, 'port': self.port}
+                    )
+                    
+                    # Find our own node_id to populate buckets
+                    resp = await client.post(
+                        f"http://{bootstrap_ip}:{bootstrap_port}/dht/find_node",
+                        json={'target_id': self.dht_node_id, 'node_id': self.dht_node_id, 'port': self.port}
+                    )
+                    if resp.status_code == 200:
+                        peers = resp.json().get('closest_peers', [])
+                        for p in peers:
+                            self.dht.add_peer(Peer.from_dict(p))
+                        logger.info(f"[DHT] Bootstrapped with {len(peers)} peers")
+                except Exception as e:
+                    logger.error(f"[DHT] Bootstrap failed: {e}")
+
+        while True:
+            await asyncio.sleep(60) # Maintenance every 60s
+            # Refresh buckets by pinging peers could be added here
+            self._save_dht_state()
+            pass
+            
+    def _save_dht_state(self):
+        """Persist DHT data_store and peers to disk"""
+        try:
+            state = {
+                'data_store': self.dht.data_store,
+                'peers': [p.to_dict() for p in self.dht.peers.values() if p.node_id != self.dht_node_id],
+                'updated_at': time.time()
+            }
+            with open(self.dht_path, 'w') as f:
+                json.dump(state, f)
+            logger.debug(f"[DHT] State persisted to {self.dht_path.name}")
+        except Exception as e:
+            logger.error(f"[DHT] Persistence failed: {e}")
+            
+    def _load_dht_state(self):
+        """Load DHT state from disk"""
+        if not self.dht_path.exists():
+            return
+        try:
+            with open(self.dht_path, 'r') as f:
+                state = json.load(f)
+                
+            # Restore data store
+            ds = state.get('data_store', {})
+            # Filter expired
+            now = time.time()
+            self.dht.data_store = {k: v for k, v in ds.items() if v.get('expires', 0) > now}
+            
+            # Restore peers
+            peers = state.get('peers', [])
+            for p_data in peers:
+                peer = Peer.from_dict(p_data)
+                self.dht.add_peer(peer)
+                
+            logger.info(f"[DHT] Recovered {len(self.dht.data_store)} keys and {len(peers)} peers from disk")
+        except Exception as e:
+            logger.error(f"[DHT] Recovery failed: {e}")
+            
     async def start(self):
         """Start the storage node server"""
+        # Start DHT maintenance loop
+        asyncio.create_task(self._dht_maintenance_loop())
+        
         runner = web.AppRunner(self.app)
         await runner.setup()
         site = web.TCPSite(runner, '0.0.0.0', self.port)
@@ -499,9 +678,15 @@ class StorageNodeServer:
 
 
 if __name__ == '__main__':
-    import sys
     node_id = sys.argv[1] if len(sys.argv) > 1 else 'node-1'
     port = int(sys.argv[2]) if len(sys.argv) > 2 else 8001
     
-    server = StorageNodeServer(node_id, port)
+    # Optional --bootstrap IP:PORT
+    bootstrap_node = None
+    if '--bootstrap' in sys.argv:
+        idx = sys.argv.index('--bootstrap')
+        if len(sys.argv) > idx + 1:
+            bootstrap_node = sys.argv[idx + 1]
+            
+    server = StorageNodeServer(node_id, port, bootstrap_node=bootstrap_node)
     asyncio.run(server.start())

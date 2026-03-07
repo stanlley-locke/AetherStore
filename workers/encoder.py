@@ -168,31 +168,64 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
                 'encryption_strategy': 'per-chunk'
             })
 
-            obj = EncryptedObject.objects.create(
+            # Check if logical file exists
+            existing_obj = EncryptedObject.objects.filter(
                 owner_did=owner_did,
-                encryption_algorithm='AES-256-GCM',
-                key_hash=encryption.get_key_hash(),
-                root_hash=merkle_dag.root_hash,
-                merkle_dag=merkle_dag_dict,
-                chunk_count=merkle_dag.chunk_count,
-                chunk_size=merkle_dag.chunk_size,
-                original_size=len(data_bytes),
-                original_hash=original_hash,
-                mime_type=mime_type,
-                filename=filename,
                 bucket=bucket,
-                shard_map=shard_map,
-                version=1
-            )
+                filename=filename,
+                is_deleted=False
+            ).first() if filename else None
+            
+            if existing_obj:
+                # Keep ID, bump version, update fields to latest
+                new_version = existing_obj.version + 1
+                
+                # We could link previous_version if we wanted, but we'll use ObjectVersion history anyway.
+                existing_obj.version = new_version
+                existing_obj.root_hash = merkle_dag.root_hash
+                existing_obj.merkle_dag = merkle_dag_dict
+                existing_obj.chunk_count = merkle_dag.chunk_count
+                existing_obj.chunk_size = merkle_dag.chunk_size
+                existing_obj.original_size = len(data_bytes)
+                existing_obj.original_hash = original_hash
+                existing_obj.mime_type = mime_type
+                existing_obj.shard_map = shard_map
+                existing_obj.key_hash = encryption.get_key_hash()
+                existing_obj.save()
+                
+                obj = existing_obj
+                logger.info(f"Updated logical file {filename} to version {new_version}")
+            else:
+                # Create brand new logical file
+                new_version = 1
+                obj = EncryptedObject.objects.create(
+                    owner_did=owner_did,
+                    encryption_algorithm='AES-256-GCM',
+                    key_hash=encryption.get_key_hash(),
+                    root_hash=merkle_dag.root_hash,
+                    merkle_dag=merkle_dag_dict,
+                    chunk_count=merkle_dag.chunk_count,
+                    chunk_size=merkle_dag.chunk_size,
+                    original_size=len(data_bytes),
+                    original_hash=original_hash,
+                    mime_type=mime_type,
+                    filename=filename,
+                    bucket=bucket,
+                    shard_map=shard_map,
+                    version=new_version
+                )
             
             from apps.storage.models import ObjectVersion
             ObjectVersion.objects.create(
                 object=obj,
-                version_number=1,
+                version_number=new_version,
                 root_hash=merkle_dag.root_hash,
                 original_size=len(data_bytes),
                 original_hash=original_hash,
-                created_by=owner_did
+                merkle_dag=merkle_dag_dict,
+                shard_map=shard_map,
+                created_by=owner_did,
+                change_summary=f"Uploaded version {new_version}"
             )
         
         logger.info(f"✓ Upload complete: {merkle_dag.root_hash[:16]}")

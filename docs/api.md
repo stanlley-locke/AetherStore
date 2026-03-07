@@ -107,3 +107,76 @@ The Celery worker triggers this endpoint directly post-encryption to upload math
 ### 3. Retrieve Shard
 `GET /shard/{hash}/{chunk_index}/{shard_index}`
 Invoked directly during download or repair sequences to recall single 85KB shards into the reconstructor algorithm memory scope.
+
+---
+
+## Messaging API (Decentralized Communication)
+The Messaging layer provides E2E encrypted, P2P-routed communication.
+
+### 1. Create/List Conversations
+`POST /api/v1/messaging/conversations/` - Create a DM or Group.
+`GET /api/v1/messaging/conversations/` - List user's active conversations.
+
+**Request (Create):**
+```json
+{
+  "participants": ["did:example:bob"],
+  "name": "Secret DM",
+  "is_group": false
+}
+```
+
+### 2. Send Encrypted Message
+`POST /api/v1/messaging/conversations/{conv_id}/send/`
+Sends an AES-256-GCM encrypted message. The body is automatically stored in both the database and the DHT (Phase 15).
+
+**Request:**
+```json
+{
+  "body": "Ciphertext or Plaintext snippet",
+  "type": "text",
+  "attachment_id": "optional-uuid"
+}
+```
+
+### 3. Standard Inbox
+`GET /api/v1/messaging/inbox/`
+Returns a summary of all conversations and the latest message in each, backed by the central SQL database.
+
+### 4. DHT-First Inbox (Pure P2P)
+`GET /api/v1/messaging/inbox/dht/`
+Queries the P2P storage nodes directly for the latest message envelopes. Works even if the database is offline.
+
+### 5. Decrypt Message (with Recovery)
+`GET /api/v1/messaging/conversations/{conv_id}/messages/{msg_id}/decrypt/`
+Returns the plaintext of a message. **Phase 15 Enhancement:** If the message is missing from the DB, it automatically recovers the payload from the DHT storage nodes.
+
+### 6. Decentralized Search
+`GET /api/v1/messaging/search/?q={query}`
+Searches through message metadata and plaintext snippets indexed across the network.
+
+---
+
+## Billing & Incentive API
+
+### 1. Wallet Balance
+`GET /api/v1/billing/wallet/`
+Returns the current balance (ATK) and the 10 most recent transactions.
+
+### 2. Deposit Funds
+`POST /api/v1/billing/deposit/`
+Simulates a credit deposit. 
+`{"amount": "500.00"}`
+
+---
+
+## Naming & Discovery (IPNS-Style)
+
+### 1. Register Name
+`POST /api/v1/name/`
+Maps a human-readable string to a P2P Object ID.
+`{"name": "my-file", "object_id": "uuid"}`
+
+### 2. Resolve Name
+`GET /api/v1/resolve/{name}/`
+Redirects to the latest version of the object tracked by the name record.

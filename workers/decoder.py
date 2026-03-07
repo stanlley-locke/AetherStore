@@ -6,14 +6,34 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+def _update_reputation(node_id: str, success: bool):
+    """Dynamically adjust Node reputation during real-time downloads."""
+    from apps.storage.models import StorageNode
+    from django.db import transaction
+    try:
+        with transaction.atomic():
+            node = StorageNode.objects.select_for_update().get(node_id=node_id, is_active=True)
+            if success:
+                node.successful_retrievals += 1
+                node.reputation_score = min(100, node.reputation_score + 1)
+            else:
+                node.failed_retrievals += 1
+                node.reputation_score = max(0, node.reputation_score - 5)
+                if node.reputation_score <= 10:
+                    node.is_active = False
+                    logger.critical(f"Node {node_id} slashed & deactivated during download.")
+            node.save()
+    except Exception:
+        pass
+
 @shared_task(bind=True, max_retries=3, default_retry_delay=60)
-def process_download(self, object_id, owner_did):
+def process_download(self, object_id, owner_did, version_number=None):
     """
     Process file download securely in the background: retrieve chunks, erasure decode, 
     trim padding, verify Merkle DAG, decrypt via AES-GCM, and save to local disk.
     """
     try:
-        from apps.storage.models import EncryptedObject, StorageNode
+        from apps.storage.models import EncryptedObject, StorageNode, ObjectVersion
         from apps.storage.services.merkle_service import MerkleService
         from apps.storage.engine import get_erasure_engine
         from apps.core.merkle import MerkleDAG
@@ -26,18 +46,31 @@ def process_download(self, object_id, owner_did):
         task_id = self.request.id
         output_path = download_dir / f"{task_id}.bin"
         
-        logger.info(f"Starting async download for object {object_id}")
+        logger.info(f"Starting async download for object {object_id} (version: {version_number or 'latest'})")
         obj = EncryptedObject.objects.get(id=object_id, is_deleted=False)
         
         if obj.owner_did != owner_did:
             raise Exception("Access Denied")
             
+        active_merkle_dag = obj.merkle_dag
+        active_shard_map = obj.shard_map
+        active_root_hash = obj.root_hash
+        
+        if version_number:
+            try:
+                history = ObjectVersion.objects.get(object=obj, version_number=int(version_number))
+                active_merkle_dag = history.merkle_dag
+                active_shard_map = history.shard_map
+                active_root_hash = history.root_hash
+            except ObjectVersion.DoesNotExist:
+                raise Exception(f"Version {version_number} not found")
+
         engine = get_erasure_engine()
         decrypted_chunks = {}
         encrypted_chunks = {}
-        merkle_dag = MerkleDAG.from_dict(obj.merkle_dag)
+        merkle_dag = MerkleDAG.from_dict(active_merkle_dag)
         
-        metadata = obj.merkle_dag.get('metadata', {}) or {}
+        metadata = active_merkle_dag.get('metadata', {}) or {}
         strategy = metadata.get('encryption_strategy', 'legacy')
         
         # Setup decryption for per-chunk or legacy
@@ -52,20 +85,45 @@ def process_download(self, object_id, owner_did):
         
         logger.info(f"Fetching {obj.chunk_count} chunks (strategy: {strategy})...")
         with httpx.Client(timeout=30.0) as client:
+            from asgiref.sync import async_to_sync
+            from apps.core.dht import dht_service
+            dht = dht_service.get_node()
+            
             for chunk_index in range(obj.chunk_count):
                 chunk_shards = {}
-                for key, node_id in obj.shard_map.items():
+                # In a fully decentralized system, we could query the DHT directly for shards.
+                # Here we use the shard_map as a cache, and locate the node via DHT.
+                for key, node_id in active_shard_map.items():
                     stored_chunk_idx, stored_shard_idx = map(int, key.split(':'))
                     if stored_chunk_idx == chunk_index:
                         try:
-                            node = StorageNode.objects.get(node_id=node_id, is_active=True)
+                            # 1. Resolve via DHT 
+                            peers = async_to_sync(dht.find_node)(node_id)
+                            peer = next((p for p in peers if p.node_id == node_id), None)
+                            
+                            # 2. Fallback to centralized DB if DHT isn't fully propagated
+                            if peer:
+                                endpoint = f"http://{peer.address}:{peer.port}"
+                            else:
+                                node = StorageNode.objects.filter(node_id=node_id, is_active=True).first()
+                                if node:
+                                    endpoint = node.endpoint
+                                else:
+                                    raise Exception("Node not located in DHT or SQLite")
+                            
+                            
                             resp = client.get(
-                                f"{node.endpoint}/shard/{obj.root_hash}/{chunk_index}/{stored_shard_idx}"
+                                f"{endpoint}/shard/{active_root_hash}/{chunk_index}/{stored_shard_idx}"
                             )
                             if resp.status_code == 200:
                                 chunk_shards[stored_shard_idx] = resp.content
+                                _update_reputation(node_id, success=True)
+                            else:
+                                logger.warning(f"Node {node_id} failed to serve shard (HTTP {resp.status_code})")
+                                _update_reputation(node_id, success=False)
                         except Exception as e:
                             logger.warning(f"Failed to fetch shard {stored_shard_idx} from {node_id}: {e}")
+                            _update_reputation(node_id, success=False)
                 
                 if len(chunk_shards) < engine.data_shards:
                     raise Exception(f"Insufficient shards for chunk {chunk_index}. Found {len(chunk_shards)}/{engine.data_shards}")

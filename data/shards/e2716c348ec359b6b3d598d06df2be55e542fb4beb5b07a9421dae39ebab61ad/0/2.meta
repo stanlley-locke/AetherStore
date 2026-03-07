@@ -1,0 +1,10 @@
+{
+  "content_hash": "e2716c348ec359b6b3d598d06df2be55e542fb4beb5b07a9421dae39ebab61ad",
+  "chunk_index": "0",
+  "shard_index": "2",
+  "size": 16,
+  "hash": "d8e0108c5a24e356ccd437fe6422862d074ca9be390df680fbc409481ce32094",
+  "node_id": "peer-node",
+  "stored_at": "2026-03-07T10:24:19.196157",
+  "received_from": "127.0.0.1"
+}

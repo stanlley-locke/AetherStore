@@ -1,0 +1,10 @@
+{
+  "content_hash": "ab3a3e107a62160f0f5738e1c3efcf569f8c2ae42cb69e78c7cdf7b7ccbdcd9c",
+  "chunk_index": "0",
+  "shard_index": "1",
+  "size": 12,
+  "hash": "f4af535d4f681442efba9b7eebebbddd5daaf699a018bfc0b67f9743dfb06b62",
+  "node_id": "bootstrap-node",
+  "stored_at": "2026-03-07T10:23:33.475478",
+  "received_from": "127.0.0.1"
+}

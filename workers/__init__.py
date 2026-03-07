@@ -13,4 +13,11 @@ __all__ = [
     'node_heartbeat',
     'process_download',
     'process_garbage_collection',
+    'confirm_delivery',
+    'expire_old_messages',
+    'index_message_for_search',
+    'sync_dht_to_db',
+    'cleanup_dht_inbox',
 ]
+
+from .message_delivery import confirm_delivery, expire_old_messages, index_message_for_search, sync_dht_to_db, cleanup_dht_inbox

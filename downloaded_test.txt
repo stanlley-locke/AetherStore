@@ -1,0 +1,1 @@
+{"task_id":"bedf337a-0f38-42ec-aa84-ec557c7cc9be","status":"processing","file_size":5436474,"filename":"shakespear.txt","message":"Download queued for background reassembly and decryption"}

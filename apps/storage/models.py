@@ -54,6 +54,12 @@ class StorageNode(models.Model):
     capacity_bytes = models.BigIntegerField(default=0)
     used_bytes = models.BigIntegerField(default=0)
     
+    # Phase 7: Reputation System
+    reputation_score = models.IntegerField(default=50) # 0 to 100
+    successful_retrievals = models.BigIntegerField(default=0)
+    failed_retrievals = models.BigIntegerField(default=0)
+    average_latency_ms = models.IntegerField(default=0)
+    
     class Meta:
         db_table = 'storage_node'
     
@@ -170,6 +176,8 @@ class ObjectVersion(models.Model):
     root_hash = models.CharField(max_length=64)
     original_size = models.BigIntegerField()
     original_hash = models.CharField(max_length=64)
+    merkle_dag = models.JSONField(default=dict)
+    shard_map = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.CharField(max_length=255)
     change_summary = models.TextField(null=True, blank=True)
@@ -226,3 +234,20 @@ class UploadPart(models.Model):
         
     def __str__(self):
         return f"Part {self.part_number} of {self.session.id}"
+
+
+class NameRecord(models.Model):
+    """Human-readable naming for objects (IPNS style)"""
+    id = models.BigAutoField(primary_key=True)
+    name = models.CharField(max_length=255, unique=True, db_index=True)
+    owner_did = models.CharField(max_length=255, db_index=True)
+    target_object = models.ForeignKey(EncryptedObject, on_delete=models.CASCADE, related_name='name_records')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'storage_name_record'
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"{self.name} -> {self.target_object.id}"

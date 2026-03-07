@@ -42,8 +42,8 @@ class ConsistentHashRing:
         self.ring = []
         self.nodes = {}
         
-        # Get active nodes
-        nodes = StorageNode.objects.filter(is_active=True)
+        # Get active nodes with decent reputation (exclude slashed nodes)
+        nodes = StorageNode.objects.filter(is_active=True, reputation_score__gte=30)
         
         for node in nodes:
             self.nodes[node.node_id] = node.endpoint

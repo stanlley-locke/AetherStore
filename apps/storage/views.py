@@ -241,6 +241,116 @@ class ObjectDetailView(APIView):
             )
 
 
+@method_decorator([csrf_exempt], name='dispatch')
+class ObjectVersionsView(APIView):
+    """List all historical versions of an object"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, object_id):
+        from apps.storage.models import EncryptedObject, ObjectVersion
+        try:
+            obj = EncryptedObject.objects.get(id=object_id, is_deleted=False)
+            owner_did = getattr(request.user, 'did', str(request.user))
+            
+            if obj.owner_did != owner_did and not request.user.is_staff:
+                return Response(
+                    {'error': 'Access denied', 'code': 'ACCESS_DENIED'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+                
+            versions = ObjectVersion.objects.filter(object=obj).order_by('-version_number')
+            result = []
+            for v in versions:
+                result.append({
+                    'version': v.version_number,
+                    'root_hash': v.root_hash,
+                    'size': v.original_size,
+                    'created_at': v.created_at.isoformat(),
+                    'change_summary': v.change_summary
+                })
+                
+            return Response({'object_id': str(obj.id), 'filename': obj.filename, 'versions': result})
+            
+        except EncryptedObject.DoesNotExist:
+            return Response(
+                {'error': 'Object not found', 'code': 'NOT_FOUND'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+@method_decorator([csrf_exempt], name='dispatch')
+class NameRecordView(APIView):
+    """Create or update a human-readable name pointing to an object"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        from apps.storage.models import EncryptedObject, NameRecord
+        name = request.data.get('name')
+        object_id = request.data.get('object_id')
+        
+        if not name or not object_id:
+            return Response({'error': 'name and object_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        owner_did = getattr(request.user, 'did', str(request.user))
+        
+        try:
+            obj = EncryptedObject.objects.get(id=object_id, is_deleted=False)
+        except EncryptedObject.DoesNotExist:
+            return Response({'error': 'Target object not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+        if obj.owner_did != owner_did and not request.user.is_staff:
+            return Response({'error': 'Access denied to target object'}, status=status.HTTP_403_FORBIDDEN)
+            
+        record, created = NameRecord.objects.get_or_create(
+            name=name,
+            defaults={'owner_did': owner_did, 'target_object': obj}
+        )
+        
+        if not created:
+            if record.owner_did != owner_did and not request.user.is_staff:
+                return Response({'error': 'Name already registered by another user'}, status=status.HTTP_403_FORBIDDEN)
+            record.target_object = obj
+            record.save()
+            
+        return Response({
+            'name': record.name,
+            'target_object_id': str(record.target_object.id),
+            'action': 'created' if created else 'updated'
+        })
+        
+    def get(self, request, name):
+        from apps.storage.models import NameRecord
+        try:
+            record = NameRecord.objects.get(name=name)
+            return Response({
+                'name': record.name,
+                'target_object_id': str(record.target_object.id),
+                'owner_did': record.owner_did,
+                'updated_at': record.updated_at.isoformat()
+            })
+        except NameRecord.DoesNotExist:
+            return Response({'error': 'Name not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@method_decorator([csrf_exempt], name='dispatch')
+class NameResolveView(APIView):
+    """Resolve a human-readable name and proxy to its stream view internally (preserving auth)"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, name):
+        from apps.storage.models import NameRecord
+        try:
+            record = NameRecord.objects.get(name=name)
+        except NameRecord.DoesNotExist:
+            return Response({'error': 'Name not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # DRF wraps the Django HttpRequest in its own Request object.
+        # Passing that DRF wrapper to a second APIView.as_view() causes an assertion error.
+        # We must unwrap to the raw Django HttpRequest before proxying.
+        raw_request = getattr(request, '_request', request)
+        
+        view = StreamFileView.as_view()
+        return view(raw_request, object_id=str(record.target_object.id))
+
 
 @method_decorator([csrf_exempt], name='dispatch')
 class ObjectListView(APIView):
@@ -742,15 +852,17 @@ class DownloadView(APIView):
                 return Response({'error': 'Access denied', 'code': 'ACCESS_DENIED'}, status=403)
             
             logger.info(f"Async download triggered for object {object_id}")
+            version_param = request.query_params.get('version')
             
             # Dispatch Celery task
-            task = process_download.delay(str(obj.id), owner_did)
+            task = process_download.delay(str(obj.id), owner_did, version_number=version_param)
             
             return Response({
                 'task_id': task.id,
                 'status': 'processing',
                 'file_size': obj.original_size,
                 'filename': obj.filename or str(obj.id),
+                'version': version_param or 'latest',
                 'message': 'Download queued for background reassembly and decryption'
             }, status=202)
             
@@ -846,7 +958,22 @@ class StreamFileView(APIView):
             if obj.owner_did != owner_did:
                 return Response({'error': 'Access denied'}, status=403)
                 
-            merkle_dag = MerkleDAG.from_dict(obj.merkle_dag)
+            version_param = request.query_params.get('version')
+            active_merkle_dag = obj.merkle_dag
+            active_shard_map = obj.shard_map
+            active_root_hash = obj.root_hash
+            
+            if version_param:
+                from apps.storage.models import ObjectVersion
+                try:
+                    history = ObjectVersion.objects.get(object=obj, version_number=int(version_param))
+                    active_merkle_dag = history.merkle_dag
+                    active_shard_map = history.shard_map
+                    active_root_hash = history.root_hash
+                except (ValueError, ObjectVersion.DoesNotExist):
+                    return Response({'error': f'Version {version_param} not found'}, status=404)
+                
+            merkle_dag = MerkleDAG.from_dict(active_merkle_dag)
             total_size = merkle_dag.total_size
             chunk_size = merkle_dag.chunk_size
             
@@ -872,7 +999,7 @@ class StreamFileView(APIView):
             start_chunk = start_byte // chunk_size
             end_chunk = end_byte // chunk_size
             
-            metadata = obj.merkle_dag.get('metadata', {}) or {}
+            metadata = active_merkle_dag.get('metadata', {}) or {}
             strategy = metadata.get('encryption_strategy', 'legacy')
             
             if strategy == 'legacy':
@@ -883,6 +1010,10 @@ class StreamFileView(APIView):
             encryption = ClientEncryption(password=f'{owner_did}:{salt.hex()}', salt=salt)
             engine = get_erasure_engine()
             
+            from asgiref.sync import async_to_sync
+            from apps.core.dht import dht_service
+            dht = dht_service.get_node()
+            
             def stream_generator():
                 bytes_yielded = 0
                 max_bytes = content_length
@@ -891,16 +1022,34 @@ class StreamFileView(APIView):
                 with httpx.Client(timeout=30.0) as client:
                     for chunk_index in range(start_chunk, end_chunk + 1):
                         chunk_shards = {}
-                        for key, node_id in obj.shard_map.items():
+                        for key, node_id in active_shard_map.items():
                             stored_chunk_idx, stored_shard_idx = map(int, key.split(':'))
                             if stored_chunk_idx == chunk_index:
                                 try:
-                                    node = StorageNode.objects.get(node_id=node_id, is_active=True)
-                                    resp = client.get(f"{node.endpoint}/shard/{obj.root_hash}/{chunk_index}/{stored_shard_idx}")
+                                    # 1. Resolve via DHT
+                                    peers = async_to_sync(dht.find_node)(node_id)
+                                    peer = next((p for p in peers if p.node_id == node_id), None)
+                                    
+                                    # 2. Fallback
+                                    if peer:
+                                        endpoint = f"http://{peer.address}:{peer.port}"
+                                    else:
+                                        node = StorageNode.objects.filter(node_id=node_id, is_active=True).first()
+                                        if node:
+                                            endpoint = node.endpoint
+                                        else:
+                                            continue
+                                            
+                                    resp = client.get(f"{endpoint}/shard/{active_root_hash}/{chunk_index}/{stored_shard_idx}")
+                                    from workers.decoder import _update_reputation
                                     if resp.status_code == 200:
                                         chunk_shards[stored_shard_idx] = resp.content
+                                        _update_reputation(node_id, True)
+                                    else:
+                                        _update_reputation(node_id, False)
                                 except Exception:
-                                    pass
+                                    from workers.decoder import _update_reputation
+                                    _update_reputation(node_id, False)
                                     
                         if len(chunk_shards) < engine.data_shards:
                              break  # Stream will abort early if data unavailable
@@ -949,3 +1098,119 @@ class StreamFileView(APIView):
             return Response({'error': 'Object not found'}, status=404)
         except Exception as e:
             return Response({'error': str(e)}, status=500)
+
+
+@method_decorator([csrf_exempt], name='dispatch')
+class MultipartInitView(APIView):
+    """Initialize a multipart upload session"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        from apps.storage.models import Bucket, UploadSession
+        owner_did = getattr(request.user, 'did', str(request.user))
+        bucket_name = request.data.get('bucket_name')
+        filename = request.data.get('filename')
+        mime_type = request.data.get('mime_type', 'application/octet-stream')
+        total_size = request.data.get('total_size')
+
+        if not bucket_name or not filename:
+             return Response({'error': 'bucket_name and filename required'}, status=400)
+
+        bucket, _ = Bucket.objects.get_or_create(name=bucket_name, defaults={'owner_did': owner_did})
+        session = UploadSession.objects.create(
+            owner_did=owner_did,
+            bucket=bucket,
+            filename=filename,
+            mime_type=mime_type,
+            total_size=total_size,
+            status='initialized'
+        )
+        return Response({'upload_id': session.id, 'status': 'initialized'})
+
+
+@method_decorator([csrf_exempt], name='dispatch')
+class MultipartUploadPartView(APIView):
+    """Upload a specific part for a multipart session"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def put(self, request, upload_id, part_number):
+        from apps.storage.models import UploadSession, UploadPart
+        import os
+        from django.conf import settings
+        
+        try:
+            session = UploadSession.objects.get(id=upload_id, owner_did=getattr(request.user, 'did', str(request.user)))
+        except UploadSession.DoesNotExist:
+            return Response({'error': 'Upload session not found'}, status=404)
+        
+        # Stream body directly to disk — avoids DATA_UPLOAD_MAX_MEMORY_SIZE limit
+        temp_dir = os.path.join(settings.BASE_DIR, 'data', 'temp_uploads', str(upload_id))
+        os.makedirs(temp_dir, exist_ok=True)
+        temp_filepath = os.path.join(temp_dir, f'part_{part_number}')
+        
+        hasher = hashlib.sha256()
+        part_size = 0
+        chunk_size = 1024 * 1024  # Read 1MB at a time
+        
+        wsgi_input = request.META.get('wsgi.input')
+        with open(temp_filepath, 'wb') as f:
+            while True:
+                block = wsgi_input.read(chunk_size)
+                if not block:
+                    break
+                f.write(block)
+                hasher.update(block)
+                part_size += len(block)
+        
+        content_hash = hasher.hexdigest()
+        
+        UploadPart.objects.update_or_create(
+            session=session,
+            part_number=part_number,
+            defaults={'size': part_size, 'content_hash': content_hash, 'temp_filepath': temp_filepath}
+        )
+        return Response({'status': 'uploaded', 'part_number': part_number, 'size': part_size})
+
+
+@method_decorator([csrf_exempt], name='dispatch')
+class MultipartCompleteView(APIView):
+    """Complete multipart upload and dispatch to encoder worker"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, upload_id):
+        from apps.storage.models import UploadSession, UploadPart
+        from workers.encoder import process_upload
+        import os
+        from django.conf import settings
+        
+        try:
+            session = UploadSession.objects.get(id=upload_id, owner_did=getattr(request.user, 'did', str(request.user)))
+        except UploadSession.DoesNotExist:
+            return Response({'error': 'Upload session not found'}, status=404)
+            
+        parts = UploadPart.objects.filter(session=session).order_by('part_number')
+        
+        # Combine files
+        download_dir = os.path.join(settings.BASE_DIR, 'data', 'downloads')
+        os.makedirs(download_dir, exist_ok=True)
+        final_filepath = os.path.join(download_dir, f"{session.id}_{session.filename}")
+        
+        with open(final_filepath, 'wb') as outfile:
+             for part in parts:
+                 with open(part.temp_filepath, 'rb') as infile:
+                     outfile.write(infile.read())
+        
+        session.status = 'processing'
+        session.save()
+        
+        task = process_upload.delay(
+            object_id=None,
+            data_bytes=None,  # Not passing b64 bytes for large files
+            mime_type=session.mime_type,
+            bucket_id=str(session.bucket.id),
+            owner_did=session.owner_did,
+            filename=session.filename,
+            filepath=final_filepath  # Pass filepath to celery task
+        )
+        
+        return Response({'status': 'processing', 'task_id': task.id})

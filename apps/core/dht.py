@@ -193,7 +193,8 @@ class DHTNode:
                             'key': key,
                             'value': value,
                             'ttl': ttl,
-                            'publisher': self.node_id
+                            'publisher': self.node_id,
+                            'publisher_port': self.port
                         }
                     )
                 except Exception:
@@ -243,6 +244,49 @@ class DHTNode:
                     continue
         
         return None
+    
+    async def ping(self, peer: Peer) -> bool:
+        """Ping a peer to check if active"""
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            try:
+                start_time = time.time()
+                response = await client.get(
+                    f"http://{peer.address}:{peer.port}/dht/ping",
+                    params={'node_id': self.node_id, 'port': self.port}
+                )
+                if response.status_code == 200:
+                    peer.last_seen = time.time()
+                    peer.latency_ms = int((time.time() - start_time) * 1000)
+                    self.add_peer(peer)
+                    return True
+            except Exception:
+                self.remove_peer(peer.node_id)
+        return False
+        
+    async def find_node(self, target_id: str) -> List[Peer]:
+        """Query peers to find closest nodes to target_id"""
+        closest = self.find_closest_peers(target_id, count=5)
+        new_peers_found = []
+        
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            for peer in closest:
+                try:
+                    response = await client.post(
+                        f"http://{peer.address}:{peer.port}/dht/find_node",
+                        json={'target_id': target_id, 'node_id': self.node_id, 'port': self.port}
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        peers_data = data.get('peers', [])
+                        for p_data in peers_data:
+                            new_peer = Peer.from_dict(p_data)
+                            if new_peer.node_id != self.node_id:
+                                self.add_peer(new_peer)
+                                new_peers_found.append(new_peer)
+                except Exception:
+                    continue
+                    
+        return self.find_closest_peers(target_id, count=20)
     
     def store_shard_location(self, content_hash: str, chunk_index: int, 
                             shard_index: int, node_id: str):
@@ -368,6 +412,10 @@ class DHTService:
         return await self.node.find_all_shards(
             content_hash, chunk_count, shards_per_chunk
         )
+
+    async def find_node(self, target_id: str) -> List[Peer]:
+        """Query peers to find closest nodes to target_id"""
+        return await self.node.find_node(target_id)
 
 
 # Global instance

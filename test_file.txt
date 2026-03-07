@@ -1,1 +1,1 @@
-AetherStore is a production-grade, decentralized object storage system built in Python. It replaces centralized storage silos with a resilient, peer-to-peer architecture using Erasure Coding and Content-Addressable hashing.
+Hello AetherStore - Decentralized Storage

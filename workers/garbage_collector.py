@@ -24,17 +24,35 @@ def process_garbage_collection(self, object_id):
             logger.warning(f"Object {object_id} not found or not marked for deletion.")
             return {'status': 'skipped', 'reason': 'not_found'}
             
-        root_hash = obj.root_hash
-        shard_map = obj.shard_map
+        from apps.storage.models import ObjectVersion
+        versions = ObjectVersion.objects.filter(object=obj)
         
-        # Prevent deletion if another active object shares the same Merkle root (Basic deduplication protection)
-        active_copies = EncryptedObject.objects.filter(root_hash=root_hash, is_deleted=False).exists()
+        # Collect all root hashes and shard maps across the object and its versions
+        all_root_hashes = {obj.root_hash}
+        for v in versions:
+            all_root_hashes.add(v.root_hash)
+            
+        # Prevent deletion if ANY other active object shares these root hashes
+        active_copies = EncryptedObject.objects.filter(root_hash__in=all_root_hashes, is_deleted=False).exists()
         if active_copies:
-            logger.info(f"Skipping physical deletion for {root_hash}: Active copies still exist.")
+            logger.info(f"Skipping physical deletion for object {object_id}: Active copies share roots.")
             return {'status': 'skipped', 'reason': 'active_copies_exist'}
             
+        # Build union of all shards across all versions
+        # Key: (root_hash, chunk_index, shard_index) -> node_id
+        flattened_shards = {}
+        
+        def add_shards(root_val, map_val):
+            for shard_key, node_id in map_val.items():
+                chunk_index, shard_index = shard_key.split(':')
+                flattened_shards[(root_val, chunk_index, shard_index)] = node_id
+                
+        add_shards(obj.root_hash, obj.shard_map)
+        for v in versions:
+            add_shards(v.root_hash, v.shard_map)
+            
         # 2. Map node_ids to endpoints
-        unique_node_ids = set(shard_map.values())
+        unique_node_ids = set(flattened_shards.values())
         nodes_info = StorageNode.objects.filter(node_id__in=unique_node_ids)
         endpoint_map = {node.node_id: node.endpoint for node in nodes_info}
         
@@ -44,26 +62,23 @@ def process_garbage_collection(self, object_id):
         
         # 3. Fire DELETE requests to nodes
         with httpx.Client(timeout=10.0) as client:
-            for shard_key, node_id in shard_map.items():
-                chunk_index, shard_index = shard_key.split(':')
+            for (r_hash, chunk_index, shard_index), node_id in flattened_shards.items():
                 endpoint = endpoint_map.get(node_id)
                 
                 if not endpoint:
-                    logger.warning(f"Node {node_id} endpoint not found for shard {shard_key}")
+                    logger.warning(f"Node {node_id} endpoint not found for shard {chunk_index}:{shard_index}")
                     failed_count += 1
                     continue
                     
-                delete_url = f"{endpoint}/shard/{root_hash}/{chunk_index}/{shard_index}"
+                delete_url = f"{endpoint}/shard/{r_hash}/{chunk_index}/{shard_index}"
                 
                 try:
                     response = client.delete(delete_url)
                     if response.status_code in (200, 204, 404):
-                        # 404 means already deleted, which is fine
                         deleted_count += 1
-                        # Remove from DHT
-                        dht.delete_shard_location(root_hash, int(chunk_index), int(shard_index), node_id)
+                        dht.delete_shard_location(r_hash, int(chunk_index), int(shard_index), node_id)
                     else:
-                        logger.warning(f"Failed to delete {shard_key} from {node_id}: HTTP {response.status_code}")
+                        logger.warning(f"Failed to delete {chunk_index}:{shard_index} from {node_id}: HTTP {response.status_code}")
                         failed_count += 1
                 except Exception as e:
                     logger.error(f"Error connecting to node {node_id}: {e}")

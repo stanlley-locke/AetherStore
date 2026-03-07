@@ -61,25 +61,47 @@ class NodeMonitor:
     
     def get_healthy_nodes(self, min_count: int = 3) -> List[Dict]:
         """Get list of healthy nodes"""
+        from apps.core.dht import dht_service
         from apps.storage.models import StorageNode
         
-        nodes = StorageNode.objects.filter(is_active=True)
+        dht_node = dht_service.get_node()
+        peers = dht_node.find_closest_peers(dht_node.node_id, count=20)
+        
         healthy_nodes = []
         
-        for node in nodes:
-            health = self.check_node_health(node.node_id, node.endpoint)
+        # 1. Query DHT For Peers First
+        for peer in peers:
+            endpoint = f"http://{peer.address}:{peer.port}"
+            health = self.check_node_health(peer.node_id, endpoint)
             
             if health['healthy']:
                 healthy_nodes.append({
-                    'node_id': node.node_id,
-                    'endpoint': node.endpoint,
+                    'node_id': peer.node_id,
+                    'endpoint': endpoint,
                     'latency_ms': health['latency_ms'],
                     'stats': health['stats']
                 })
-            else:
-                logger.warning(f"Node {node.node_id} unhealthy: {health['error']}")
-                node.is_active = False
-                node.save(update_fields=['is_active'])
+        
+        # 2. Fallback to Centralized DB if DHT lacks peers (e.g., initial bootstrap)
+        if len(healthy_nodes) < min_count:
+            nodes = StorageNode.objects.filter(is_active=True)
+            for node in nodes:
+                if any(n['node_id'] == node.node_id for n in healthy_nodes):
+                    continue
+                    
+                health = self.check_node_health(node.node_id, node.endpoint)
+                
+                if health['healthy']:
+                    healthy_nodes.append({
+                        'node_id': node.node_id,
+                        'endpoint': node.endpoint,
+                        'latency_ms': health['latency_ms'],
+                        'stats': health['stats']
+                    })
+                else:
+                    logger.warning(f"Node {node.node_id} unhealthy: {health['error']}")
+                    node.is_active = False
+                    node.save(update_fields=['is_active'])
         
         return healthy_nodes
     

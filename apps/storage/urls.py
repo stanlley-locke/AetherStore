@@ -10,6 +10,9 @@ from .views import (
     PresignedDownloadView,
     ObjectDetailView,
     ObjectListView,
+    ObjectVersionsView,
+    NameRecordView,
+    NameResolveView,
     PresignedURLView,
     HealthView,
     MetricsView,
@@ -42,8 +45,14 @@ urlpatterns = [
     
     # Object management
     path('object/<uuid:object_id>/', ObjectDetailView.as_view(), name='object-detail'),
+    path('object/<uuid:object_id>/versions/', ObjectVersionsView.as_view(), name='object-versions'),
     path('objects/', ObjectListView.as_view(), name='object-list'),
     path('object/<uuid:object_id>/presigned/', PresignedURLView.as_view(), name='object-presigned'),
+    
+    # Naming (IPNS style)
+    path('name/', NameRecordView.as_view(), name='name-record'),
+    path('name/<str:name>/', NameRecordView.as_view(), name='name-record-detail'),
+    path('resolve/<str:name>/', NameResolveView.as_view(), name='name-resolve'),
     
     # System endpoints
     path('health/', HealthView.as_view(), name='health'),

@@ -6,7 +6,10 @@
 
 1. [Overview](#overview)
 2. [Setup Guide](#setup-guide)
-3. [API Reference](#api-reference)
+3. [Documentation](#documentation)
+    - [Project Whitepaper](./docs/whitepaper.md)
+    - [API Reference](./docs/api.md)
+    - [Testing Guide](./docs/testing.md)
 
 ---
 
@@ -17,7 +20,8 @@
 ### Key Features
 
 - **Distributed Storage** — Files are sharded and distributed across multiple P2P nodes.
-- **Erasure Coding** — Reed-Solomon encoding for data durability (6+3 shards by default).
+- **Decentralized Messaging** — E2E encrypted, DHT-routed communication with pure P2P fallback.
+- **Erasure Coding** — Reed-Solomon encoding for data durability.
 - **Content-Addressable** — SHA-256 hashing for automatic deduplication.
 
 ### Architecture
