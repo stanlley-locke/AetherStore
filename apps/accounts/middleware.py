@@ -17,16 +17,17 @@ class DIDAuthenticationMiddleware:
     For production: Verify cryptographic signature against DID document
     """
     EXEMPT_PATHS = [
-        '/admin/', 
-        '/health/', 
-        '/docs/', 
-        '/static/', 
-        '/api/v1/health/', 
-        '/api/v1/metrics/', 
-        '/api/v1/billing/wallet/transfer/', 
-        '/api/v1/billing/wallet/recover/',
-        '/api/v1/billing/wallet/generate/',
-        '/api/v1/download/presigned/',
+        '/admin', 
+        '/health', 
+        '/docs', 
+        '/static', 
+        '/api/v1/storage/health', 
+        '/api/v1/storage/metrics', 
+        '/api/v1/storage/stats',
+        '/api/v1/billing/wallet/transfer', 
+        '/api/v1/billing/wallet/recover',
+        '/api/v1/billing/wallet/generate',
+        '/api/v1/download/presigned',
         '/favicon.ico'
     ]
     
@@ -34,8 +35,12 @@ class DIDAuthenticationMiddleware:
         self.get_response = get_response
     
     def __call__(self, request):
+        path = request.path.rstrip('/')
+        if not path: # Handle root /
+            path = '/'
+
         # Skip auth for exempt paths
-        if any(request.path.startswith(p) for p in self.EXEMPT_PATHS):
+        if any(path.startswith(p) for p in self.EXEMPT_PATHS):
             return self.get_response(request)
         
         # Skip auth for OPTIONS (CORS preflight)
