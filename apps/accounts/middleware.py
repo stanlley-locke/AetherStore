@@ -24,10 +24,10 @@ class DIDAuthenticationMiddleware:
         '/api/v1/storage/health', 
         '/api/v1/storage/metrics', 
         '/api/v1/storage/stats',
+        '/api/v1/storage/download/presigned',
         '/api/v1/billing/wallet/transfer', 
         '/api/v1/billing/wallet/recover',
         '/api/v1/billing/wallet/generate',
-        '/api/v1/storage/download/presigned',
         '/favicon.ico'
     ]
     
@@ -35,13 +35,28 @@ class DIDAuthenticationMiddleware:
         self.get_response = get_response
     
     def __call__(self, request):
-        path = request.path.rstrip('/')
-        if not path: # Handle root /
-            path = '/'
+        path = request.path
+        if not path.startswith('/'):
+            path = '/' + path
+            
+        # Standardize path for matching
+        normalized_path = path.rstrip('/')
+        if not normalized_path:
+            normalized_path = '/'
 
-        # Skip auth for exempt paths
-        if any(path.startswith(p) for p in self.EXEMPT_PATHS):
+        # Skip auth for exempt paths (prefix match)
+        is_exempt = any(normalized_path.startswith(p) for p in self.EXEMPT_PATHS)
+        
+        # Also check without /api/v1 prefix just in case of proxy issues
+        if not is_exempt:
+            short_path = normalized_path.replace('/api/v1', '')
+            is_exempt = any(short_path.startswith(p.replace('/api/v1', '')) for p in self.EXEMPT_PATHS if p.startswith('/api/v1'))
+            
+        if is_exempt:
             return self.get_response(request)
+        
+        # Only log non-exempt paths that reach here
+        print(f"DEBUG: Path {normalized_path} is NOT exempt. EXEMPT_PATHS contains /api/v1/storage/download/presigned: {'/api/v1/storage/download/presigned' in self.EXEMPT_PATHS}")
         
         # Skip auth for OPTIONS (CORS preflight)
         if request.method == 'OPTIONS':
