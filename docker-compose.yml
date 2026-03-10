@@ -107,11 +107,17 @@ services:
       - NODE_PORT=8001
       - NODE_ADDRESS=node-1
       - REDIS_HOST=redis
+      - DB_HOST=db
+      - DB_NAME=aether
+      - DB_USER=aether
+      - DB_PASSWORD=secret
     ports:
       - "8001:8001"
     volumes:
       - node1_data:/app/data/shards
     depends_on:
+      db:
+        condition: service_healthy
       backend:
         condition: service_healthy
     healthcheck:
@@ -132,11 +138,17 @@ services:
       - NODE_ADDRESS=node-2
       - BOOTSTRAP_NODE=node-1:8001
       - REDIS_HOST=redis
+      - DB_HOST=db
+      - DB_NAME=aether
+      - DB_USER=aether
+      - DB_PASSWORD=secret
     ports:
       - "8002:8002"
     volumes:
       - node2_data:/app/data/shards
     depends_on:
+      db:
+        condition: service_healthy
       node-1:
         condition: service_healthy
     healthcheck:
@@ -157,11 +169,17 @@ services:
       - NODE_ADDRESS=node-3
       - BOOTSTRAP_NODE=node-1:8001
       - REDIS_HOST=redis
+      - DB_HOST=db
+      - DB_NAME=aether
+      - DB_USER=aether
+      - DB_PASSWORD=secret
     ports:
       - "8003:8003"
     volumes:
       - node3_data:/app/data/shards
     depends_on:
+      db:
+        condition: service_healthy
       node-1:
         condition: service_healthy
     healthcheck:
@@ -182,11 +200,17 @@ services:
       - NODE_ADDRESS=node-4
       - BOOTSTRAP_NODE=node-1:8001
       - REDIS_HOST=redis
+      - DB_HOST=db
+      - DB_NAME=aether
+      - DB_USER=aether
+      - DB_PASSWORD=secret
     ports:
       - "8004:8004"
     volumes:
       - node4_data:/app/data/shards
     depends_on:
+      db:
+        condition: service_healthy
       node-1:
         condition: service_healthy
     healthcheck:
@@ -207,11 +231,17 @@ services:
       - NODE_ADDRESS=node-5
       - BOOTSTRAP_NODE=node-1:8001
       - REDIS_HOST=redis
+      - DB_HOST=db
+      - DB_NAME=aether
+      - DB_USER=aether
+      - DB_PASSWORD=secret
     ports:
       - "8005:8005"
     volumes:
       - node5_data:/app/data/shards
     depends_on:
+      db:
+        condition: service_healthy
       node-1:
         condition: service_healthy
     healthcheck:
@@ -232,11 +262,17 @@ services:
       - NODE_ADDRESS=node-6
       - BOOTSTRAP_NODE=node-1:8001
       - REDIS_HOST=redis
+      - DB_HOST=db
+      - DB_NAME=aether
+      - DB_USER=aether
+      - DB_PASSWORD=secret
     ports:
       - "8006:8006"
     volumes:
       - node6_data:/app/data/shards
     depends_on:
+      db:
+        condition: service_healthy
       node-1:
         condition: service_healthy
     healthcheck:

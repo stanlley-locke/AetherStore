@@ -88,7 +88,12 @@ class NodeMonitor:
         
         # 3. Fallback to Centralized DB if DHT lacks peers (e.g., initial bootstrap)
         if len(healthy_nodes) < min_count:
-            nodes = StorageNode.objects.filter(is_active=True)
+            from asgiref.sync import sync_to_async
+            
+            # Use sync_to_async to safely query the ORM from an async context
+            get_active_nodes = sync_to_async(lambda: list(StorageNode.objects.filter(is_active=True)))
+            nodes = await get_active_nodes()
+            
             for node in nodes:
                 if any(n['node_id'] == node.node_id for n in healthy_nodes):
                     continue
@@ -139,14 +144,18 @@ class NodeMonitor:
     async def get_cluster_status(self) -> Dict:
         """Get overall cluster health status"""
         from apps.storage.models import StorageNode
+        from asgiref.sync import sync_to_async
         
-        all_nodes = StorageNode.objects.all()
+        # Use sync_to_async for DB count
+        get_count = sync_to_async(lambda: StorageNode.objects.count())
+        total_nodes = await get_count()
+        
         healthy_nodes = await self.get_healthy_nodes()
         
         return {
-            'total_nodes': all_nodes.count(),
+            'total_nodes': total_nodes,
             'healthy_nodes': len(healthy_nodes),
-            'unhealthy_nodes': all_nodes.count() - len(healthy_nodes),
+            'unhealthy_nodes': total_nodes - len(healthy_nodes),
             'cluster_healthy': len(healthy_nodes) >= 3,
             'nodes': healthy_nodes
         }
