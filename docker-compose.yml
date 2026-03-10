@@ -105,6 +105,7 @@ services:
       - SERVICE_TYPE=node
       - NODE_ID=node-1
       - NODE_PORT=8001
+      - NODE_ADDRESS=node-1
       - REDIS_HOST=redis
     ports:
       - "8001:8001"
@@ -128,6 +129,7 @@ services:
       - SERVICE_TYPE=node
       - NODE_ID=node-2
       - NODE_PORT=8002
+      - NODE_ADDRESS=node-2
       - BOOTSTRAP_NODE=node-1:8001
       - REDIS_HOST=redis
     ports:
@@ -152,6 +154,7 @@ services:
       - SERVICE_TYPE=node
       - NODE_ID=node-3
       - NODE_PORT=8003
+      - NODE_ADDRESS=node-3
       - BOOTSTRAP_NODE=node-1:8001
       - REDIS_HOST=redis
     ports:
@@ -176,6 +179,7 @@ services:
       - SERVICE_TYPE=node
       - NODE_ID=node-4
       - NODE_PORT=8004
+      - NODE_ADDRESS=node-4
       - BOOTSTRAP_NODE=node-1:8001
       - REDIS_HOST=redis
     ports:
@@ -200,6 +204,7 @@ services:
       - SERVICE_TYPE=node
       - NODE_ID=node-5
       - NODE_PORT=8005
+      - NODE_ADDRESS=node-5
       - BOOTSTRAP_NODE=node-1:8001
       - REDIS_HOST=redis
     ports:
@@ -224,6 +229,7 @@ services:
       - SERVICE_TYPE=node
       - NODE_ID=node-6
       - NODE_PORT=8006
+      - NODE_ADDRESS=node-6
       - BOOTSTRAP_NODE=node-1:8001
       - REDIS_HOST=redis
     ports:

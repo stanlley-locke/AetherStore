@@ -36,8 +36,9 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
         
         # 1. Verify enough healthy nodes
         logger.info("Checking node availability...")
+        import asyncio
         engine = get_erasure_engine()
-        node_verification = node_monitor.verify_enough_nodes(required_count=engine.data_shards)
+        node_verification = asyncio.run(node_monitor.verify_enough_nodes(required_count=engine.data_shards))
         
         if not node_verification['success']:
             error_msg = f"Insufficient nodes: {node_verification['message']}"

@@ -59,17 +59,21 @@ class NodeMonitor:
         
         return result
     
-    def get_healthy_nodes(self, min_count: int = 3) -> List[Dict]:
-        """Get list of healthy nodes"""
+    async def get_healthy_nodes(self, min_count: int = 3) -> List[Dict]:
+        """Get list of healthy nodes (Async to support DHT lookup)"""
         from apps.core.dht import dht_service
         from apps.storage.models import StorageNode
         
         dht_node = dht_service.get_node()
-        peers = dht_node.find_closest_peers(dht_node.node_id, count=20)
         
+        # 1. Active Discovery: Query DHT to find all nodes in the network
+        logger.info("[Monitor] Performing recursive DHT discovery...")
+        await dht_node.find_node(dht_node.node_id)
+        
+        peers = dht_node.find_closest_peers(dht_node.node_id, count=20)
         healthy_nodes = []
         
-        # 1. Query DHT For Peers First
+        # 2. Query DHT For Peers
         for peer in peers:
             endpoint = f"http://{peer.address}:{peer.port}"
             health = self.check_node_health(peer.node_id, endpoint)
@@ -82,7 +86,7 @@ class NodeMonitor:
                     'stats': health['stats']
                 })
         
-        # 2. Fallback to Centralized DB if DHT lacks peers (e.g., initial bootstrap)
+        # 3. Fallback to Centralized DB if DHT lacks peers (e.g., initial bootstrap)
         if len(healthy_nodes) < min_count:
             nodes = StorageNode.objects.filter(is_active=True)
             for node in nodes:
@@ -100,14 +104,13 @@ class NodeMonitor:
                     })
                 else:
                     logger.warning(f"Node {node.node_id} unhealthy: {health['error']}")
-                    node.is_active = False
-                    node.save(update_fields=['is_active'])
+                    # Don't deactivate yet, could be a networking blip
         
         return healthy_nodes
     
-    def verify_enough_nodes(self, required_count: int = 3) -> Dict:
+    async def verify_enough_nodes(self, required_count: int = 3) -> Dict:
         """Verify we have enough healthy nodes"""
-        healthy_nodes = self.get_healthy_nodes(required_count)
+        healthy_nodes = await self.get_healthy_nodes(required_count)
         
         return {
             'success': len(healthy_nodes) >= required_count,
@@ -133,12 +136,12 @@ class NodeMonitor:
                 node.save(update_fields=['is_active', 'last_heartbeat'])
                 logger.info(f"Node {node.node_id} reactivated")
     
-    def get_cluster_status(self) -> Dict:
+    async def get_cluster_status(self) -> Dict:
         """Get overall cluster health status"""
         from apps.storage.models import StorageNode
         
         all_nodes = StorageNode.objects.all()
-        healthy_nodes = self.get_healthy_nodes()
+        healthy_nodes = await self.get_healthy_nodes()
         
         return {
             'total_nodes': all_nodes.count(),

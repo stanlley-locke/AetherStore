@@ -94,9 +94,48 @@ class StorageNodeServer:
         logger.info(f"Initializing storage node {node_id} on port {port}")
         logger.info(f"Storage path: {self.storage_path.absolute()}")
         
+        # Phase 36: Register in Database for fallback discovery
+        self._register_node()
+        
         # Load previous DHT state if exists
         self._load_dht_state()
         
+    def _register_node(self):
+        """Register node in centralized Django database (fallback)"""
+        try:
+            import django
+            from django.utils import timezone
+            
+            # Setup django if not already configured
+            if not os.environ.get('DJANGO_SETTINGS_MODULE'):
+                os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'aetherstore.settings')
+            
+            try:
+                django.setup()
+            except Exception:
+                # Already setup or missing settings
+                pass
+
+            from apps.storage.models import StorageNode
+            
+            # Use the provided address or default to 'localhost'
+            # In Docker, NODE_ADDRESS should be the container name
+            host = self.address if self.address != '127.0.0.1' else 'localhost'
+            endpoint = f"http://{host}:{self.port}"
+            
+            StorageNode.objects.update_or_create(
+                node_id=self.node_id,
+                defaults={
+                    'endpoint': endpoint,
+                    'is_active': True,
+                    'last_heartbeat': timezone.now(),
+                    'owner_did': getattr(self, 'owner_did', None)
+                }
+            )
+            logger.info(f"[DB] Registered node {self.node_id} at {endpoint}")
+        except Exception as e:
+            logger.warning(f"[DB] Failed to register node in database: {e}")
+
     def _init_wallet(self):
         """Initializes the node's BIP-39 non-custodial wallet securely."""
         if self.wallet_address:
