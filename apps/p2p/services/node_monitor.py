@@ -101,7 +101,7 @@ class NodeMonitor:
                 health = self.check_node_health(node.node_id, node.endpoint)
                 
                 if health['healthy']:
-                    async def update_heartbeat(n):
+                    def update_heartbeat(n):
                         n.last_heartbeat = timezone.now()
                         n.save(update_fields=['last_heartbeat'])
                     
