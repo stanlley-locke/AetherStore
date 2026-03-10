@@ -25,6 +25,8 @@ from .views import (
 )
 from .node_management import NodeClaimView, MinerFleetView, MinerEarningsView, NodePayoutView, NodeLogProxyView
 
+app_name = 'storage'
+
 router = DefaultRouter()
 router.register(r'buckets', BucketViewSet, basename='bucket')
 router.register(r'nodes', StorageNodeViewSet, basename='node')

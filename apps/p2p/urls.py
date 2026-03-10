@@ -9,6 +9,8 @@ from .admin_controls import (
 )
 from .log_views import SystemLogView
 
+app_name = 'p2p'
+
 urlpatterns = [
     path('nodes/health/', NodeHealthView.as_view(), name='node-health-check'),
     path('nodes/activate/', NodeActivateView.as_view(), name='node-activate'),

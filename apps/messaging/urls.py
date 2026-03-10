@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+app_name = 'messaging'
+
 urlpatterns = [
     # Phase 10 — Core conversations & messaging
     path('conversations/', views.ConversationListView.as_view(), name='conversations-list'),
