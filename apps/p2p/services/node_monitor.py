@@ -101,6 +101,8 @@ class NodeMonitor:
                 health = self.check_node_health(node.node_id, node.endpoint)
                 
                 if health['healthy']:
+                    node.last_heartbeat = timezone.now()
+                    node.save(update_fields=['last_heartbeat'])
                     healthy_nodes.append({
                         'node_id': node.node_id,
                         'endpoint': node.endpoint,

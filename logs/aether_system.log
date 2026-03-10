@@ -1242,3 +1242,75 @@ kombu.exceptions.OperationalError: Error 10054 while writing to socket. An exist
 2026-03-10 14:18:49,601 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
 2026-03-10 14:19:03,538 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\p2p\views.py changed, reloading.
 2026-03-10 14:19:07,256 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 14:25:41,611 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:41,699 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:49,055 [INFO] apps.storage.engine: ReedSolomon library (reedsolo) loaded successfully
+2026-03-10 14:25:49,415 [INFO] apps.storage.views: Upload queued: .env (262 bytes) -> personal
+2026-03-10 14:25:49,418 [INFO] django.server: "POST /api/v1/storage/upload/personal/ HTTP/1.1" 202 275
+2026-03-10 14:25:51,493 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:51,578 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:52,536 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:53,266 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:53,901 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:54,069 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:54,219 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:54,391 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:54,516 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:55,316 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:55,938 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:56,529 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:57,162 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:57,752 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:58,360 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:58,761 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:58,942 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:59,086 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:59,228 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:59,311 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:25:59,564 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:26:00,012 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:27:36,602 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:27:37,302 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:27:37,774 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:27:38,290 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:27:38,701 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:27:49,314 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:29:24,501 [WARNING] django.request: Unauthorized: /api/v1/storage/objects/
+2026-03-10 14:29:24,502 [WARNING] django.server: "GET /api/v1/storage/objects/ HTTP/1.1" 401 77
+2026-03-10 14:39:28,281 [INFO] apps.storage.views: Upload queued: dreadme.md (14958 bytes) -> personal
+2026-03-10 14:39:28,283 [INFO] django.server: "POST /api/v1/storage/upload/personal/ HTTP/1.1" 202 283
+2026-03-10 14:39:30,520 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:44,695 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:45,427 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:46,051 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:46,531 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:46,854 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:47,068 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:47,251 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:47,442 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:47,663 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:47,844 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:48,037 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:48,206 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:48,418 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:48,618 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:48,817 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:49,007 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:49,262 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:49,431 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:49,645 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:49,886 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:50,128 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:50,301 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:51,327 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:51,555 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:51,768 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:51,962 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:52,159 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:52,375 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:39:52,918 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:40:03,630 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:40:03,769 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:40:06,902 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:43:05,896 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\workers\auditor.py changed, reloading.
+2026-03-10 14:43:09,751 [INFO] django.utils.autoreload: Watching for file changes with StatReloader

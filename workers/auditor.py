@@ -145,7 +145,17 @@ def node_heartbeat():
     )
     
     for node in dead_nodes:
-        logger.warning(f"Node {node.node_id} marked dead")
+        # Final double-check before marking dead
+        from apps.p2p.services.node_monitor import node_monitor
+        health = node_monitor.check_node_health(node.node_id, node.endpoint)
+        
+        if health['healthy']:
+            node.last_heartbeat = timezone.now()
+            node.save(update_fields=['last_heartbeat'])
+            logger.info(f"Node {node.node_id} heartbeat refreshed instead of marking dead")
+            continue
+
+        logger.warning(f"Node {node.node_id} marked dead after failed heartbeat")
         node.is_active = False
         node.save()
         
