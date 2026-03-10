@@ -114,7 +114,15 @@ class DHTNode:
         return hashlib.sha1(f'{time.time()}{random.random()}{os.urandom(16)}'.encode()).hexdigest()
     
     def _distance(self, id1: str, id2: str) -> int:
-        """Calculate XOR distance between two node IDs"""
+        """Calculate XOR distance between two node IDs or a key and a node ID"""
+        # Ensure id1 is a hash (160-bit hex)
+        if len(id1) != 40 or any(c not in '0123456789abcdef' for c in id1.lower()):
+            id1 = hashlib.sha1(id1.encode()).hexdigest()
+            
+        # Ensure id2 is a hash (160-bit hex)
+        if len(id2) != 40 or any(c not in '0123456789abcdef' for c in id2.lower()):
+            id2 = hashlib.sha1(id2.encode()).hexdigest()
+
         return int(id1, 16) ^ int(id2, 16)
     
     def _bucket_index(self, node_id: str) -> int:
