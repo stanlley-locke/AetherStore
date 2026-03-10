@@ -1369,3 +1369,7 @@ kombu.exceptions.OperationalError: Error 10054 while writing to socket. An exist
 2026-03-10 15:22:34,359 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
 2026-03-10 15:26:37,526 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\storage\views.py changed, reloading.
 2026-03-10 15:26:40,325 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 15:34:18,193 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\accounts\middleware.py changed, reloading.
+2026-03-10 15:34:23,372 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 15:34:29,357 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\storage\views.py changed, reloading.
+2026-03-10 15:34:35,150 [INFO] django.utils.autoreload: Watching for file changes with StatReloader

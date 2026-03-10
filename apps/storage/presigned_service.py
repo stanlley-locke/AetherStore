@@ -46,7 +46,7 @@ class PresignedURLService:
         token = base64.urlsafe_b64encode(nonce + ct).decode('utf-8').rstrip('=')
         
         # Build URL
-        return f"/api/v1/download/presigned/{token}/"
+        return f"/api/v1/storage/download/presigned/{token}/"
     
     @classmethod
     def validate(cls, token: str) -> dict:

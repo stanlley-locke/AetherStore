@@ -27,7 +27,7 @@ class DIDAuthenticationMiddleware:
         '/api/v1/billing/wallet/transfer', 
         '/api/v1/billing/wallet/recover',
         '/api/v1/billing/wallet/generate',
-        '/api/v1/download/presigned',
+        '/api/v1/storage/download/presigned',
         '/favicon.ico'
     ]
     

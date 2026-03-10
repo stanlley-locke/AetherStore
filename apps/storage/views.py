@@ -917,15 +917,13 @@ class DownloadView(APIView):
                 logger.warning(f"Access denied for {owner_did} on object {object_id}")
                 return Response({'error': 'Access denied', 'code': 'ACCESS_DENIED'}, status=403)
             
-            # Redirect to the streaming view for direct user-side download
-            from django.urls import reverse
-            version_param = request.query_params.get('version')
-            stream_url = reverse('storage:stream-file', kwargs={'object_id': str(obj.id)})
-            if version_param:
-                stream_url += f"?version={version_param}"
+            # Redirect to the presigned download view for direct user-side download
+            # This allows the browser to follow the 302 without an Authorization header
+            from apps.storage.presigned_service import PresignedURLService
+            presigned_url = PresignedURLService.generate(obj.id, owner_did)
             
             from django.http import HttpResponseRedirect
-            return HttpResponseRedirect(stream_url)
+            return HttpResponseRedirect(presigned_url)
             
         except EncryptedObject.DoesNotExist:
             logger.warning(f"Object {object_id} not found")
