@@ -569,12 +569,12 @@ class ObjectSearchView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request):
-        from apps.storage.models import StorageObject
+        from apps.storage.models import EncryptedObject
         
         try:
             owner_did = getattr(request.user, 'did', str(request.user))
             
-            queryset = StorageObject.objects.filter(
+            queryset = EncryptedObject.objects.filter(
                 is_deleted=False,
                 owner_did=owner_did
             ).select_related('bucket')
@@ -582,7 +582,9 @@ class ObjectSearchView(APIView):
             query = request.query_params.get('q')
             if query:
                 queryset = queryset.filter(
-                    Q(content_hash__icontains=query) |
+                    Q(filename__icontains=query) |
+                    Q(original_hash__icontains=query) |
+                    Q(root_hash__icontains=query) |
                     Q(mime_type__icontains=query) |
                     Q(bucket__name__icontains=query)
                 )
@@ -590,9 +592,9 @@ class ObjectSearchView(APIView):
             min_size = request.query_params.get('min_size')
             max_size = request.query_params.get('max_size')
             if min_size:
-                queryset = queryset.filter(size__gte=int(min_size))
+                queryset = queryset.filter(original_size__gte=int(min_size))
             if max_size:
-                queryset = queryset.filter(size__lte=int(max_size))
+                queryset = queryset.filter(original_size__lte=int(max_size))
             
             limit = min(int(request.query_params.get('limit', 50)), 100)
             queryset = queryset[:limit]
@@ -600,10 +602,11 @@ class ObjectSearchView(APIView):
             results = [
                 {
                     'id': obj.id,
-                    'content_hash': obj.content_hash[:16] + '...',
+                    'filename': obj.filename,
+                    'root_hash': obj.root_hash[:16] + '...',
                     'bucket': obj.bucket.name if obj.bucket else None,
                     'mime_type': obj.mime_type,
-                    'size': obj.size,
+                    'size': obj.original_size,
                     'created_at': obj.created_at.isoformat()
                 }
                 for obj in queryset
@@ -642,23 +645,23 @@ class BucketViewSet(ModelViewSet):
     @action(detail=True, methods=['get'])
     def stats(self, request, pk=None):
         """Get bucket statistics"""
-        from apps.storage.models import Bucket, StorageObject
-        from django.db.models import Sum, Count, Avg
+        from apps.storage.models import Bucket, EncryptedObject
+        from django.db.models import Sum, Count, Avg, Min, Max
         
         bucket = self.get_object()
         
-        stats = StorageObject.objects.filter(
+        stats = EncryptedObject.objects.filter(
             bucket=bucket,
             is_deleted=False
         ).aggregate(
             total_objects=Count('id'),
-            total_size=Sum('size'),
-            avg_size=Avg('size'),
-            min_size=Min('size'),
-            max_size=Max('size')
+            total_size=Sum('original_size'),
+            avg_size=Avg('original_size'),
+            min_size=Min('original_size'),
+            max_size=Max('original_size')
         )
         
-        recent_uploads = StorageObject.objects.filter(
+        recent_uploads = EncryptedObject.objects.filter(
             bucket=bucket,
             is_deleted=False,
             created_at__gte=timezone.now() - timedelta(days=7)
@@ -684,10 +687,10 @@ class BucketViewSet(ModelViewSet):
     @action(detail=True, methods=['get'])
     def objects(self, request, pk=None):
         """List objects in bucket"""
-        from apps.storage.models import StorageObject
+        from apps.storage.models import EncryptedObject
         
         bucket = self.get_object()
-        objects = StorageObject.objects.filter(
+        objects = EncryptedObject.objects.filter(
             bucket=bucket,
             is_deleted=False
         ).order_by('-created_at')[:100]
@@ -697,8 +700,9 @@ class BucketViewSet(ModelViewSet):
             'objects': [
                 {
                     'id': obj.id,
-                    'content_hash': obj.content_hash,
-                    'size': obj.size,
+                    'filename': obj.filename,
+                    'root_hash': obj.root_hash,
+                    'size': obj.original_size,
                     'mime_type': obj.mime_type,
                     'created_at': obj.created_at.isoformat()
                 }
@@ -807,18 +811,18 @@ class MetricsView(APIView):
     permission_classes = [permissions.AllowAny]
     
     def get(self, request):
-        from apps.storage.models import StorageObject, StorageNode, AccessLog, Bucket
+        from apps.storage.models import EncryptedObject, StorageNode, AccessLog, Bucket
         from django.db.models import Sum
         
         metrics = []
         
-        obj_count = StorageObject.objects.filter(is_deleted=False).count()
+        obj_count = EncryptedObject.objects.filter(is_deleted=False).count()
         metrics.append(f'aether_objects_total {obj_count}')
         
         node_count = StorageNode.objects.filter(is_active=True).count()
         metrics.append(f'aether_nodes_active {node_count}')
         
-        total_bytes = StorageObject.objects.filter(is_deleted=False).aggregate(total=Sum('size'))['total'] or 0
+        total_bytes = EncryptedObject.objects.filter(is_deleted=False).aggregate(total=Sum('original_size'))['total'] or 0
         metrics.append(f'aether_storage_bytes {total_bytes}')
         
         bucket_count = Bucket.objects.count()
@@ -845,15 +849,15 @@ class StatsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request):
-        from apps.storage.models import StorageObject, StorageNode, AccessLog, Bucket
+        from apps.storage.models import EncryptedObject, StorageNode, AccessLog, Bucket
         from django.db.models import Sum
         
         owner_did = getattr(request.user, 'did', str(request.user))
         
-        user_objects = StorageObject.objects.filter(owner_did=owner_did, is_deleted=False)
-        user_total_size = user_objects.aggregate(total=Sum('size'))['total'] or 0
+        user_objects = EncryptedObject.objects.filter(owner_did=owner_did, is_deleted=False)
+        user_total_size = user_objects.aggregate(total=Sum('original_size'))['total'] or 0
         
-        system_total_size = StorageObject.objects.filter(is_deleted=False).aggregate(total=Sum('size'))['total'] or 0
+        system_total_size = EncryptedObject.objects.filter(is_deleted=False).aggregate(total=Sum('original_size'))['total'] or 0
         
         day_ago = timezone.now() - timedelta(days=1)
         week_ago = timezone.now() - timedelta(weeks=1)
@@ -867,7 +871,7 @@ class StatsView(APIView):
                 'buckets': Bucket.objects.filter(owner_did=owner_did).count()
             },
             'system': {
-                'total_objects': StorageObject.objects.filter(is_deleted=False).count(),
+                'total_objects': EncryptedObject.objects.filter(is_deleted=False).count(),
                 'total_size': system_total_size,
                 'total_size_human': self._human_readable_size(system_total_size),
                 'active_nodes': StorageNode.objects.filter(is_active=True).count(),

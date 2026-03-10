@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.db import connection
-from apps.storage.models import StorageObject, Bucket
+from apps.storage.models import EncryptedObject, Bucket
 import json
 import gzip
 from datetime import datetime
@@ -20,7 +20,7 @@ class Command(BaseCommand):
         
         backup_data = {
             'timestamp': datetime.utcnow().isoformat(),
-            'version': '1.0',
+            'version': '2.0', # Updated version for EncryptedObject
             'buckets': [],
             'objects': [],
             'quotas': []
@@ -34,16 +34,20 @@ class Command(BaseCommand):
                 'created_at': bucket.created_at.isoformat()
             })
         
-        # Export objects
-        for obj in StorageObject.objects.filter(is_deleted=False):
+        # Export objects (EncryptedObject)
+        for obj in EncryptedObject.objects.filter(is_deleted=False):
             backup_data['objects'].append({
                 'id': str(obj.id),
-                'content_hash': obj.content_hash,
+                'filename': obj.filename,
+                'root_hash': obj.root_hash,
+                'original_hash': obj.original_hash,
                 'bucket': obj.bucket.name,
                 'mime_type': obj.mime_type,
-                'size': obj.size,
+                'size': obj.original_size,
                 'owner_did': obj.owner_did,
                 'shard_map': obj.shard_map,
+                'encryption_algorithm': obj.encryption_algorithm,
+                'key_hash': obj.key_hash,
                 'created_at': obj.created_at.isoformat()
             })
         

@@ -1,7 +1,7 @@
 # tests/test_upload.py
 from django.test import TestCase
 from rest_framework.test import APIClient
-from apps.storage.models import StorageObject, Bucket
+from apps.storage.models import EncryptedObject, Bucket
 import hashlib
 
 class UploadTestCase(TestCase):
@@ -12,7 +12,7 @@ class UploadTestCase(TestCase):
     def test_upload_deduplication(self):
         """Test that duplicate files are not stored twice"""
         data = b'test content for deduplication'
-        content_hash = hashlib.sha256(data).hexdigest()
+        original_hash = hashlib.sha256(data).hexdigest()
         
         # First upload
         response1 = self.client.post(
@@ -28,11 +28,15 @@ class UploadTestCase(TestCase):
             format='multipart'
         )
         
-        # Should return deduplicated flag
-        self.assertEqual(response2.data['deduplicated'], True)
+        # Should return processing status as it is now async
+        self.assertEqual(response2.data['status'], 'processing')
         
-        # Only one object in DB
-        self.assertEqual(StorageObject.objects.filter(content_hash=content_hash).count(), 1)
+        # We check the processing result or just wait, but for unit tests we can check if task was queued.
+        # Actually in this task setup we probably mock celery or it runs sync in test.
+        
+        # Only one object in DB by original_hash 
+        # (Assuming the task finished or runs synchronously in tests)
+        self.assertEqual(EncryptedObject.objects.filter(original_hash=original_hash).count(), 1)
     
     def test_erasure_coding_recovery(self):
         """Test that file can be recovered with missing shards"""

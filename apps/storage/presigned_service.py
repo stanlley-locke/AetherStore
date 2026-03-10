@@ -4,7 +4,7 @@ from django.utils import timezone
 from datetime import timedelta
 from rest_framework.reverse import reverse
 from django.db.models import Q
-from apps.storage.models import StorageObject
+from apps.storage.models import EncryptedObject
 import hashlib
 import hmac
 
@@ -131,8 +131,8 @@ class SearchService:
     
     @staticmethod
     def search(bucket_name: str, query: str, owner_did: str = None):
-        """Search objects by MIME type, bucket, or metadata"""
-        queryset = StorageObject.objects.filter(
+        """Search objects by name, MIME type, or hash"""
+        queryset = EncryptedObject.objects.filter(
             bucket__name=bucket_name,
             is_deleted=False
         )
@@ -140,11 +140,12 @@ class SearchService:
         if owner_did:
             queryset = queryset.filter(owner_did=owner_did)
         
-        # Search by MIME type
         if query:
             queryset = queryset.filter(
+                Q(filename__icontains=query) |
                 Q(mime_type__icontains=query) |
-                Q(content_hash__icontains=query)
+                Q(original_hash__icontains=query) |
+                Q(root_hash__icontains=query)
             )
         
         return queryset.order_by('-created_at')

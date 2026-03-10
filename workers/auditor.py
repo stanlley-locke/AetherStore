@@ -1,7 +1,7 @@
 from celery import shared_task
 from django.utils import timezone
 from datetime import timedelta
-from apps.storage.models import StorageObject, StorageNode
+from apps.storage.models import EncryptedObject, StorageNode
 from apps.storage.engine import get_erasure_engine
 from apps.p2p.ring import get_hash_ring
 import httpx
@@ -15,7 +15,7 @@ def audit_storage_health():
     logger.info("Starting storage audit...")
     
     # Get recent objects
-    recent_objects = StorageObject.objects.filter(
+    recent_objects = EncryptedObject.objects.filter(
         updated_at__gte=timezone.now() - timedelta(hours=1),
         is_deleted=False
     )[:100]
@@ -30,8 +30,9 @@ def audit_storage_health():
                     node = StorageNode.objects.get(node_id=node_id)
                     
                     with httpx.Client(timeout=5.0) as client:
+                        # Shards are stored by root_hash
                         resp = client.head(
-                            f"{node.endpoint}/shard/{obj.content_hash}/{shard_index}"
+                            f"{node.endpoint}/shard/{obj.root_hash}/{shard_index}"
                         )
                         
                         if resp.status_code != 200:
@@ -54,8 +55,8 @@ def audit_storage_health():
 def repair_object(self, object_id):
     """Repair object with missing/corrupted shards"""
     try:
-        obj = StorageObject.objects.get(id=object_id, is_deleted=False)
-    except StorageObject.DoesNotExist:
+        obj = EncryptedObject.objects.get(id=object_id, is_deleted=False)
+    except EncryptedObject.DoesNotExist:
         logger.error(f"Object {object_id} not found")
         return
     
@@ -72,7 +73,7 @@ def repair_object(self, object_id):
         for node_id, shard_index in obj.shard_map.items():
             try:
                 node = StorageNode.objects.get(node_id=node_id, is_active=True)
-                resp = client.get(f"{node.endpoint}/shard/{obj.content_hash}/{shard_index}")
+                resp = client.get(f"{node.endpoint}/shard/{obj.root_hash}/{shard_index}")
                 
                 if resp.status_code == 200:
                     existing_shards[shard_index] = resp.content
@@ -82,7 +83,7 @@ def repair_object(self, object_id):
     
     # Check if recoverable
     if valid_count < engine.data_shards:
-        logger.error(f"Cannot repair: only {valid_count} shards")
+        logger.error(f"Cannot repair {object_id}: only {valid_count} shards available")
         raise self.retry(countdown=300)
     
     # Decode and re-encode
@@ -90,11 +91,11 @@ def repair_object(self, object_id):
         data = engine.decode(existing_shards)
         new_shards = engine.encode(data)
     except Exception as e:
-        logger.error(f"Decode failed: {e}")
+        logger.error(f"Decode failed for {object_id}: {e}")
         raise self.retry(countdown=300)
     
-    # Find new nodes
-    target_nodes = ring.get_all_nodes_for_object(obj.content_hash, len(new_shards))
+    # Find new nodes using root_hash
+    target_nodes = ring.get_all_nodes_for_object(obj.root_hash, len(new_shards))
     
     # Distribute repaired shards
     new_shard_map = {}
@@ -106,7 +107,7 @@ def repair_object(self, object_id):
             for node_id, endpoint in nodes:
                 try:
                     resp = client.put(
-                        f"{endpoint}/shard/{obj.content_hash}/{shard_index}",
+                        f"{endpoint}/shard/{obj.root_hash}/{shard_index}",
                         content=shard_data
                     )
                     
@@ -164,7 +165,7 @@ def node_heartbeat():
         ring.invalidate()
         
         # Trigger repair
-        affected = StorageObject.objects.filter(
+        affected = EncryptedObject.objects.filter(
             shard_map__has_key=node.node_id,
             is_deleted=False
         )

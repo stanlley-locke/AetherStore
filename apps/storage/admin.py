@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Bucket, StorageObject, StorageNode, StorageQuota, AccessLog, Webhook, EncryptedObject, ObjectVersion
+from .models import Bucket, StorageNode, StorageQuota, AccessLog, Webhook, EncryptedObject, ObjectVersion
 
 @admin.register(Bucket)
 class BucketAdmin(admin.ModelAdmin):
@@ -7,12 +7,6 @@ class BucketAdmin(admin.ModelAdmin):
     search_fields = ['name', 'owner_did']
     list_filter = ['created_at']
 
-@admin.register(StorageObject)
-class StorageObjectAdmin(admin.ModelAdmin):
-    list_display = ['id', 'content_hash', 'bucket', 'size', 'owner_did', 'created_at', 'is_deleted']
-    search_fields = ['content_hash', 'owner_did']
-    list_filter = ['is_deleted', 'created_at', 'bucket']
-    readonly_fields = ['id', 'content_hash', 'created_at', 'updated_at']
 
 @admin.register(StorageNode)
 class StorageNodeAdmin(admin.ModelAdmin):

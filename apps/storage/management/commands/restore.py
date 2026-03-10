@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 import json
 import gzip
-from apps.storage.models import StorageObject, Bucket
+from apps.storage.models import EncryptedObject, Bucket
 from django.utils import timezone
 from datetime import datetime
 
@@ -33,15 +33,19 @@ class Command(BaseCommand):
                 defaults={'owner_did': obj_data['owner_did']}
             )
             
-            obj, created = StorageObject.objects.update_or_create(
+            obj, created = EncryptedObject.objects.update_or_create(
                 id=obj_data['id'],
                 defaults={
-                    'content_hash': obj_data['content_hash'],
+                    'filename': obj_data.get('filename', f"restored_{obj_data['id'][:8]}"),
+                    'root_hash': obj_data.get('root_hash', obj_data.get('content_hash')),
+                    'original_hash': obj_data.get('original_hash', obj_data.get('content_hash')),
                     'bucket': bucket,
                     'mime_type': obj_data['mime_type'],
-                    'size': obj_data['size'],
+                    'original_size': obj_data.get('size', 0),
                     'owner_did': obj_data['owner_did'],
                     'shard_map': obj_data['shard_map'],
+                    'encryption_algorithm': obj_data.get('encryption_algorithm', 'AES-256-GCM'),
+                    'key_hash': obj_data.get('key_hash', 'legacy_restored'),
                     'is_deleted': False
                 }
             )

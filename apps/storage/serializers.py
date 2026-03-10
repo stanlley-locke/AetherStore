@@ -1,7 +1,7 @@
 # apps/storage/serializers.py
 
 from rest_framework import serializers
-from apps.storage.models import Bucket, StorageObject, StorageNode, StorageQuota
+from apps.storage.models import Bucket, EncryptedObject, StorageNode, StorageQuota
 
 class BucketSerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,13 +9,13 @@ class BucketSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'owner_did', 'created_at']
         read_only_fields = ['id', 'created_at']
 
-class StorageObjectSerializer(serializers.ModelSerializer):
+class EncryptedObjectSerializer(serializers.ModelSerializer):
     bucket_name = serializers.CharField(source='bucket.name', read_only=True)
     
     class Meta:
-        model = StorageObject
-        fields = ['id', 'content_hash', 'bucket', 'bucket_name', 'mime_type', 'size', 'owner_did', 'shard_map', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'content_hash', 'created_at', 'updated_at']
+        model = EncryptedObject
+        fields = ['id', 'original_hash', 'root_hash', 'bucket', 'bucket_name', 'mime_type', 'original_size', 'owner_did', 'shard_map', 'filename', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'original_hash', 'root_hash', 'created_at', 'updated_at']
 
 class StorageNodeSerializer(serializers.ModelSerializer):
     class Meta:

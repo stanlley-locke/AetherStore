@@ -1393,3 +1393,12 @@ kombu.exceptions.OperationalError: Error 10054 while writing to socket. An exist
 2026-03-10 16:27:02,277 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\storage\views.py changed, reloading.
 2026-03-10 16:27:05,902 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
 2026-03-10 16:32:21,584 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\storage\models.py changed, reloading.
+2026-03-10 16:32:24,958 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 16:34:09,435 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\storage\admin.py changed, reloading.
+2026-03-10 16:34:12,639 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 16:35:09,207 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\storage\serializers.py changed, reloading.
+2026-03-10 16:35:12,056 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 16:37:38,737 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\storage\views.py changed, reloading.
+2026-03-10 16:37:42,236 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 16:38:10,140 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\storage\views.py changed, reloading.
+2026-03-10 16:38:13,373 [INFO] django.utils.autoreload: Watching for file changes with StatReloader

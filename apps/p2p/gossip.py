@@ -247,10 +247,10 @@ class GossipProtocol:
     def _trigger_repair_sync(self, dead_node_ids: List[str]):
         """Trigger repair tasks for affected shards"""
         from workers.auditor import repair_object
-        from apps.storage.models import StorageObject
+        from apps.storage.models import EncryptedObject
         
         for node_id in dead_node_ids:
-            affected_objects = StorageObject.objects.filter(
+            affected_objects = EncryptedObject.objects.filter(
                 shard_map__has_key=node_id,
                 is_deleted=False
             )

@@ -2,7 +2,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db import connection
 from django.core.cache import cache
-from apps.storage.models import StorageObject, StorageNode
+from django.utils import timezone
+from django.db import models
+from apps.storage.models import EncryptedObject, StorageNode
 from celery import current_app
 import psutil
 import os
@@ -63,7 +65,7 @@ class MetricsView(APIView):
         metrics = []
         
         # Object count
-        obj_count = StorageObject.objects.filter(is_deleted=False).count()
+        obj_count = EncryptedObject.objects.filter(is_deleted=False).count()
         metrics.append(f'aether_objects_total {obj_count}')
         
         # Storage nodes
@@ -71,9 +73,9 @@ class MetricsView(APIView):
         metrics.append(f'aether_nodes_active {node_count}')
         
         # Total storage
-        total_bytes = StorageObject.objects.filter(
+        total_bytes = EncryptedObject.objects.filter(
             is_deleted=False
-        ).aggregate(total=models.Sum('size'))['total'] or 0
+        ).aggregate(total=models.Sum('original_size'))['total'] or 0
         metrics.append(f'aether_storage_bytes {total_bytes}')
         
         # Celery queue length
