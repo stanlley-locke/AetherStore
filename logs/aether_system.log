@@ -984,3 +984,6 @@ kombu.exceptions.OperationalError: Error 10054 while writing to socket. An exist
 2026-03-09 20:16:30,080 [WARNING] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 401 153
 2026-03-09 20:16:38,887 [WARNING] django.request: Unauthorized: /api/v1/storage/objects/
 2026-03-09 20:16:38,889 [WARNING] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 401 153
+2026-03-10 08:41:35,039 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 08:42:22,238 [INFO] apps.storage.engine: ReedSolomon library (reedsolo) loaded successfully
+2026-03-10 08:42:23,872 [INFO] apps.storage.engine: ReedSolomon initialized: 5+2 (reedsolo)
