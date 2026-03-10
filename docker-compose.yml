@@ -142,12 +142,112 @@ services:
     networks:
       - aether-network
 
+  node-3:
+    build: .
+    container_name: aether-node-3
+    environment:
+      - SERVICE_TYPE=node
+      - NODE_ID=node-3
+      - NODE_PORT=8003
+      - BOOTSTRAP_NODE=node-1:8001
+      - REDIS_HOST=redis
+    ports:
+      - "8003:8003"
+    volumes:
+      - node3_data:/app/data/shards
+    depends_on:
+      node-1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8003/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - aether-network
+
+  node-4:
+    build: .
+    container_name: aether-node-4
+    environment:
+      - SERVICE_TYPE=node
+      - NODE_ID=node-4
+      - NODE_PORT=8004
+      - BOOTSTRAP_NODE=node-1:8001
+      - REDIS_HOST=redis
+    ports:
+      - "8004:8004"
+    volumes:
+      - node4_data:/app/data/shards
+    depends_on:
+      node-1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8004/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - aether-network
+
+  node-5:
+    build: .
+    container_name: aether-node-5
+    environment:
+      - SERVICE_TYPE=node
+      - NODE_ID=node-5
+      - NODE_PORT=8005
+      - BOOTSTRAP_NODE=node-1:8001
+      - REDIS_HOST=redis
+    ports:
+      - "8005:8005"
+    volumes:
+      - node5_data:/app/data/shards
+    depends_on:
+      node-1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8005/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - aether-network
+
+  node-6:
+    build: .
+    container_name: aether-node-6
+    environment:
+      - SERVICE_TYPE=node
+      - NODE_ID=node-6
+      - NODE_PORT=8006
+      - BOOTSTRAP_NODE=node-1:8001
+      - REDIS_HOST=redis
+    ports:
+      - "8006:8006"
+    volumes:
+      - node6_data:/app/data/shards
+    depends_on:
+      node-1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8006/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - aether-network
+
 volumes:
   postgres_data:
   redis_data:
   media_volume:
   node1_data:
   node2_data:
+  node3_data:
+  node4_data:
+  node5_data:
+  node6_data:
 
 networks:
   aether-network:
