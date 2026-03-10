@@ -126,27 +126,9 @@ services:
     networks:
       - aether-network
 
-  # Edge Proxy & Frontend
-  nginx:
-    build:
-      context: .
-      target: nginx-prod
-    container_name: aether-nginx
-    ports:
-      - "80:80"
-    volumes:
-      - ./config/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - static_volume:/app/staticfiles:ro
-      - media_volume:/app/media:ro
-    depends_on:
-      - backend
-    networks:
-      - aether-network
-
 volumes:
   postgres_data:
   redis_data:
-  static_volume:
   media_volume:
   node1_data:
   node2_data:

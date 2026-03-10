@@ -67,7 +67,12 @@ elif [[ "$SERVICE_TYPE" == "node" ]]; then
         WALLET_ARG="--wallet-address $NODE_WALLET_ADDRESS"
     fi
     
-    exec python apps/p2p/storage_node.py "${NODE_ID:-node-1}" "${NODE_PORT:-8001}" $BOOTSTRAP_ARG $WALLET_ARG
+    ADDRESS_ARG=""
+    if [ -n "$NODE_ADDRESS" ]; then
+        ADDRESS_ARG="--address $NODE_ADDRESS"
+    fi
+    
+    exec python apps/p2p/storage_node.py "${NODE_ID:-node-1}" "${NODE_PORT:-8001}" $BOOTSTRAP_ARG $WALLET_ARG $ADDRESS_ARG
     
 else
     echo "Unknown SERVICE_TYPE: $SERVICE_TYPE"

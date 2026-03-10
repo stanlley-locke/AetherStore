@@ -1,78 +1,84 @@
-# AetherStore Local Setup Guide
+# AetherStore Setup Guide
 
-Follow this guide to get the complete AetherStore decentralized storage environment running on your local machine.
+Follow this guide to get the complete AetherStore federated storage environment running on your local machine.
 
-## Prerequisites
-- **Python 3.10+**
-- **Docker** (for Redis)
-- **Git**
+## Recommended: Docker Setup (Quickest)
 
-## 1. Project Initialization
+AetherStore is fully containerized and orchestrated via `docker-compose`. This is the easiest way to launch the entire network including the database, redis, celery, and multiple federated storage nodes.
 
-Clone the repository and install dependencies:
+### 1. Launch the Network
+Run the following command from the project root:
 ```bash
-# Clone the project (if not already done)
-git clone https://github.com/yourusername/aetherstore.git
-cd aetherstore
-
-# Set up your virtual environment
-python -m venv .venv
-
-# Activate it
-# On Windows:
-.venv\Scripts\activate
-# On Mac/Linux:
-source .venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
+docker-compose up --build
 ```
 
-## 2. Infrastructure (Redis)
+This will start:
+- **Postgres Database** (Port 5432)
+- **Redis Broker** (Port 6379)
+- **Django Backend** (Port 8000)
+- **Celery Worker & Beat**
+- **Nginx Edge Proxy & Frontend** (Port 80)
+- **2 Storage Nodes** (Port 8001, 8002)
 
-AetherStore relies on Celery for executing expensive cryptography tasks in the background, which requires Redis as a message broker:
+### 2. Access the Application
+- **Frontend/Portal**: [http://localhost](http://localhost)
+- **Django Admin**: [http://localhost/admin/](http://localhost/admin/) (Default creds set via scripts/init_network_admin.py)
+- **API Health**: [http://localhost/api/v1/p2p/health/](http://localhost/api/v1/p2p/health/)
 
+---
+
+## Alternative: Manual Setup (Development)
+
+Use this method if you want to run the components individually for debugging or more control.
+
+### 1. Backend Initialization
+AetherStore uses `uv` for high-performance dependency management.
+
+```bash
+# Install uv if you haven't
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install dependencies and sync environment
+uv sync
+
+# Run migrations
+uv run python manage.py migrate
+
+# Initialize Network Admin
+uv run python scripts/init_network_admin.py
+```
+
+### 2. Infrastructure
+Ensure Redis and Postgres are running. If you have Docker, you can start just these:
 ```bash
 docker run -d --name aether-redis -p 6379:6379 redis:7-alpine
+docker run -d --name aether-db -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=aether -p 5432:5432 postgres:14-alpine
 ```
 
-## 3. Django Server
+### 3. Start Components
+Open separate terminal windows for each:
 
-The central Django API handles authentication, orchestrates the background encryption tasks, and maintains object metadata:
-
+**A. API Server**
 ```bash
-# Initialize the database
-python manage.py makemigrations
-python manage.py migrate
-
-# Start the Django server
-python manage.py runserver 0.0.0.0:8000
+uv run python manage.py runserver 0.0.0.0:8000
 ```
 
-## 4. Peer-to-Peer Storage Nodes
-
-AetherStore uses an Erasure Coding algorithm requiring a minimum of **5 Active Storage Nodes** (3 Data Shards + 2 Parity Shards).
-Open 5 new terminal windows, activate the virtual environment in each, and run:
-
+**B. Storage Nodes (Minimum 2 for federated network)**
 ```bash
-python apps/p2p/storage_node.py node-1 8001
-python apps/p2p/storage_node.py node-2 8002
-python apps/p2p/storage_node.py node-3 8003
-python apps/p2p/storage_node.py node-4 8004
-python apps/p2p/storage_node.py node-5 8005
+uv run python apps/p2p/storage_node.py node-1 8001
+uv run python apps/p2p/storage_node.py node-2 8002 --bootstrap localhost:8001
 ```
 
-## 5. Background Task Workers (Celery)
-
-Start the Celery worker to perform the heavy lifting of Chunking, AES encryption, Merkle DAG building, and interacting with the P2P Nodes.
-Open a new terminal window, activate the virtual environment, and run:
-
+**C. Celery Worker**
 ```bash
-# Windows
-celery -A aetherstore worker --pool=solo --loglevel=info
+uv run celery -A aetherstore worker --loglevel=info
+```
 
-# Mac/Linux
-celery -A aetherstore worker --loglevel=info
+**D. Frontend (Vite)**
+```bash
+cd aetherstoreweb
+npm install
+npm run dev
 ```
 
 Your local AetherStore cluster is now fully functional! Proceed to the **API Documentation** to start storing objects.

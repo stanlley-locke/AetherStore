@@ -1,14 +1,5 @@
-# Multi-Stage Dockerfile for AetherStore Federated Network
+# Optimized Dockerfile for AetherStore Backend Services
 
-# --- Stage 1: Build Frontend ---
-FROM node:20-alpine AS frontend-builder
-WORKDIR /app/frontend
-COPY aetherstoreweb/package*.json ./
-RUN npm install
-COPY aetherstoreweb/ ./
-RUN npm run build
-
-# --- Stage 2: Python Backend & Final Image ---
 FROM python:3.12-slim
 WORKDIR /app
 
@@ -30,9 +21,6 @@ RUN uv pip install --system -r pyproject.toml
 # Copy project files
 COPY . .
 
-# Copy built frontend from Stage 1
-COPY --from=frontend-builder /app/frontend/dist /app/static/frontend
-
 # Ensure entrypoint is executable
 RUN chmod +x scripts/docker-entrypoint.sh
 
@@ -41,15 +29,8 @@ ENV PYTHONUNBUFFERED=1
 ENV DJANGO_SETTINGS_MODULE=aetherstore.settings
 ENV PORT=8000
 
-# Expose ports
+# Expose ports for API and Storage Nodes
 EXPOSE 8000 8001 8002 8003 8004 8005 8006
 
 # Default entrypoint
 ENTRYPOINT ["scripts/docker-entrypoint.sh"]
-
-# --- Stage 3: Nginx Production ---
-FROM nginx:stable-alpine AS nginx-prod
-COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
-COPY config/nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]

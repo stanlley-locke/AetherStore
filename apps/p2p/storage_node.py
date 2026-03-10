@@ -52,9 +52,10 @@ class StorageNodeServer:
     - Storage statistics and monitoring
     """
     
-    def __init__(self, node_id: str, port: int, storage_path: str = './data/shards', bootstrap_node: str = None, wallet_address: str = None):
+    def __init__(self, node_id: str, port: int, storage_path: str = './data/shards', bootstrap_node: str = None, wallet_address: str = None, address: str = '127.0.0.1'):
         self.node_id = node_id
         self.port = port
+        self.address = address
         self.storage_path = Path(storage_path)
         self.dht_path = self.storage_path / 'dht_state.json'
         self.bootstrap_node = bootstrap_node
@@ -73,7 +74,7 @@ class StorageNodeServer:
         self.dht_node_id = hashlib.sha1(node_id.encode()).hexdigest()
         
         # Initialize DHT Node
-        self.dht = DHTNode(node_id=self.dht_node_id, address='127.0.0.1', port=port)
+        self.dht = DHTNode(node_id=self.dht_node_id, address=self.address, port=port)
         
         # Initialize Node Wallet (Phase 16 -> 17 Security Update)
         self.wallet_address = wallet_address
@@ -765,6 +766,13 @@ if __name__ == '__main__':
         if len(sys.argv) > idx + 1:
             bootstrap_node = sys.argv[idx + 1]
             
+    # Optional --address
+    address = '127.0.0.1'
+    if '--address' in sys.argv:
+        idx = sys.argv.index('--address')
+        if len(sys.argv) > idx + 1:
+            address = sys.argv[idx + 1]
+            
     # Optional --wallet-address
     wallet_address = None
     if '--wallet-address' in sys.argv:
@@ -772,5 +780,5 @@ if __name__ == '__main__':
         if len(sys.argv) > idx + 1:
             wallet_address = sys.argv[idx + 1]
             
-    server = StorageNodeServer(node_id, port, bootstrap_node=bootstrap_node, wallet_address=wallet_address)
+    server = StorageNodeServer(node_id, port, bootstrap_node=bootstrap_node, wallet_address=wallet_address, address=address)
     asyncio.run(server.start())
