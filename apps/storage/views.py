@@ -922,6 +922,11 @@ class DownloadView(APIView):
             from apps.storage.presigned_service import PresignedURLService
             presigned_url = PresignedURLService.generate(obj.id, owner_did)
             
+            # Pass through version parameter if present
+            version_param = request.query_params.get('version')
+            if version_param:
+                presigned_url += f"?version={version_param}"
+            
             from django.http import HttpResponseRedirect
             return HttpResponseRedirect(presigned_url)
             
@@ -998,7 +1003,7 @@ class DownloadFileView(APIView):
 @method_decorator([csrf_exempt], name='dispatch')
 class StreamFileView(APIView):
     """Dynamically streams file directly from P2P swarm, supporting HTTP Range requests"""
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     
     def get(self, request, object_id):
         from apps.storage.models import EncryptedObject, StorageNode, AccessLog
