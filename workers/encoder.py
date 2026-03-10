@@ -78,8 +78,8 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
         original_hash = merkle_dag.root_hash
         logger.info(f"Original file hash: {original_hash[:16]}...")
         
-        # 6. Get healthy nodes
-        healthy_nodes = node_monitor.get_healthy_nodes()
+        # 6. Reuse healthy nodes from verification
+        healthy_nodes = node_verification['nodes']
         logger.info(f"Using {len(healthy_nodes)} nodes")
         
         # 7. Encode and distribute shards

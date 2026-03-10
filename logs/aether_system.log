@@ -1068,3 +1068,177 @@ kombu.exceptions.OperationalError: Error 10054 while writing to socket. An exist
 2026-03-10 11:01:51,889 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
 2026-03-10 11:02:04,351 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\aetherstore\settings.py changed, reloading.
 2026-03-10 11:02:09,419 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 13:59:05,767 [INFO] django.server: "OPTIONS /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 0
+2026-03-10 13:59:05,767 [INFO] django.server: "OPTIONS /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 0
+2026-03-10 13:59:06,041 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 13:59:06,124 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 13:59:12,119 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 13:59:12,204 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 13:59:41,048 [INFO] django.server: "OPTIONS /api/v1/storage/upload/personal/ HTTP/1.1" 200 0
+2026-03-10 13:59:42,861 [INFO] apps.storage.engine: ReedSolomon library (reedsolo) loaded successfully
+2026-03-10 13:59:43,281 [INFO] apps.storage.views: Upload queued: .env (262 bytes) -> personal
+2026-03-10 13:59:43,284 [INFO] django.server: "POST /api/v1/storage/upload/personal/ HTTP/1.1" 202 275
+2026-03-10 13:59:45,521 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:07:08,445 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:07:08,538 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:07:09,197 [INFO] django.server: "OPTIONS /api/v1/storage/objects/?deleted=true&sort=-created_at HTTP/1.1" 200 0
+2026-03-10 14:07:09,197 [INFO] django.server: "OPTIONS /api/v1/storage/objects/?deleted=true&sort=-created_at HTTP/1.1" 200 0
+2026-03-10 14:07:09,306 [INFO] django.server: "GET /api/v1/storage/objects/?deleted=true&sort=-created_at HTTP/1.1" 200 146
+2026-03-10 14:07:09,402 [INFO] django.server: "GET /api/v1/storage/objects/?deleted=true&sort=-created_at HTTP/1.1" 200 146
+2026-03-10 14:07:10,833 [INFO] django.server: "OPTIONS /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 0
+2026-03-10 14:07:10,834 [INFO] django.server: "OPTIONS /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 0
+2026-03-10 14:07:13,658 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 56
+2026-03-10 14:07:15,558 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 56
+2026-03-10 14:07:24,209 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 56
+2026-03-10 14:07:33,358 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 56
+2026-03-10 14:07:39,146 [INFO] django.server: "OPTIONS /api/v1/messaging/conversations/ HTTP/1.1" 200 0
+2026-03-10 14:07:41,419 [INFO] apps.messaging.views: [DHT] Mailbox updated for did:aether:ath1ff47115449d2e3c6ee8ff4dab3e6a0b18c2fa2ad (Key: 6e240005)
+2026-03-10 14:07:42,594 [INFO] apps.messaging.views: [DHT] Message content stored (Key: 08e5e3d9)
+2026-03-10 14:07:43,979 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 56
+2026-03-10 14:07:44,408 [INFO] apps.messaging.views: [DHT] Mailbox updated for did:aether:ath1ff47115449d2e3c6ee8ff4dab3e6a0b18c2fa2ad (Key: 6e240005)
+2026-03-10 14:07:46,616 [INFO] apps.messaging.views: [DHT] Mailbox updated for did:aether:ath1ff47115449d2e3c6ee8ff4dab3e6a0b18c2fa2ad (Key: 6e240005)
+2026-03-10 14:07:46,808 [INFO] apps.messaging.views: [DHT] Message content stored (Key: 4f576d0e)
+2026-03-10 14:07:48,058 [INFO] apps.messaging.views: [DHT] Mailbox updated for did:aether:ath1fd2757b37c7a72b160b697e562a84a845416a401 (Key: b098e7d6)
+2026-03-10 14:07:48,829 [INFO] apps.messaging.views: [DHT] Mailbox updated for did:aether:ath1fd2757b37c7a72b160b697e562a84a845416a401 (Key: b098e7d6)
+2026-03-10 14:07:48,994 [INFO] apps.messaging.views: [DHT] Message content stored (Key: 40f16251)
+2026-03-10 14:07:49,838 [INFO] apps.messaging.views: [DHT] Mailbox updated for did:aether:ath1ff47115449d2e3c6ee8ff4dab3e6a0b18c2fa2ad (Key: 6e240005)
+2026-03-10 14:07:49,896 [INFO] apps.messaging.views: [DHT] Message content stored (Key: 08e5e3d9)
+2026-03-10 14:07:49,912 [INFO] django.server: "POST /api/v1/messaging/conversations/ HTTP/1.1" 201 244
+2026-03-10 14:07:50,590 [INFO] apps.messaging.views: [DHT] Message content stored (Key: 4f576d0e)
+2026-03-10 14:07:50,601 [INFO] django.server: "POST /api/v1/messaging/conversations/ HTTP/1.1" 201 244
+2026-03-10 14:07:50,737 [INFO] apps.messaging.views: [DHT] Mailbox updated for did:aether:ath1fd2757b37c7a72b160b697e562a84a845416a401 (Key: b098e7d6)
+2026-03-10 14:07:51,416 [INFO] apps.messaging.views: [DHT] Message content stored (Key: f784656c)
+2026-03-10 14:07:51,503 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1491
+2026-03-10 14:07:51,656 [INFO] django.server: "OPTIONS /api/v1/messaging/conversations/3a02d393-287d-480c-a560-7825bfa3c489/ HTTP/1.1" 200 0
+2026-03-10 14:07:51,818 [INFO] django.server: "GET /api/v1/messaging/conversations/3a02d393-287d-480c-a560-7825bfa3c489/ HTTP/1.1" 200 322
+2026-03-10 14:07:52,348 [INFO] apps.messaging.views: [DHT] Message content stored (Key: 40f16251)
+2026-03-10 14:07:52,358 [INFO] django.server: "POST /api/v1/messaging/conversations/ HTTP/1.1" 201 244
+2026-03-10 14:07:52,875 [INFO] apps.messaging.views: [DHT] Mailbox updated for did:aether:ath1fd2757b37c7a72b160b697e562a84a845416a401 (Key: b098e7d6)
+2026-03-10 14:07:52,971 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1491
+2026-03-10 14:07:53,031 [INFO] django.server: "OPTIONS /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 0
+2026-03-10 14:07:53,167 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:07:54,124 [INFO] apps.messaging.views: [DHT] Message content stored (Key: f784656c)
+2026-03-10 14:07:54,132 [INFO] django.server: "POST /api/v1/messaging/conversations/ HTTP/1.1" 201 244
+2026-03-10 14:07:54,215 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1491
+2026-03-10 14:07:55,112 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1491
+2026-03-10 14:07:56,259 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1491
+2026-03-10 14:07:56,316 [INFO] django.server: "OPTIONS /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/ HTTP/1.1" 200 0
+2026-03-10 14:07:56,457 [INFO] django.server: "GET /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/ HTTP/1.1" 200 322
+2026-03-10 14:07:57,303 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1491
+2026-03-10 14:07:58,245 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1491
+2026-03-10 14:07:58,294 [INFO] django.server: "OPTIONS /api/v1/messaging/conversations/ca9a839d-67b6-40b9-9a40-c3b0c956c4b3/ HTTP/1.1" 200 0
+2026-03-10 14:07:58,432 [INFO] django.server: "GET /api/v1/messaging/conversations/ca9a839d-67b6-40b9-9a40-c3b0c956c4b3/ HTTP/1.1" 200 322
+2026-03-10 14:07:59,373 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1491
+2026-03-10 14:08:00,245 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1491
+2026-03-10 14:08:08,544 [INFO] django.server: "GET /api/v1/messaging/conversations/ca9a839d-67b6-40b9-9a40-c3b0c956c4b3/ HTTP/1.1" 200 322
+2026-03-10 14:08:09,653 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1491
+2026-03-10 14:08:18,052 [INFO] django.server: "OPTIONS /api/v1/messaging/conversations/ca9a839d-67b6-40b9-9a40-c3b0c956c4b3/send/ HTTP/1.1" 200 0
+2026-03-10 14:08:18,576 [INFO] django.server: "GET /api/v1/messaging/conversations/ca9a839d-67b6-40b9-9a40-c3b0c956c4b3/ HTTP/1.1" 200 871
+2026-03-10 14:08:19,914 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1491
+2026-03-10 14:08:19,917 [INFO] apps.messaging.views: [DHT] Mailbox updated for did:aether:ath1ff47115449d2e3c6ee8ff4dab3e6a0b18c2fa2ad (Key: 6e240005)
+2026-03-10 14:08:20,949 [INFO] apps.messaging.views: [DHT] Message content stored (Key: 6799a3c5)
+2026-03-10 14:08:21,973 [INFO] apps.messaging.views: [DHT] Mailbox updated for did:aether:ath1fd2757b37c7a72b160b697e562a84a845416a401 (Key: b098e7d6)
+2026-03-10 14:08:23,174 [INFO] apps.messaging.views: [DHT] Message content stored (Key: 6799a3c5)
+2026-03-10 14:08:23,335 [INFO] django.server: "POST /api/v1/messaging/conversations/ca9a839d-67b6-40b9-9a40-c3b0c956c4b3/send/ HTTP/1.1" 201 135
+2026-03-10 14:08:28,562 [INFO] django.server: "GET /api/v1/messaging/conversations/ca9a839d-67b6-40b9-9a40-c3b0c956c4b3/ HTTP/1.1" 200 871
+2026-03-10 14:08:29,922 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1725
+2026-03-10 14:08:38,561 [INFO] django.server: "GET /api/v1/messaging/conversations/ca9a839d-67b6-40b9-9a40-c3b0c956c4b3/ HTTP/1.1" 200 871
+2026-03-10 14:08:39,799 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1725
+2026-03-10 14:08:43,431 [INFO] django.server: "OPTIONS /api/v1/messaging/conversations/ca9a839d-67b6-40b9-9a40-c3b0c956c4b3/messages/b6140a42-44a4-4f3d-9e53-70bfd1b3d809/decrypt/ HTTP/1.1" 200 0
+2026-03-10 14:08:43,670 [INFO] django.server: "GET /api/v1/messaging/conversations/ca9a839d-67b6-40b9-9a40-c3b0c956c4b3/messages/b6140a42-44a4-4f3d-9e53-70bfd1b3d809/decrypt/ HTTP/1.1" 200 569
+2026-03-10 14:08:45,193 [INFO] django.server: "GET /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/ HTTP/1.1" 200 322
+2026-03-10 14:08:46,260 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1725
+2026-03-10 14:08:49,136 [INFO] django.server: "OPTIONS /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/send/ HTTP/1.1" 200 0
+2026-03-10 14:08:50,406 [INFO] apps.messaging.views: [DHT] Mailbox updated for did:aether:ath1ff47115449d2e3c6ee8ff4dab3e6a0b18c2fa2ad (Key: 6e240005)
+2026-03-10 14:08:51,449 [INFO] apps.messaging.views: [DHT] Message content stored (Key: f74a408a)
+2026-03-10 14:08:52,353 [INFO] apps.messaging.views: [DHT] Mailbox updated for did:aether:ath1fd2757b37c7a72b160b697e562a84a845416a401 (Key: b098e7d6)
+2026-03-10 14:08:53,289 [INFO] apps.messaging.views: [DHT] Message content stored (Key: f74a408a)
+2026-03-10 14:08:53,304 [INFO] django.server: "POST /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/send/ HTTP/1.1" 201 135
+2026-03-10 14:08:55,188 [INFO] django.server: "GET /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/ HTTP/1.1" 200 1425
+2026-03-10 14:08:56,156 [INFO] apps.messaging.views: [DHT] Mailbox updated for did:aether:ath1ff47115449d2e3c6ee8ff4dab3e6a0b18c2fa2ad (Key: 6e240005)
+2026-03-10 14:08:56,431 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1959
+2026-03-10 14:08:57,129 [INFO] apps.messaging.views: [DHT] Message content stored (Key: 074b4782)
+2026-03-10 14:08:57,994 [INFO] apps.messaging.views: [DHT] Mailbox updated for did:aether:ath1fd2757b37c7a72b160b697e562a84a845416a401 (Key: b098e7d6)
+2026-03-10 14:08:58,645 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:08:59,327 [INFO] apps.messaging.views: [DHT] Message content stored (Key: 074b4782)
+2026-03-10 14:08:59,335 [INFO] django.server: "POST /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/send/ HTTP/1.1" 201 135
+2026-03-10 14:08:59,714 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:09:09,519 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:09:10,478 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:09:19,535 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:09:20,438 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:09:29,517 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:09:30,373 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:09:39,523 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:09:40,310 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:09:49,532 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:09:50,233 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:09:59,525 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:10:00,769 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:10:09,564 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:10:10,533 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:10:19,529 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:10:20,692 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:10:29,515 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:10:30,120 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:10:39,503 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:10:40,110 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:10:49,515 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:10:50,022 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:10:59,515 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:11:00,186 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:11:09,539 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:11:10,155 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:11:19,525 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:11:20,089 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:11:29,512 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:11:30,068 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:11:39,510 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:11:40,084 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:11:49,530 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:11:50,163 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:12:04,703 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:12:04,796 [INFO] django.server: "GET /api/v1/messaging/conversations/1a6c2e5d-ffd0-4c97-b325-9ec68abb03c3/ HTTP/1.1" 200 322
+2026-03-10 14:12:05,433 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:12:06,128 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:12:14,014 [INFO] django.server: "GET /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/ HTTP/1.1" 200 1425
+2026-03-10 14:12:14,740 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:12:15,375 [INFO] django.server: "OPTIONS /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/messages/c0cb83e8-a97d-4082-8909-a53f6018d739/decrypt/ HTTP/1.1" 200 0
+2026-03-10 14:12:15,538 [INFO] django.server: "GET /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/messages/c0cb83e8-a97d-4082-8909-a53f6018d739/decrypt/ HTTP/1.1" 200 576
+2026-03-10 14:12:17,214 [INFO] django.server: "OPTIONS /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/messages/fd987c66-8bda-4b4a-aed5-b3f7219861b0/decrypt/ HTTP/1.1" 200 0
+2026-03-10 14:12:17,393 [INFO] django.server: "GET /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/messages/fd987c66-8bda-4b4a-aed5-b3f7219861b0/decrypt/ HTTP/1.1" 200 569
+2026-03-10 14:12:24,024 [INFO] django.server: "GET /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/ HTTP/1.1" 200 1425
+2026-03-10 14:12:24,715 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:12:34,503 [INFO] django.server: "GET /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/ HTTP/1.1" 200 1425
+2026-03-10 14:12:35,320 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 1963
+2026-03-10 14:12:40,756 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:12:40,848 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:12:41,907 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:12:42,002 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:12:42,860 [INFO] django.server: "OPTIONS /api/v1/billing/wallet/ HTTP/1.1" 200 0
+2026-03-10 14:12:42,861 [INFO] django.server: "OPTIONS /api/v1/billing/wallet/ HTTP/1.1" 200 0
+2026-03-10 14:12:42,951 [INFO] django.server: "GET /api/v1/billing/wallet/ HTTP/1.1" 200 717
+2026-03-10 14:12:43,041 [INFO] django.server: "GET /api/v1/billing/wallet/ HTTP/1.1" 200 717
+2026-03-10 14:13:40,660 [INFO] django.server: "GET /api/v1/billing/wallet/ HTTP/1.1" 200 717
+2026-03-10 14:13:41,727 [INFO] django.server: "GET /api/v1/billing/wallet/ HTTP/1.1" 200 717
+2026-03-10 14:13:42,398 [INFO] django.server: "GET /api/v1/billing/wallet/ HTTP/1.1" 200 717
+2026-03-10 14:13:42,649 [INFO] django.server: "GET /api/v1/billing/wallet/ HTTP/1.1" 200 717
+2026-03-10 14:13:43,245 [INFO] django.server: "GET /api/v1/billing/wallet/ HTTP/1.1" 200 717
+2026-03-10 14:13:43,658 [INFO] django.server: "GET /api/v1/billing/wallet/ HTTP/1.1" 200 717
+2026-03-10 14:13:44,141 [INFO] django.server: "GET /api/v1/billing/wallet/ HTTP/1.1" 200 717
+2026-03-10 14:13:44,910 [INFO] django.server: "GET /api/v1/billing/wallet/ HTTP/1.1" 200 717
+2026-03-10 14:13:50,060 [WARNING] django.request: Unauthorized: /api/v1/billing/wallet/
+2026-03-10 14:13:50,061 [WARNING] django.server: "GET /api/v1/billing/wallet/ HTTP/1.1" 401 76
+2026-03-10 14:13:50,224 [WARNING] django.request: Not Found: /favicon.ico
+2026-03-10 14:13:50,226 [WARNING] django.server: "GET /favicon.ico HTTP/1.1" 404 3169
+2026-03-10 14:17:22,988 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\workers\encoder.py changed, reloading.
+2026-03-10 14:17:29,750 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 14:17:31,516 [INFO] django.server: "GET /api/v1/billing/wallet/ HTTP/1.1" 200 717
+2026-03-10 14:18:38,341 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:18:38,444 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:18:46,604 [INFO] apps.storage.engine: ReedSolomon library (reedsolo) loaded successfully
+2026-03-10 14:18:46,996 [INFO] apps.storage.views: Upload queued: .env (262 bytes) -> personal
+2026-03-10 14:18:46,999 [INFO] django.server: "POST /api/v1/storage/upload/personal/ HTTP/1.1" 202 275
+2026-03-10 14:18:49,601 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:19:03,538 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\p2p\views.py changed, reloading.
+2026-03-10 14:19:07,256 [INFO] django.utils.autoreload: Watching for file changes with StatReloader

@@ -9,8 +9,9 @@ class NodeHealthView(APIView):
     
     def get(self, request):
         from apps.p2p.services.node_monitor import node_monitor
+        import asyncio
         
-        cluster_status = node_monitor.get_cluster_status()
+        cluster_status = asyncio.run(node_monitor.get_cluster_status())
         
         if cluster_status['cluster_healthy']:
             return Response(cluster_status, status=200)
@@ -24,11 +25,12 @@ class NodeActivateView(APIView):
     
     def post(self, request):
         from apps.p2p.services.node_monitor import node_monitor
+        import asyncio
         
         node_monitor.activate_healthy_nodes()
-        status = node_monitor.get_cluster_status()
+        status_data = asyncio.run(node_monitor.get_cluster_status())
         
         return Response({
             'message': 'Node health check completed',
-            'status': status
+            'status': status_data
         })
