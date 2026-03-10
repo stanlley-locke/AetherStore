@@ -1314,3 +1314,17 @@ kombu.exceptions.OperationalError: Error 10054 while writing to socket. An exist
 2026-03-10 14:40:06,902 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
 2026-03-10 14:43:05,896 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\workers\auditor.py changed, reloading.
 2026-03-10 14:43:09,751 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 14:51:51,620 [INFO] apps.storage.engine: ReedSolomon library (reedsolo) loaded successfully
+2026-03-10 14:51:52,006 [INFO] apps.storage.views: Upload queued: .env.example (789 bytes) -> personal
+2026-03-10 14:51:52,013 [INFO] django.server: "POST /api/v1/storage/upload/personal/ HTTP/1.1" 202 283
+2026-03-10 14:51:54,509 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:52:05,685 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:52:13,418 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\storage\views.py changed, reloading.
+2026-03-10 14:52:17,378 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 14:52:23,441 [INFO] django.server: "POST /api/v1/billing/wallet/generate/ HTTP/1.1" 200 503
+2026-03-10 14:52:26,095 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\storage\views.py changed, reloading.
+2026-03-10 14:52:29,811 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 14:52:31,508 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:52:31,680 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:52:37,573 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\storage\views.py changed, reloading.
+2026-03-10 14:52:41,442 [INFO] django.utils.autoreload: Watching for file changes with StatReloader

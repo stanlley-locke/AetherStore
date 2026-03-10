@@ -917,20 +917,14 @@ class DownloadView(APIView):
                 logger.warning(f"Access denied for {owner_did} on object {object_id}")
                 return Response({'error': 'Access denied', 'code': 'ACCESS_DENIED'}, status=403)
             
-            logger.info(f"Async download triggered for object {object_id}")
-            version_param = request.query_params.get('version')
+            # Redirect to the streaming view for direct user-side download
+            from django.urls import reverse
+            stream_url = reverse('storage:stream-file', kwargs={'object_id': str(obj.id)})
+            if version_param:
+                stream_url += f"?version={version_param}"
             
-            # Dispatch Celery task
-            task = process_download.delay(str(obj.id), owner_did, version_number=version_param)
-            
-            return Response({
-                'task_id': task.id,
-                'status': 'processing',
-                'file_size': obj.original_size,
-                'filename': obj.filename or str(obj.id),
-                'version': version_param or 'latest',
-                'message': 'Download queued for background reassembly and decryption'
-            }, status=202)
+            from django.http import HttpResponseRedirect
+            return HttpResponseRedirect(stream_url)
             
         except EncryptedObject.DoesNotExist:
             logger.warning(f"Object {object_id} not found")
@@ -1068,7 +1062,7 @@ class StreamFileView(APIView):
             metadata = active_merkle_dag.get('metadata', {}) or {}
             strategy = metadata.get('encryption_strategy', 'legacy')
             
-            if strategy == 'legacy':
+            if strategy == 'legacy' and range_match:
                 return Response({'error': 'Instant seeking is not mathematically possible for legacy whole-file encryption. Use standard download.'}, status=400)
                 
             salt_b64 = metadata.get('salt')
@@ -1124,19 +1118,27 @@ class StreamFileView(APIView):
                         padded_encrypted_chunk = engine.decode(shard_list)
                         
                         chunk_meta = merkle_dag.chunks[chunk_index]
-                        encrypted_chunk_size = chunk_meta.size + 28
-                        encrypted_chunk = padded_encrypted_chunk[:encrypted_chunk_size]
-                        
-                        encrypted_package = {
-                            'encrypted_data': base64.b64encode(encrypted_chunk).decode('utf-8'),
-                            'salt': salt_b64
-                        }
-                        
-                        try:
-                            plaintext_chunk = encryption.decrypt(encrypted_package)
-                        except Exception:
-                            break
+                        if strategy == 'per-chunk':
+                            encrypted_chunk_size = chunk_meta.size + 28
+                            encrypted_chunk = padded_encrypted_chunk[:encrypted_chunk_size]
                             
+                            encrypted_package = {
+                                'encrypted_data': base64.b64encode(encrypted_chunk).decode('utf-8'),
+                                'salt': salt_b64
+                            }
+                            
+                            try:
+                                plaintext_chunk = encryption.decrypt(encrypted_package)
+                            except Exception as e:
+                                logger.error(f"Decryption failed for chunk {chunk_index}: {e}")
+                                break
+                        else:
+                            # Legacy strategy requires full file for decryption
+                            # This is a fallback for older files
+                            if range_match:
+                                break
+                            plaintext_chunk = padded_encrypted_chunk[:chunk_meta.size]
+
                         # Slice the plaintext based on what we need
                         chunk_start_byte = chunk_index * chunk_size
                         slice_start = max(0, current_byte_pos - chunk_start_byte)
@@ -1151,6 +1153,20 @@ class StreamFileView(APIView):
                         
                         if bytes_yielded >= max_bytes:
                             break
+                    
+                    # Log successful transfer completion
+                    if bytes_yielded >= content_length:
+                        try:
+                            AccessLog.objects.create(
+                                object_id=obj.id,
+                                user_did=owner_did,
+                                action='download',
+                                bytes_transferred=bytes_yielded,
+                                ip_address=request.META.get('REMOTE_ADDR'),
+                                status_code=200
+                            )
+                        except Exception:
+                            pass
             
             response = StreamingHttpResponse(
                 stream_generator(), 
@@ -1159,6 +1175,9 @@ class StreamFileView(APIView):
             )
             response['Content-Length'] = str(content_length)
             response['Accept-Ranges'] = 'bytes'
+            # Trigger browser download with original filename
+            response['Content-Disposition'] = f'attachment; filename="{obj.filename}"'
+            
             if range_match:
                 response['Content-Range'] = f'bytes {start_byte}-{end_byte}/{total_size}'
                 
