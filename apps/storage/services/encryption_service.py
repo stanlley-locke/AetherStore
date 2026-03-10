@@ -8,6 +8,7 @@ from django.core.cache import cache
 from django.conf import settings
 import hashlib
 import os
+import base64
 
 
 class EncryptionService:
@@ -101,6 +102,23 @@ class EncryptionService:
         # Decrypt
         return encryption.decrypt(encrypted_package)
     
+    @staticmethod
+    def get_encryption_instance(metadata: dict, owner_did: str) -> ClientEncryption:
+        """
+        Get the correct ClientEncryption instance based on metadata.
+        """
+        if metadata.get('convergent'):
+            original_hash = metadata.get('original_hash')
+            if not original_hash:
+                raise ValueError("Original hash missing from metadata for convergent decryption")
+            return EncryptionService.get_convergent_encryption(original_hash)
+        else:
+            salt_b64 = metadata.get('salt')
+            if not salt_b64:
+                raise ValueError("Salt missing from metadata")
+            salt = base64.b64decode(salt_b64)
+            return ClientEncryption(password=f'{owner_did}:{salt.hex()}', salt=salt)
+
     @staticmethod
     def verify_key(user_did: str, key_hash: str) -> bool:
         """Verify encryption key matches"""

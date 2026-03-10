@@ -2,7 +2,8 @@ from rest_framework.views import APIView
 from apps.core.merkle import MerkleDAG
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
-from apps.storage.models import AccessLog
+from apps.storage.models import AccessLog, StorageNode, Bucket, EncryptedObject, ObjectVersion
+from apps.storage.services.encryption_service import EncryptionService
 from rest_framework import status, permissions
 from rest_framework.decorators import action
 from django.http import StreamingHttpResponse
@@ -1069,9 +1070,8 @@ class StreamFileView(APIView):
             if strategy == 'legacy' and range_match:
                 return Response({'error': 'Instant seeking is not mathematically possible for legacy whole-file encryption. Use standard download.'}, status=400)
                 
+            encryption = EncryptionService.get_encryption_instance(metadata, owner_did)
             salt_b64 = metadata.get('salt')
-            salt = base64.b64decode(salt_b64)
-            encryption = ClientEncryption(password=f'{owner_did}:{salt.hex()}', salt=salt)
             engine = get_erasure_engine()
             
             from asgiref.sync import async_to_sync
