@@ -1328,3 +1328,34 @@ kombu.exceptions.OperationalError: Error 10054 while writing to socket. An exist
 2026-03-10 14:52:31,680 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
 2026-03-10 14:52:37,573 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\storage\views.py changed, reloading.
 2026-03-10 14:52:41,442 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 14:53:09,148 [INFO] apps.storage.engine: ReedSolomon library (reedsolo) loaded successfully
+2026-03-10 14:53:09,674 [INFO] apps.storage.views: Upload queued: dreadme.md (14958 bytes) -> personal
+2026-03-10 14:53:09,688 [INFO] django.server: "POST /api/v1/storage/upload/personal/ HTTP/1.1" 202 283
+2026-03-10 14:53:11,806 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:53:14,424 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:58:35,079 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:58:35,159 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:59:26,552 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:59:26,652 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:59:27,604 [INFO] django.server: "GET /api/v1/storage/objects/?deleted=true&sort=-created_at HTTP/1.1" 200 146
+2026-03-10 14:59:27,727 [INFO] django.server: "GET /api/v1/storage/objects/?deleted=true&sort=-created_at HTTP/1.1" 200 146
+2026-03-10 14:59:29,215 [INFO] django.server: "GET /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/ HTTP/1.1" 200 1427
+2026-03-10 14:59:29,403 [INFO] django.server: "GET /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/ HTTP/1.1" 200 1427
+2026-03-10 14:59:32,547 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 56
+2026-03-10 14:59:33,315 [WARNING] django.request: Forbidden: /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/messages/c0cb83e8-a97d-4082-8909-a53f6018d739/decrypt/
+2026-03-10 14:59:33,317 [WARNING] django.server: "GET /api/v1/messaging/conversations/9c3d3cb3-80ae-4930-b2da-2ef82723507a/messages/c0cb83e8-a97d-4082-8909-a53f6018d739/decrypt/ HTTP/1.1" 403 25
+2026-03-10 14:59:34,996 [INFO] django.server: "GET /api/v1/messaging/inbox/dht/ HTTP/1.1" 200 56
+2026-03-10 14:59:38,703 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:59:38,855 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:59:40,151 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 14:59:40,265 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 15:01:44,538 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 15:01:44,694 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 15:01:54,622 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 15:01:54,729 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 15:01:55,551 [INFO] django.server: "GET /api/v1/storage/objects/?deleted=true&sort=-created_at HTTP/1.1" 200 146
+2026-03-10 15:01:55,689 [INFO] django.server: "GET /api/v1/storage/objects/?deleted=true&sort=-created_at HTTP/1.1" 200 146
+2026-03-10 15:02:00,147 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 15:02:00,239 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
+2026-03-10 15:02:11,241 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\aetherstore\settings.py changed, reloading.
+2026-03-10 15:02:15,387 [INFO] django.utils.autoreload: Watching for file changes with StatReloader

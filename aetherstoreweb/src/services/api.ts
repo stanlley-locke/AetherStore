@@ -5,7 +5,7 @@
  */
 import axios from 'axios';
 
-export const BASE_URL = 'http://localhost:8000/api/v1';
+export const BASE_URL = '/api/v1';
 
 //  DID Auth Header
 export function getDIDAuthHeader(did: string | null): string {
