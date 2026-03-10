@@ -162,7 +162,7 @@ class EncryptedObject(models.Model):
     key_hash = models.CharField(max_length=64, db_index=True)
     
     # Merkle DAG
-    root_hash = models.CharField(max_length=64, unique=True, db_index=True)
+    root_hash = models.CharField(max_length=64, db_index=True)
     merkle_dag = models.JSONField(default=dict)
     chunk_count = models.IntegerField(default=0)
     chunk_size = models.IntegerField(default=262144)

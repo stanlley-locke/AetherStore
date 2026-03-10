@@ -46,115 +46,110 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
             raise Exception(error_msg)
         
         logger.info(f"✓ {node_verification['available_nodes']} healthy nodes available")
-        
-        # 2. Extract salt for user encryption
+               # 2. Extract salt for user encryption
         logger.info("Setting up encryption...")
         from apps.core.crypto import ClientEncryption
-        salt = EncryptionService.get_user_salt(owner_did)
-        encryption = ClientEncryption(password=f'{owner_did}:{salt.hex()}', salt=salt)
+        # Using convergent encryption by default for global deduplication
+        encryption = EncryptionService.get_convergent_encryption(hashlib.sha256(data_bytes).hexdigest())
+        salt = encryption.salt
         
         # 3. Build Merkle DAG on PLAINTEXT data
         logger.info("Building Merkle DAG...")
         merkle_dag = MerkleService.build_merkle_dag(data_bytes)
         logger.info(f"Merkle root: {merkle_dag.root_hash[:16]}...")
         
-        # 4. Check deduplication on PLAINTEXT root hash
-        if EncryptedObject.objects.filter(
+        # 4. Check global deduplication on PLAINTEXT root hash
+        global_existing = EncryptedObject.objects.filter(
             original_hash=merkle_dag.root_hash,
             is_deleted=False
-        ).exists():
-            logger.info(f"Deduplication hit for {merkle_dag.root_hash[:16]}")
-            existing = EncryptedObject.objects.filter(
-                original_hash=merkle_dag.root_hash,
-                is_deleted=False
-            ).first()
-            return {
-                'status': 'deduplicated',
-                'object_id': str(existing.id),
-                'root_hash': merkle_dag.root_hash
-            }
+        ).first()
         
         # 5. Assign original hash
         original_hash = merkle_dag.root_hash
         logger.info(f"Original file hash: {original_hash[:16]}...")
-        
-        # 6. Reuse healthy nodes from verification
-        healthy_nodes = node_verification['nodes']
-        logger.info(f"Using {len(healthy_nodes)} nodes")
-        
-        # 7. Encode and distribute shards
-        dht = dht_service.get_node()
-        ring = get_hash_ring()
-        
+
         shard_map = {}
         shards_stored = 0
-        
-        for chunk_meta in merkle_dag.chunks:
-            chunk_index = chunk_meta.index
+
+        if global_existing:
+            logger.info(f"Global deduplication hit for {merkle_dag.root_hash[:16]}. Reusing existing shards.")
+            shard_map = global_existing.shard_map
+            # We skip the sharding process entirely
+        else:
+            # 6. Reuse healthy nodes from verification
+            healthy_nodes = node_verification['nodes']
+            logger.info(f"Using {len(healthy_nodes)} nodes")
             
-            plaintext_chunk = MerkleService.get_chunk_from_data(
-                data_bytes, 
-                chunk_index, 
-                merkle_dag.chunk_size
-            )
+            # 7. Encode and distribute shards
+            dht = dht_service.get_node()
+            ring = get_hash_ring()
             
-            # --- PER-CHUNK ENCRYPTION ---
-            encrypted_package = encryption.encrypt(plaintext_chunk)
-            encrypted_chunk = base64.b64decode(encrypted_package['encrypted_data'])
-            
-            # Erasure code the encrypted chunk
-            shards = engine.encode(encrypted_chunk)
-            
-            chunk_shard_map = ring.get_all_nodes_for_object(
-                f"{merkle_dag.root_hash}:{chunk_index}",
-                len(shards)
-            )
-            
-            with httpx.Client(timeout=30.0) as client:
-                for shard_index, shard_data in enumerate(shards):
-                    nodes = chunk_shard_map.get(shard_index, [])
-                    stored = False
-                    
-                    for node_id, endpoint in nodes:
-                        try:
-                            response = client.put(
-                                f"{endpoint}/shard/{merkle_dag.root_hash}/{chunk_index}/{shard_index}",
-                                content=shard_data,
-                                timeout=30.0
-                            )
-                            
-                            if response.status_code == 200:
-                                key = f"{chunk_index}:{shard_index}"
-                                shard_map[key] = node_id
-                                shards_stored += 1
-                                stored = True
-                                
-                                dht.store_shard_location(
-                                    merkle_dag.root_hash,
-                                    chunk_index,
-                                    shard_index,
-                                    node_id
+            for chunk_meta in merkle_dag.chunks:
+                chunk_index = chunk_meta.index
+                
+                plaintext_chunk = MerkleService.get_chunk_from_data(
+                    data_bytes, 
+                    chunk_index, 
+                    merkle_dag.chunk_size
+                )
+                
+                # --- PER-CHUNK ENCRYPTION (Convergent) ---
+                encrypted_package = encryption.encrypt(plaintext_chunk)
+                encrypted_chunk = base64.b64decode(encrypted_package['encrypted_data'])
+                
+                # Erasure code the encrypted chunk
+                shards = engine.encode(encrypted_chunk)
+                
+                chunk_shard_map = ring.get_all_nodes_for_object(
+                    f"{merkle_dag.root_hash}:{chunk_index}",
+                    len(shards)
+                )
+                
+                with httpx.Client(timeout=30.0) as client:
+                    for shard_index, shard_data in enumerate(shards):
+                        nodes = chunk_shard_map.get(shard_index, [])
+                        stored = False
+                        
+                        for node_id, endpoint in nodes:
+                            try:
+                                response = client.put(
+                                    f"{endpoint}/shard/{merkle_dag.root_hash}/{chunk_index}/{shard_index}",
+                                    content=shard_data,
+                                    timeout=30.0
                                 )
-                                logger.debug(f"Shard {chunk_index}:{shard_index} -> {node_id}")
-                                break
                                 
-                        except Exception as e:
-                            logger.warning(f"Node {node_id} failed: {e}")
-                            continue
-                    
-                    if not stored:
-                        logger.error(f"Failed to store shard {chunk_index}:{shard_index}")
+                                if response.status_code == 200:
+                                    key = f"{chunk_index}:{shard_index}"
+                                    shard_map[key] = node_id
+                                    shards_stored += 1
+                                    stored = True
+                                    
+                                    dht.store_shard_location(
+                                        merkle_dag.root_hash,
+                                        chunk_index,
+                                        shard_index,
+                                        node_id
+                                    )
+                                    logger.debug(f"Shard {chunk_index}:{shard_index} -> {node_id}")
+                                    break
+                                    
+                            except Exception as e:
+                                logger.warning(f"Node {node_id} failed: {e}")
+                                continue
+                        
+                        if not stored:
+                            logger.error(f"Failed to store shard {chunk_index}:{shard_index}")
+                
+                logger.info(f"Chunk {chunk_index}/{merkle_dag.chunk_count} done")
             
-            logger.info(f"Chunk {chunk_index}/{merkle_dag.chunk_count} done")
-        
-        # 8. Verify minimum shards
-        min_required = merkle_dag.chunk_count * engine.data_shards
-        if shards_stored < min_required:
-            error_msg = f"Insufficient shards: {shards_stored}/{min_required}"
-            logger.error(error_msg)
-            raise Exception(error_msg)
-        
-        logger.info(f"✓ Stored {shards_stored} shards")
+            # 8. Verify minimum shards
+            min_required = merkle_dag.chunk_count * engine.data_shards
+            if shards_stored < min_required:
+                error_msg = f"Insufficient shards: {shards_stored}/{min_required}"
+                logger.error(error_msg)
+                raise Exception(error_msg)
+            
+            logger.info(f"✓ Stored {shards_stored} shards")
         
         # 9. Save to database
         with transaction.atomic():
@@ -166,13 +161,19 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
             merkle_dag_dict['metadata'].update({
                 'salt': base64.b64encode(salt).decode('utf-8'),
                 'algorithm': 'AES-256-GCM',
-                'encryption_strategy': 'per-chunk'
+                'encryption_strategy': 'per-chunk',
+                'convergent': True
             })
 
-            # Logical object selection: 
-            # 1. If we have a filename, check if the user already has a matching ACTIVE file.
-            obj = None
-            if filename:
+            # Check if THIS user already owns THIS content
+            obj = EncryptedObject.objects.filter(
+                owner_did=owner_did,
+                root_hash=merkle_dag.root_hash,
+                is_deleted=False
+            ).first()
+            
+            if not obj and filename:
+                # Check for same filename for this user to create a new version
                 obj = EncryptedObject.objects.filter(
                     owner_did=owner_did,
                     bucket=bucket,
@@ -180,16 +181,11 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
                     is_deleted=False
                 ).first()
             
-            # 2. If no active file found by name, check if any object (deleted or not) exists with this root_hash.
-            # This handles both recycling deleted files and deduplication if a user re-uploads the exact same content.
-            if not obj:
-                obj = EncryptedObject.objects.filter(root_hash=merkle_dag.root_hash).first()
-            
             if obj:
                 # Update existing object (Recycle or New Version)
-                logger.info(f"Reusing/Updating existing object {obj.id} for root_hash {merkle_dag.root_hash[:16]}")
+                logger.info(f"Updating user's object {obj.id} for content {merkle_dag.root_hash[:16]}")
                 
-                # If it was deleted, we "restore" it to the current user/bucket/filename context
+                # If it was deleted, we "restore" it
                 if obj.is_deleted:
                     obj.is_deleted = False
                     obj.deleted_at = None
@@ -197,8 +193,6 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
                 else:
                     new_version = obj.version + 1
                 
-                obj.owner_did = owner_did
-                obj.bucket = bucket
                 obj.filename = filename or obj.filename
                 obj.version = new_version
                 obj.root_hash = merkle_dag.root_hash
@@ -212,40 +206,25 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
                 obj.key_hash = encryption.get_key_hash()
                 obj.save()
             else:
-                # 3. Brand new file
-                logger.info(f"Creating brand new object for root_hash {merkle_dag.root_hash[:16]}")
+                # Brand new record for THIS user (possibly pointing to shared content)
+                logger.info(f"Creating new record for {owner_did} for root_hash {merkle_dag.root_hash[:16]}")
                 new_version = 1
-                try:
-                    obj = EncryptedObject.objects.create(
-                        owner_did=owner_did,
-                        encryption_algorithm='AES-256-GCM',
-                        key_hash=encryption.get_key_hash(),
-                        root_hash=merkle_dag.root_hash,
-                        merkle_dag=merkle_dag_dict,
-                        chunk_count=merkle_dag.chunk_count,
-                        chunk_size=merkle_dag.chunk_size,
-                        original_size=len(data_bytes),
-                        original_hash=original_hash,
-                        mime_type=mime_type,
-                        filename=filename,
-                        bucket=bucket,
-                        shard_map=shard_map,
-                        version=new_version
-                    )
-                except Exception as e:
-                    # Final fallback: If create failed due to a race, try one last fetch
-                    logger.warning(f"Creation failed (likely race): {e}. Attempting last-second fetch.")
-                    obj = EncryptedObject.objects.filter(root_hash=merkle_dag.root_hash).first()
-                    if not obj:
-                        raise e  # It wasn't a hash collision? Raise it.
-                    
-                    # If we found it now, update it (same logic as above)
-                    obj.is_deleted = False
-                    obj.deleted_at = None
-                    obj.owner_did = owner_did
-                    obj.filename = filename or obj.filename
-                    obj.save()
-
+                obj = EncryptedObject.objects.create(
+                    owner_did=owner_did,
+                    encryption_algorithm='AES-256-GCM',
+                    key_hash=encryption.get_key_hash(),
+                    root_hash=merkle_dag.root_hash,
+                    merkle_dag=merkle_dag_dict,
+                    chunk_count=merkle_dag.chunk_count,
+                    chunk_size=merkle_dag.chunk_size,
+                    original_size=len(data_bytes),
+                    original_hash=original_hash,
+                    mime_type=mime_type,
+                    filename=filename,
+                    bucket=bucket,
+                    shard_map=shard_map,
+                    version=new_version
+                )
             
             from apps.storage.models import ObjectVersion
             ObjectVersion.objects.create(

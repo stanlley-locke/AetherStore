@@ -24,9 +24,20 @@ class EncryptionService:
             cache.set(salt_key, salt, timeout=None)
         
         return salt
-    
+
     @staticmethod
-    def encrypt_file(file_data: bytes, user_did: str, metadata: dict = None) -> dict:
+    def get_convergent_encryption(file_hash: str) -> ClientEncryption:
+        """
+        Create a ClientEncryption instance derived from the content hash.
+        This enables global deduplication of encrypted data.
+        """
+        # derivation_seed is the file hash
+        # salt is derived from the first 16 bytes of the hash
+        salt = bytes.fromhex(file_hash[:32])
+        return ClientEncryption(password=f"convergent:{file_hash}", salt=salt)
+
+    @staticmethod
+    def encrypt_file(file_data: bytes, user_did: str, metadata: dict = None, convergent: bool = False) -> dict:
         """
         Encrypt file data for storage
         
@@ -34,14 +45,19 @@ class EncryptionService:
             file_data: Raw file bytes
             user_did: User's DID for key derivation
             metadata: Optional metadata to include
+            convergent: Whether to use convergent encryption (derived from content)
             
         Returns:
             Dict with encrypted data and metadata
         """
-        salt = EncryptionService.get_user_salt(user_did)
-        
-        # Create encryption instance with explicit salt
-        encryption = ClientEncryption(password=f'{user_did}:{salt.hex()}', salt=salt)
+        if convergent:
+            file_hash = hashlib.sha256(file_data).hexdigest()
+            encryption = EncryptionService.get_convergent_encryption(file_hash)
+            salt = encryption.salt
+        else:
+            salt = EncryptionService.get_user_salt(user_did)
+            # Create encryption instance with explicit salt
+            encryption = ClientEncryption(password=f'{user_did}:{salt.hex()}', salt=salt)
         
         # Prepare metadata
         full_metadata = metadata or {}
@@ -53,6 +69,7 @@ class EncryptionService:
         encrypted = encryption.encrypt(file_data, metadata=full_metadata)
         encrypted['key_hash'] = encryption.get_key_hash()
         encrypted['user_did'] = user_did  # Store user_did for decryption
+        encrypted['convergent'] = convergent
         
         return encrypted
     
@@ -68,11 +85,18 @@ class EncryptionService:
         Returns:
             Decrypted file bytes
         """
-        # Get salt (must be same as encryption)
-        salt = EncryptionService.get_user_salt(user_did)
-        
-        # Create encryption instance with SAME salt
-        encryption = ClientEncryption(password=f'{user_did}:{salt.hex()}', salt=salt)
+        if encrypted_package.get('convergent'):
+            # For convergent encryption, we need the original hash (which is also the root hash in our system)
+            # This should be in the metadata or we can use the root_hash if available
+            original_hash = encrypted_package.get('metadata', {}).get('original_hash')
+            if not original_hash:
+                raise ValueError("Original hash missing from metadata for convergent decryption")
+            encryption = EncryptionService.get_convergent_encryption(original_hash)
+        else:
+            # Get salt (must be same as encryption)
+            salt = EncryptionService.get_user_salt(user_did)
+            # Create encryption instance with SAME salt
+            encryption = ClientEncryption(password=f'{user_did}:{salt.hex()}', salt=salt)
         
         # Decrypt
         return encryption.decrypt(encrypted_package)
