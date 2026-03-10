@@ -919,6 +919,7 @@ class DownloadView(APIView):
             
             # Redirect to the streaming view for direct user-side download
             from django.urls import reverse
+            version_param = request.query_params.get('version')
             stream_url = reverse('storage:stream-file', kwargs={'object_id': str(obj.id)})
             if version_param:
                 stream_url += f"?version={version_param}"
