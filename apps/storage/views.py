@@ -1118,9 +1118,9 @@ class StreamFileView(APIView):
                                     _update_reputation(node_id, False)
                                     
                         if len(chunk_shards) < engine.data_shards:
-                             break  # Stream will abort early if data unavailable
+                             raise Exception(f"Insufficient shards for chunk {chunk_index} (found {len(chunk_shards)}, need {engine.data_shards})")
                              
-                        shard_list = [chunk_shards.get(i, None) for i in range(max(chunk_shards.keys()) + 1)]
+                        shard_list = [chunk_shards.get(i, None) for i in range(engine.total_shards)]
                         padded_encrypted_chunk = engine.decode(shard_list)
                         
                         chunk_meta = merkle_dag.chunks[chunk_index]

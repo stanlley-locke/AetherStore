@@ -35,7 +35,14 @@ export const Login: React.FC = () => {
       // For this prototype, we'll ask the backend to generate the keys securely, but it drops the mnemonic immediately.
       // We use the new fully unauthenticated endpoint directly
       const response = await axios.post(`${API_BASE_URL}/billing/wallet/generate/`);
-      setNewWallet(response.data);
+      const data = response.data;
+      setNewWallet({
+        mnemonic: data.mnemonic,
+        address: data.address,
+        did: data.did,
+        publicKey: data.public_key || data.publicKey,
+        privateKey: data.private_key || data.privateKey
+      });
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to generate Web3 wallet');
     } finally {
