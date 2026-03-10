@@ -18,30 +18,7 @@ class Bucket(models.Model):
         return self.name
 
 
-class StorageObject(models.Model):
-    """Metadata for stored objects"""
-    id = models.BigAutoField(primary_key=True)
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    content_hash = models.CharField(max_length=64, unique=True, db_index=True)
-    bucket = models.ForeignKey(Bucket, on_delete=models.CASCADE, related_name='storage_objects')
-    mime_type = models.CharField(max_length=100)
-    size = models.BigIntegerField()
-    owner_did = models.CharField(max_length=255)
-    shard_map = models.JSONField(default=dict)
-    is_deleted = models.BooleanField(default=False)
-    deleted_at = models.DateTimeField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        db_table = 'storage_object'
-        indexes = [
-            models.Index(fields=['content_hash']),
-            models.Index(fields=['owner_did', '-created_at']),
-        ]
-    
-    def __str__(self):
-        return f"{self.uuid} - {self.content_hash[:16]}"
+
 
 
 class StorageNode(models.Model):
