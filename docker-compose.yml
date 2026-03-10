@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:14-alpine
@@ -48,7 +46,6 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-secret}
     volumes:
       - .:/app
-      - static_volume:/app/staticfiles
       - media_volume:/app/media
     depends_on:
       db:
