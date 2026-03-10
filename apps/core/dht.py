@@ -393,13 +393,15 @@ class DHTService:
             if env_bootstrap:
                 try:
                     b_host, b_port = env_bootstrap.split(':')
+                    # Use SHA-1 of host to guarantee hex node_id (Kademlia requirement)
+                    b_node_id = hashlib.sha1(b_host.encode()).hexdigest()
                     self.node.bootstrap([{
-                        'node_id': f'bootstrap-{b_host}',
+                        'node_id': b_node_id,
                         'address': b_host,
                         'port': int(b_port)
                     }])
                     import logging
-                    logging.getLogger(__name__).info(f"DHT bootstrapped to {env_bootstrap}")
+                    logging.getLogger(__name__).info(f"DHT bootstrapped to {env_bootstrap} (ID: {b_node_id[:8]})")
                 except Exception as e:
                     import logging
                     logging.getLogger(__name__).warning(f"Failed to parse BOOTSTRAP_NODE {env_bootstrap}: {e}")
