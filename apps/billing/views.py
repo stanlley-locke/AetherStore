@@ -364,7 +364,8 @@ class WalletTransferView(APIView):
                 is_node_sender = False
                 if not sender_wallet:
                     sender_wallet = NodeWallet.objects.filter(address=sender_address).first()
-                    is_node_sender = True
+                    if sender_wallet:
+                        is_node_sender = True
                     
                 if not sender_wallet:
                     return Response({'error': f'Sender wallet ({sender_address}) not found.'}, status=404)
@@ -384,7 +385,8 @@ class WalletTransferView(APIView):
                     recipient_wallet = NodeWallet.objects.filter(
                         models.Q(address=recipient_target) | models.Q(node_id=recipient_target)
                     ).first()
-                    is_node_recipient = True
+                    if recipient_wallet:
+                        is_node_recipient = True
                     
                 if not recipient_wallet:
                     # If recipient doesn't exist AND target is an address, create pseudo wallet

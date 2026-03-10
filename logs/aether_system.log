@@ -1402,3 +1402,7 @@ kombu.exceptions.OperationalError: Error 10054 while writing to socket. An exist
 2026-03-10 16:37:42,236 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
 2026-03-10 16:38:10,140 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\storage\views.py changed, reloading.
 2026-03-10 16:38:13,373 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 16:53:44,518 [INFO] django.server: "POST /api/v1/billing/wallet/generate/ HTTP/1.1" 200 508
+2026-03-10 16:54:01,520 [INFO] django.server: "POST /api/v1/billing/wallet/generate/ HTTP/1.1" 200 509
+2026-03-10 16:57:17,280 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\billing\views.py changed, reloading.
+2026-03-10 16:57:21,919 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
