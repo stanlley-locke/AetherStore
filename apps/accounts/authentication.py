@@ -22,6 +22,12 @@ class DIDAuthentication(BaseAuthentication):
         # If middleware already authenticated, use that user
         if hasattr(django_request, 'user') and django_request.user.is_authenticated:
             return (django_request.user, None)
+            
+        # Check if path is exempt from authentication (match middleware logic)
+        from .middleware import DIDAuthenticationMiddleware
+        path = django_request.path.rstrip('/') or '/'
+        if any(path.startswith(p) for p in DIDAuthenticationMiddleware.EXEMPT_PATHS):
+            return None
         
         # Otherwise, authenticate from header
         auth_header = request.META.get('HTTP_AUTHORIZATION', '')

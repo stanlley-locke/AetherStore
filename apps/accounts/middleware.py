@@ -55,9 +55,6 @@ class DIDAuthenticationMiddleware:
         if is_exempt:
             return self.get_response(request)
         
-        # Only log non-exempt paths that reach here
-        print(f"DEBUG: Path {normalized_path} is NOT exempt. EXEMPT_PATHS contains /api/v1/storage/download/presigned: {'/api/v1/storage/download/presigned' in self.EXEMPT_PATHS}")
-        
         # Skip auth for OPTIONS (CORS preflight)
         if request.method == 'OPTIONS':
             return self.get_response(request)
