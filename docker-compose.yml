@@ -41,6 +41,7 @@ services:
       - SERVICE_TYPE=web
       - DB_HOST=db
       - REDIS_HOST=redis
+      - BOOTSTRAP_NODE=node-1:8001
       - DB_NAME=${DB_NAME:-aether}
       - DB_USER=${DB_USER:-aether}
       - DB_PASSWORD=${DB_PASSWORD:-secret}
@@ -69,6 +70,7 @@ services:
       - SERVICE_TYPE=worker
       - DB_HOST=db
       - REDIS_HOST=redis
+      - BOOTSTRAP_NODE=node-1:8001
       - DB_NAME=${DB_NAME:-aether}
       - DB_USER=${DB_USER:-aether}
       - DB_PASSWORD=${DB_PASSWORD:-secret}
@@ -87,6 +89,7 @@ services:
     environment:
       - SERVICE_TYPE=beat
       - REDIS_HOST=redis
+      - BOOTSTRAP_NODE=node-1:8001
     volumes:
       - .:/app
     depends_on:

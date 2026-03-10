@@ -373,14 +373,36 @@ class DHTService:
             cls._instance.initialized = False
         return cls._instance
     
-    def initialize(self, node_id: str = None, address: str = 'localhost', 
-                  port: int = 8001, bootstrap_nodes: List[Dict] = None) -> DHTNode:
-        """Initialize DHT node"""
+    def initialize(self, node_id: str = None, address: str = None, 
+                  port: int = None, bootstrap_nodes: List[Dict] = None) -> DHTNode:
+        """Initialize DHT node from args or environment"""
         if not self.initialized:
-            self.node = DHTNode(node_id, address, port)
+            # Order: Args > Environment > Defaults
+            env_node_id = node_id or os.environ.get('NODE_ID')
+            env_address = address or os.environ.get('NODE_ADDRESS', 'localhost')
+            env_port = port or int(os.environ.get('NODE_PORT', 8001))
             
+            self.node = DHTNode(env_node_id, env_address, env_port)
+            
+            # Explicit bootstrap nodes from args
             if bootstrap_nodes:
                 self.node.bootstrap(bootstrap_nodes)
+            
+            # Additional bootstrap from environment (e.g., "node-1:8001")
+            env_bootstrap = os.environ.get('BOOTSTRAP_NODE')
+            if env_bootstrap:
+                try:
+                    b_host, b_port = env_bootstrap.split(':')
+                    self.node.bootstrap([{
+                        'node_id': f'bootstrap-{b_host}',
+                        'address': b_host,
+                        'port': int(b_port)
+                    }])
+                    import logging
+                    logging.getLogger(__name__).info(f"DHT bootstrapped to {env_bootstrap}")
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).warning(f"Failed to parse BOOTSTRAP_NODE {env_bootstrap}: {e}")
             
             self.initialized = True
         
