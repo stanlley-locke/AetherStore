@@ -137,6 +137,8 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
 # Celery Beat Schedule
+from celery.schedules import crontab
+
 CELERY_BEAT_SCHEDULE = {
     'audit-storage': {
         'task': 'workers.auditor.audit_storage_health',
@@ -145,7 +147,19 @@ CELERY_BEAT_SCHEDULE = {
     'node-heartbeat': {
         'task': 'workers.auditor.node_heartbeat',
         'schedule': 60.0,
-    }
+    },
+    'daily-billing-and-payouts': {
+        'task': 'workers.payout_calculator.calculate_payouts',
+        'schedule': crontab(hour=0, minute=0),
+    },
+    'periodic-node-audit': {
+        'task': 'workers.storage_auditor.audit_nodes',
+        'schedule': crontab(minute='*/15'),
+    },
+    'expire-old-messages': {
+        'task': 'workers.message_delivery.expire_old_messages',
+        'schedule': crontab(minute=0),  # Every hour
+    },
 }
 
 # Django REST Framework - FIXED: Removed SessionAuthentication (enforces CSRF)
@@ -264,24 +278,5 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
-    },
-}
-
-# Celery Beat Schedule
-from celery.schedules import crontab
-
-CELERY_BEAT_SCHEDULE = {
-    'daily-billing-and-payouts': {
-        'task': 'workers.payout_calculator.calculate_payouts',
-        'schedule': crontab(hour=0, minute=0),
-    },
-    'periodic-node-audit': {
-        'task': 'workers.storage_auditor.audit_nodes',
-        'schedule': crontab(minute='*/15'),
-    },
-    # Phase 14: Hourly auto-expiry of old messages
-    'expire-old-messages': {
-        'task': 'workers.message_delivery.expire_old_messages',
-        'schedule': crontab(minute=0),  # Every hour
     },
 }

@@ -989,3 +989,7 @@ kombu.exceptions.OperationalError: Error 10054 while writing to socket. An exist
 2026-03-10 08:42:23,872 [INFO] apps.storage.engine: ReedSolomon initialized: 5+2 (reedsolo)
 2026-03-10 09:49:34,251 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\aetherstore\settings.py changed, reloading.
 2026-03-10 09:49:39,218 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 09:55:42,738 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\aetherstore\settings.py changed, reloading.
+2026-03-10 09:55:45,499 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 09:56:05,135 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\aetherstore\settings.py changed, reloading.
+2026-03-10 09:56:07,586 [INFO] django.utils.autoreload: Watching for file changes with StatReloader

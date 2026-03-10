@@ -45,7 +45,13 @@ def main():
         print(f"\n[!] WARNING: {existing_admins.count()} existing admin(s) found:")
         for adm in existing_admins:
             print(f"    - {adm.did}")
-        cont = input("\nDo you want to create an ADDITIONAL admin? (yes/no): ").strip().lower()
+        
+        try:
+            cont = input("\nDo you want to create an ADDITIONAL admin? (yes/no): ").strip().lower()
+        except EOFError:
+            print("\n[!] Non-interactive environment detected. Skipping additional admin creation.")
+            cont = 'no'
+
         if cont != 'yes':
             print("\nAborted. Existing admins unchanged.")
             return
