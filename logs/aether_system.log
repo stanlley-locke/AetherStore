@@ -1359,3 +1359,5 @@ kombu.exceptions.OperationalError: Error 10054 while writing to socket. An exist
 2026-03-10 15:02:00,239 [INFO] django.server: "GET /api/v1/storage/objects/?page=1&page_size=100&sort=-created_at HTTP/1.1" 200 147
 2026-03-10 15:02:11,241 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\aetherstore\settings.py changed, reloading.
 2026-03-10 15:02:15,387 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2026-03-10 15:07:19,216 [INFO] django.utils.autoreload: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\apps\storage\views.py changed, reloading.
+2026-03-10 15:07:23,478 [INFO] django.utils.autoreload: Watching for file changes with StatReloader

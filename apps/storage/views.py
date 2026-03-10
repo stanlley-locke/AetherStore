@@ -1094,7 +1094,9 @@ class StreamFileView(APIView):
                                     if peer:
                                         endpoint = f"http://{peer.address}:{peer.port}"
                                     else:
-                                        node = StorageNode.objects.filter(node_id=node_id, is_active=True).first()
+                                        # Use sync_to_async for DB fallback
+                                        get_node = sync_to_async(lambda: StorageNode.objects.filter(node_id=node_id, is_active=True).first())
+                                        node = async_to_sync(get_node)()
                                         if node:
                                             endpoint = node.endpoint
                                         else:
@@ -1157,14 +1159,16 @@ class StreamFileView(APIView):
                     # Log successful transfer completion
                     if bytes_yielded >= content_length:
                         try:
-                            AccessLog.objects.create(
-                                object_id=obj.id,
-                                user_did=owner_did,
-                                action='download',
-                                bytes_transferred=bytes_yielded,
-                                ip_address=request.META.get('REMOTE_ADDR'),
-                                status_code=200
-                            )
+                            def log_access():
+                                AccessLog.objects.create(
+                                    object_id=obj.id,
+                                    user_did=owner_did,
+                                    action='download',
+                                    bytes_transferred=bytes_yielded,
+                                    ip_address=request.META.get('REMOTE_ADDR'),
+                                    status_code=200
+                                )
+                            async_to_sync(sync_to_async(log_access))()
                         except Exception:
                             pass
             
