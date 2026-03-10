@@ -16,8 +16,19 @@ class DIDAuthenticationMiddleware:
     For development: Accepts any valid format (signature not cryptographically verified)
     For production: Verify cryptographic signature against DID document
     """
-    
-    EXEMPT_PATHS = ['/admin/', '/health/', '/docs/', '/static/', '/api/v1/health/', '/api/v1/metrics/']
+    EXEMPT_PATHS = [
+        '/admin/', 
+        '/health/', 
+        '/docs/', 
+        '/static/', 
+        '/api/v1/health/', 
+        '/api/v1/metrics/', 
+        '/api/v1/billing/wallet/transfer/', 
+        '/api/v1/billing/wallet/recover/',
+        '/api/v1/billing/wallet/generate/',
+        '/api/v1/download/presigned/',
+        '/favicon.ico'
+    ]
     
     def __init__(self, get_response):
         self.get_response = get_response
@@ -34,8 +45,9 @@ class DIDAuthenticationMiddleware:
         auth_header = request.META.get('HTTP_AUTHORIZATION', '')
         
         if not auth_header:
+            # Provide more debug info if it fails
             return JsonResponse(
-                {'detail': 'Missing Authorization header'}, 
+                {'detail': f'Missing Authorization header for path: {request.path}'}, 
                 status=401
             )
         

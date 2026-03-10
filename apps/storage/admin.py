@@ -27,7 +27,7 @@ class StorageQuotaAdmin(admin.ModelAdmin):
 
 @admin.register(AccessLog)
 class AccessLogAdmin(admin.ModelAdmin):
-    list_display = ['id', 'object', 'user_did', 'action', 'bytes_transferred', 'timestamp', 'status_code']
+    list_display = ['id', 'object_id', 'user_did', 'action', 'bytes_transferred', 'timestamp', 'status_code']
     search_fields = ['user_did', 'action']
     list_filter = ['action', 'timestamp', 'status_code']
     readonly_fields = ['timestamp']

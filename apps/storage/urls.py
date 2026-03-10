@@ -21,13 +21,22 @@ from .views import (
     MultipartUploadPartView,
     MultipartCompleteView,
     StreamFileView,
+    PresignedInfoView,
 )
+from .node_management import NodeClaimView, MinerFleetView, MinerEarningsView, NodePayoutView, NodeLogProxyView
 
 router = DefaultRouter()
 router.register(r'buckets', BucketViewSet, basename='bucket')
 router.register(r'nodes', StorageNodeViewSet, basename='node')
 
 urlpatterns = [
+    # Miner Management (Phase 29)
+    path('miner/claim/', NodeClaimView.as_view(), name='node-claim'),
+    path('miner/fleet/', MinerFleetView.as_view(), name='miner-fleet'),
+    path('miner/earnings/', MinerEarningsView.as_view(), name='miner-earnings'),
+    path('miner/payout/', NodePayoutView.as_view(), name='node-payout'),
+    path('miner/logs/<str:node_id>/', NodeLogProxyView.as_view(), name='node-logs-proxy'),
+
     path('', include(router.urls)),
     
     # Upload/Download
@@ -42,6 +51,7 @@ urlpatterns = [
     path('download/status/<str:task_id>/', DownloadStatusView.as_view(), name='download-status'),
     path('download/file/<str:task_id>/', DownloadFileView.as_view(), name='download-file'),
     path('download/presigned/<str:token>/', PresignedDownloadView.as_view(), name='presigned-download'),
+    path('download/presigned/<str:token>/info/', PresignedInfoView.as_view(), name='presigned-info'),
     
     # Object management
     path('object/<uuid:object_id>/', ObjectDetailView.as_view(), name='object-detail'),

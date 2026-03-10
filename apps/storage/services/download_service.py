@@ -71,7 +71,7 @@ class DownloadService:
         
         # 4. Log access
         AccessLog.objects.create(
-            object=obj,
+            object_id=obj.id,
             user_did=user_did,
             action='download',
             bytes_transferred=range_end - range_start + 1 if range_start is not None else obj.size,
@@ -204,7 +204,7 @@ class DownloadService:
             
             # Log
             AccessLog.objects.create(
-                object=obj,
+                object_id=obj.id,
                 user_did=user_did,
                 action='delete',
                 status_code=200

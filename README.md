@@ -647,6 +647,29 @@ List all objects within a specific bucket. Authentication is **required**.
 
 ---
 
+### **Decentralized Chat (`apps/messaging`)**
+Provides end-to-end encrypted messaging integrated with DHT and Wallet features.
+* **E2E Encryption:** Messages are encrypted client-side using symmetric keys derived from Ed25519 diffie-hellman key exchanges.
+* **DHT Mailboxes:** Pure decentralization; messages are routed through the P2P network instead of a centralized database.
+* **Token Integration:** A tiny ATK transaction fee (e.g. 0.01 ATK) to send messages, curbing network spam.
+
+---
+
+### **Dashboards & Frontend (Planned)**
+AetherStore features two distinct, beautiful frontends designed for radically different personas:
+
+1. **The AetherDrive Portal (Consumers):**
+   * Passwordless Web3 Mnemonic Login
+   * Cloud File Explorer with client-side cryptography, in-app media streaming, and "Shared Workspaces".
+   * E2E Encrypted Chat Hub with typing indicators and secure attachments.
+   * Wallet Portal for managing ATK, ledger history, and P2P transfers.
+2. **The AetherNode Console (Infrastructure & Admins):**
+   * Command center for storage miners to monitor fleet capacity, uptime heartbeats, and live debug logs.
+   * Analytics graphs charting ATK mining earnings based on Proof of Storage & Service.
+   * **Admin "God-Mode":** A restricted view for network administrators featuring a 3D Global P2P Topology Map, Treasury analytics, dynamic network parameter adjustments, and tools for moderating unencrypted public data.
+
+---
+
 ### Best Practices
 
 - **Always use fresh nonces** — each request must carry a unique nonce value.

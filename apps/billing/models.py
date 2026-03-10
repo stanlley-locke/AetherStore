@@ -1,11 +1,13 @@
 from django.db import models
 from django.utils import timezone
+from decimal import Decimal
 import uuid
 
 class UserWallet(models.Model):
     """Tracks the token balance for a user DID."""
     did = models.CharField(max_length=255, unique=True, primary_key=True)
-    balance = models.DecimalField(max_digits=20, decimal_places=8, default=100.0) # Start with 100 free tokens
+    address = models.CharField(max_length=64, unique=True, null=True, blank=True, db_index=True)  # ath1... blockchain address
+    balance = models.DecimalField(max_digits=20, decimal_places=8, default=Decimal('100.0')) # Start with 100 free tokens
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -16,7 +18,8 @@ class UserWallet(models.Model):
 class NodeWallet(models.Model):
     """Tracks the token earnings for a P2P Storage Node."""
     node_id = models.CharField(max_length=255, unique=True, primary_key=True)
-    earned_balance = models.DecimalField(max_digits=20, decimal_places=8, default=0.0)
+    address = models.CharField(max_length=64, unique=True, null=True, blank=True, db_index=True)  # ath1... blockchain address
+    earned_balance = models.DecimalField(max_digits=20, decimal_places=8, default=Decimal('0.0'))
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -32,6 +35,8 @@ class Transaction(models.Model):
         ('withdrawal', 'Withdrawal'),
         ('storage_payment', 'Storage Payment'),
         ('node_payout', 'Node Payout'),
+        ('transfer_in', 'Incoming Transfer'),
+        ('transfer_out', 'Outgoing Transfer'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -55,3 +60,20 @@ class Transaction(models.Model):
         elif self.node_wallet:
             return f"{self.tx_type.capitalize()} - {self.node_wallet.node_id}: {self.amount} ATK"
         return f"{self.tx_type.capitalize()} - {self.amount} ATK"
+
+class LedgerTransaction(models.Model):
+    """Represents a cryptographically signed peer-to-peer token transfer."""
+    tx_hash = models.CharField(max_length=64, primary_key=True)
+    sender_address = models.CharField(max_length=64, db_index=True)
+    recipient_address = models.CharField(max_length=64, db_index=True)
+    amount = models.DecimalField(max_digits=20, decimal_places=8)
+    signature = models.TextField() # Hex string of Ed25519 signature
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('completed', 'Completed'), ('failed', 'Failed')], default='completed')
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        db_table = 'billing_ledger_transaction'
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.tx_hash[:8]} - {self.amount} ATK from {self.sender_address[:8]} to {self.recipient_address[:8]}"

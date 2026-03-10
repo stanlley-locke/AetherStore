@@ -26,7 +26,10 @@ GROUP_MSG_MULTIPLIER = 1 # multiplied by member count for group messages
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 
 def _owner_did(request):
-    return getattr(request.user, 'did', str(request.user))
+    did = getattr(request.user, 'did', str(request.user))
+    if did and did.startswith('ath1'):
+        return f"did:aether:{did}"
+    return did
 
 
 def _encrypt_message(plaintext: str, sender_did: str, recipient_key_id: str) -> str:
@@ -96,7 +99,11 @@ def _write_dht_mailbox(conv_id, msg_id, recipient_did, envelope: dict):
         from asgiref.sync import async_to_sync
         dht = dht_service.get_node()
         # Key: inbox:did:bob (hashed)
-        mailbox_key = hashlib.sha1(f"inbox:{recipient_did}".encode()).hexdigest()
+        normalized_did = recipient_did
+        if normalized_did.startswith('ath1') and not normalized_did.startswith('did:aether:'):
+            normalized_did = f"did:aether:{normalized_did}"
+            
+        mailbox_key = hashlib.sha1(f"inbox:{normalized_did}".encode()).hexdigest()
         
         # Phase 15: Use find_value to avoid overwriting distributed mailbox
         current_inbox = async_to_sync(dht.find_value)(mailbox_key) or []
@@ -140,6 +147,7 @@ class ConversationListView(APIView):
     def get(self, request):
         from apps.messaging.models import Conversation, ConversationMember
         did = _owner_did(request)
+        # Normalize: handle queries with/without prefix if needed, but _owner_did should handle it.
         conv_ids = ConversationMember.objects.filter(did=did).values_list('conversation_id', flat=True)
         conversations = Conversation.objects.filter(id__in=conv_ids).order_by('-updated_at')
 
@@ -175,8 +183,15 @@ class ConversationListView(APIView):
         if not participants:
             return Response({'error': 'participants is required'}, status=400)
 
-        # Ensure creator is always a participant
-        all_participants = list(set([did] + participants))
+        # Ensure creator is always a participant and all are prefixed
+        prefixed_participants = []
+        for p in participants:
+            if p.startswith('ath1') and not p.startswith('did:aether:'):
+                prefixed_participants.append(f"did:aether:{p}")
+            else:
+                prefixed_participants.append(p)
+                
+        all_participants = list(set([did] + prefixed_participants))
         is_group = len(all_participants) > 2
 
         # For DM, check if conversation already exists between these two
@@ -211,14 +226,25 @@ class ConversationListView(APIView):
             # Register @channel name via NameRecord (Phase 13)
             if channel_name:
                 try:
-                    from apps.storage.models import NameRecord
-                    # Store conversation ID as a special NameRecord with no target_object
-                    # Use a custom approach: store in DHT
                     from apps.core.dht import dht_service
                     dht = dht_service.get_node()
                     dht.store(f"channel:{channel_name}", str(conv.id))
                 except Exception as e:
                     logger.warning(f"DHT channel registration failed: {e}")
+
+            # Phase 27: Announce conversation to DHT mailboxes of ALL participants
+            init_envelope = {
+                'id': f"init-{str(conv.id)}",
+                'conversation_id': str(conv.id),
+                'conversation_name': conv.name,
+                'is_group': is_group,
+                'sender_did': did,
+                'message_type': 'system',
+                'encrypted_body': 'Conversation created',
+                'sent_at': dj_timezone.now().isoformat(),
+            }
+            for p_did in all_participants:
+                _write_dht_mailbox(conv.id, init_envelope['id'], p_did, init_envelope)
 
         return Response({
             'id': str(conv.id),
@@ -237,43 +263,90 @@ class ConversationDetailView(APIView):
     def get(self, request, conversation_id):
         from apps.messaging.models import Conversation, ConversationMember, Message
         did = _owner_did(request)
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 20))
+        before = request.GET.get('before')
 
         try:
-            conv = Conversation.objects.get(id=conversation_id)
+            conv_obj = Conversation.objects.get(id=conversation_id)
+            qs = Message.objects.filter(conversation=conv_obj)
+            if before:
+                qs = qs.filter(sent_at__lt=before)
+            qs = qs.order_by('-sent_at')
+            total = qs.count()
+            messages_list = qs[(page-1)*page_size : page*page_size]
+            
+            # Mark last_read_at
+            ConversationMember.objects.filter(conversation=conv_obj, did=did).update(
+                last_read_at=dj_timezone.now()
+            )
+            
+            members = list(ConversationMember.objects.filter(conversation=conv_obj).values('did', 'last_read_at'))
+            conv_resp = {
+                'id': str(conv_obj.id),
+                'name': conv_obj.name,
+                'is_group': conv_obj.is_group,
+                'channel_name': conv_obj.channel_name,
+                'members': [m['did'] for m in members],
+            }
+            serialized_msgs = [_serialize_message(m, did) for m in reversed(list(messages_list))]
+
         except Conversation.DoesNotExist:
-            return Response({'error': 'Conversation not found'}, status=404)
-
-        if not ConversationMember.objects.filter(conversation=conv, did=did).exists():
-            return Response({'error': 'Access denied'}, status=403)
-
-        # Paginated history (Phase 14)
-        page = int(request.query_params.get('page', 1))
-        page_size = int(request.query_params.get('page_size', 50))
-        before = request.query_params.get('before')  # ISO timestamp cursor
-
-        qs = Message.objects.filter(conversation=conv)
-        if before:
-            qs = qs.filter(sent_at__lt=before)
-        qs = qs.order_by('-sent_at')
-        total = qs.count()
-        messages = qs[(page-1)*page_size : page*page_size]
-
-        # Mark last_read_at
-        ConversationMember.objects.filter(conversation=conv, did=did).update(
-            last_read_at=dj_timezone.now()
-        )
-
-        members = list(ConversationMember.objects.filter(conversation=conv).values('did', 'last_read_at'))
+            # Phase 27 Fallback: Fetch from DHT
+            from apps.core.dht import dht_service
+            from asgiref.sync import async_to_sync
+            dht = dht_service.get_node()
+            mailbox_key_prefixed = hashlib.sha1(f"inbox:{did}".encode()).hexdigest()
+            raw_address = did.replace('did:aether:', '')
+            mailbox_key_legacy = hashlib.sha1(f"inbox:{raw_address}".encode()).hexdigest()
+            
+            envelopes_prefixed = async_to_sync(dht.find_value)(mailbox_key_prefixed) or []
+            envelopes_legacy = async_to_sync(dht.find_value)(mailbox_key_legacy) or []
+            
+            seen_ids = set()
+            raw_envelopes = []
+            for env in (envelopes_prefixed + envelopes_legacy):
+                eid = env.get('id')
+                if eid and eid not in seen_ids:
+                    seen_ids.add(eid)
+                    raw_envelopes.append(env)
+            
+            # Filter for this conversation
+            convo_envelopes = [e for e in raw_envelopes if e.get('conversation_id') == str(conversation_id)]
+            if not convo_envelopes:
+                return Response({'error': 'Conversation not found in DB or DHT'}, status=404)
+            
+            # Materialize conversation metadata from first envelope
+            first = convo_envelopes[0]
+            conv_resp = {
+                'id': str(conversation_id),
+                'name': first.get('conversation_name'),
+                'is_group': first.get('is_group', False),
+                'members': [did], # Partial member list from DHT view
+                'source': 'dht_p2p'
+            }
+            
+            # Sort and paginate envelopes
+            convo_envelopes.sort(key=lambda x: x.get('sent_at', ''))
+            total = len(convo_envelopes)
+            
+            # Simple manual serialization of envelopes
+            serialized_msgs = []
+            for env in convo_envelopes:
+                if env.get('id', '').startswith('init-'): continue # skip init helper
+                serialized_msgs.append({
+                    'id': env['id'],
+                    'sender_did': env['sender_did'],
+                    'message_type': env['message_type'],
+                    'sent_at': env['sent_at'],
+                    'encrypted_body': env['encrypted_body'],
+                    'is_mine': env['sender_did'] == did,
+                    'source': 'dht_p2p'
+                })
 
         return Response({
-            'conversation': {
-                'id': str(conv.id),
-                'name': conv.name,
-                'is_group': conv.is_group,
-                'channel_name': conv.channel_name,
-                'members': [m['did'] for m in members],
-            },
-            'messages': [_serialize_message(m, did) for m in reversed(list(messages))],
+            'conversation': conv_resp,
+            'messages': serialized_msgs,
             'pagination': {
                 'page': page,
                 'page_size': page_size,
@@ -337,9 +410,10 @@ class SendMessageView(APIView):
 
         body = request.data.get('body', '')
         message_type = request.data.get('type', 'text')
+        attachment_id = request.data.get('attachment_id')
 
-        if not body:
-            return Response({'error': 'body is required'}, status=400)
+        if not body and not attachment_id:
+            return Response({'error': 'body or attachment is required'}, status=400)
 
         # Determine recipient DID for key derivation
         members = list(ConversationMember.objects.filter(conversation=conv).exclude(did=did).values_list('did', flat=True))
@@ -363,19 +437,31 @@ class SendMessageView(APIView):
         _charge_wallet(did, cost, f"Message in conversation {conv.id}")
 
         with transaction.atomic():
-            msg = Message.objects.create(
-                conversation=conv,
-                sender_did=did,
-                message_type=message_type,
-                encrypted_body=encrypted,
-                credits_charged=cost,
-                delivered_at=dj_timezone.now(),
-                # Store a plaintext snippet for search (Phase 14)
-                search_vector=body[:200],
-                # Set expiry if TTL configured
-                expires_at=(dj_timezone.now() + timedelta(days=conv.message_ttl_days))
-                           if conv.message_ttl_days > 0 else None
-            )
+            msg_args = {
+                'conversation': conv,
+                'sender_did': did,
+                'message_type': message_type,
+                'encrypted_body': encrypted,
+                'credits_charged': cost,
+                'delivered_at': dj_timezone.now(),
+                'search_vector': body[:200],
+                'expires_at': (dj_timezone.now() + timedelta(days=conv.message_ttl_days))
+                               if conv.message_ttl_days > 0 else None
+            }
+
+            if attachment_id:
+                from apps.storage.models import EncryptedObject
+                try:
+                    obj = EncryptedObject.objects.get(id=attachment_id)
+                    msg_args['attachment_id'] = obj.id
+                    msg_args['attachment_name'] = obj.filename or str(obj.id)
+                    msg_args['attachment_mime'] = obj.mime_type
+                    msg_args['attachment_size'] = obj.original_size
+                except EncryptedObject.DoesNotExist:
+                    # Ignore invalid attachment ID but still send the message
+                    pass
+
+            msg = Message.objects.create(**msg_args)
             # Bump conversation updated_at
             conv.save()
 
@@ -383,6 +469,8 @@ class SendMessageView(APIView):
         envelope = {
             'id': str(msg.id),
             'conversation_id': str(conv.id),
+            'conversation_name': conv.name,
+            'is_group': conv.is_group,
             'sender_did': did,
             'message_type': message_type,
             'encrypted_body': encrypted,
@@ -390,8 +478,9 @@ class SendMessageView(APIView):
             'attachment_id': str(msg.attachment_id) if msg.attachment_id else None,
         }
 
-        # Write to DHT mailboxes for each recipient
-        for recipient_did in members:
+        # Write to DHT mailboxes for ALL members (including sender)
+        all_members = list(ConversationMember.objects.filter(conversation=conv).values_list('did', flat=True))
+        for recipient_did in all_members:
             _write_dht_mailbox(conv.id, msg.id, recipient_did, envelope)
 
         # Push WebSocket notification (Phase 11)
@@ -473,21 +562,72 @@ class DHTInboxView(APIView):
         did = _owner_did(request)
         
         dht = dht_service.get_node()
-        mailbox_key = hashlib.sha1(f"inbox:{did}".encode()).hexdigest()
         
-        # Query DHT for the inbox list using async_to_sync to fix AssertionError
-        inbox_data = async_to_sync(dht.find_value)(mailbox_key) or []
+        # Check both prefixed and non-prefixed keys for robustness during transition
+        mailbox_key_prefixed = hashlib.sha1(f"inbox:{did}".encode()).hexdigest()
+        raw_address = did.replace('did:aether:', '')
+        mailbox_key_legacy = hashlib.sha1(f"inbox:{raw_address}".encode()).hexdigest()
         
-        # Phase 15: Support limit
-        limit = request.query_params.get('limit')
-        if limit and limit.isdigit():
-            inbox_data = inbox_data[-int(limit):]
+        # Query DHT for both
+        envelopes_prefixed = async_to_sync(dht.find_value)(mailbox_key_prefixed) or []
+        envelopes_legacy = async_to_sync(dht.find_value)(mailbox_key_legacy) or []
         
+        # Combine and deduplicate by message id
+        seen_ids = set()
+        raw_envelopes = []
+        for env in (envelopes_prefixed + envelopes_legacy):
+            eid = env.get('id')
+            if eid and eid not in seen_ids:
+                seen_ids.add(eid)
+                raw_envelopes.append(env)
+        
+        # Phase 27: Group envelopes by conversation_id
+        convos_map = {}
+        for env in raw_envelopes:
+            cid = env.get('conversation_id')
+            if not cid: continue
+            
+            if cid not in convos_map:
+                convos_map[cid] = {
+                    'conversation_id': cid,
+                    'conversation_name': env.get('conversation_name'),
+                    'is_group': env.get('is_group', False),
+                    'messages': [],
+                    'unread_count': 0
+                }
+            
+            convos_map[cid]['messages'].append(env)
+            # Simple heuristic for unread: if we haven't seen it in DB last_read_at
+            # But since we are DHT-first, we'll just report total count for now
+            # or use logic if we want to be fancy. For now, let's just use the latest message.
+
+        inbox_data = []
+        for cid, data in convos_map.items():
+            # Sort messages in this convo by sent_at
+            data['messages'].sort(key=lambda x: x.get('sent_at', ''))
+            latest = data['messages'][-1]
+            
+            inbox_data.append({
+                'conversation_id': cid,
+                'conversation_name': data['conversation_name'],
+                'is_group': data['is_group'],
+                'unread_count': len(data['messages']), # In DHT mode, we show total history segment as "unread" or "new"
+                'latest_message': {
+                    'id': latest['id'],
+                    'sender_did': latest['sender_did'],
+                    'message_type': latest['message_type'],
+                    'sent_at': latest['sent_at'],
+                    'body': latest['encrypted_body'], # Already encrypted package
+                }
+            })
+
+        # Sort conversations by latest message time
+        inbox_data.sort(key=lambda x: x['latest_message']['sent_at'], reverse=True)
+
         return Response({
-            'did': did,
+            'total_unread': sum(c['unread_count'] for c in inbox_data),
             'source': 'dht_p2p',
-            'count': len(inbox_data),
-            'messages': inbox_data
+            'conversations': inbox_data
         })
 
 

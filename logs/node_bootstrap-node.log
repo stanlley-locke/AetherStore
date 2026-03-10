@@ -1,0 +1,97 @@
+2026-03-09 18:50:10,614 - INFO - [DHT] FIND_NODE Target: 31d463897fd45ba5... from 31d463897fd45ba511566f1d9422b1cda055ecec
+2026-03-09 18:54:13,952 - INFO - [UPLOAD] Receiving shard from 127.0.0.1
+2026-03-09 18:54:13,953 - INFO - [UPLOAD] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 4
+2026-03-09 18:54:13,959 - INFO - [UPLOAD] Received 371 bytes
+2026-03-09 18:55:48,658 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 18:55:48,659 - INFO - [DOWNLOAD] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 4
+2026-03-09 18:57:53,243 - INFO - [UPLOAD] Receiving shard from 127.0.0.1
+2026-03-09 18:57:53,244 - INFO - [UPLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 0
+2026-03-09 18:57:53,246 - INFO - [UPLOAD] Received 21856 bytes
+2026-03-09 18:58:12,823 - INFO - [UPLOAD] Receiving shard from 127.0.0.1
+2026-03-09 18:58:12,826 - INFO - [UPLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 6
+2026-03-09 18:58:12,827 - INFO - [UPLOAD] Received 21856 bytes
+2026-03-09 18:58:31,690 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 18:58:31,690 - INFO - [DOWNLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 0
+2026-03-09 18:58:47,824 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 18:58:47,824 - INFO - [DOWNLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 6
+2026-03-09 19:03:33,219 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:04:33,235 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:05:00,405 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 19:05:00,459 - INFO - [DOWNLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 0
+2026-03-09 19:05:17,054 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 19:05:17,055 - INFO - [DOWNLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 6
+2026-03-09 19:05:33,247 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:06:33,252 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:07:33,263 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:08:33,280 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:09:33,292 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:10:24,668 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 19:10:24,668 - INFO - [DOWNLOAD] Hash: b7e3419bb326e95c... Chunk: 0, Shard: 4
+2026-03-09 19:10:31,966 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:10:31,967 - INFO - [DELETE] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 0
+2026-03-09 19:10:33,298 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:10:42,228 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:10:42,228 - INFO - [DELETE] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 6
+2026-03-09 19:10:55,356 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:10:55,356 - INFO - [DELETE] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 4
+2026-03-09 19:11:10,720 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:11:10,728 - INFO - [DELETE] Hash: adad8781b1e039a2... Chunk: 0, Shard: 3
+2026-03-09 19:11:30,328 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:11:30,329 - INFO - [DELETE] Hash: b7e3419bb326e95c... Chunk: 0, Shard: 4
+2026-03-09 19:11:33,316 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:12:33,322 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:13:33,332 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:14:33,339 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:15:33,356 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:16:33,372 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:19:40,681 - INFO - ======================================================================
+2026-03-09 19:19:40,682 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 19:19:40,682 - WARNING - Address: ath1c29840aa18c02b64121e444b968fec50a12c2e75
+2026-03-09 19:19:40,682 - WARNING - Mnemonic: black crisp next goddess ugly rookie urban kangaroo smile vague explain penalty
+2026-03-09 19:19:40,682 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 19:19:40,683 - INFO - ======================================================================
+2026-03-09 19:19:40,683 - INFO - Initializing storage node bootstrap-node on port 8001
+2026-03-09 19:19:40,683 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:19:40,685 - INFO - [DHT] Recovered 2 keys and 1 peers from disk
+2026-03-09 19:19:40,689 - INFO - ======================================================================
+2026-03-09 19:19:40,690 - INFO - Storage node bootstrap-node listening on port 8001
+2026-03-09 19:19:40,690 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:19:40,691 - INFO - Endpoints:
+2026-03-09 19:19:40,691 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 19:19:40,692 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 19:19:40,692 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 19:19:40,693 - INFO -   GET    /health                            - Health check
+2026-03-09 19:19:40,693 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 19:19:40,694 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 19:19:40,694 - INFO -   GET    /shards                            - List shards
+2026-03-09 19:19:40,694 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 19:19:40,695 - INFO - ======================================================================
+2026-03-09 19:19:48,174 - INFO - [DHT] FIND_NODE Target: 31d463897fd45ba5... from 31d463897fd45ba511566f1d9422b1cda055ecec
+2026-03-09 19:19:51,661 - INFO - [DHT] FIND_NODE Target: 31d463897fd45ba5... from 31d463897fd45ba511566f1d9422b1cda055ecec
+2026-03-09 19:19:54,915 - INFO - [DHT] FIND_NODE Target: 31d463897fd45ba5... from 31d463897fd45ba511566f1d9422b1cda055ecec
+2026-03-09 19:20:03,719 - INFO - [DHT] FIND_NODE Target: 31d463897fd45ba5... from 31d463897fd45ba511566f1d9422b1cda055ecec
+2026-03-09 19:20:45,719 - INFO - [DHT] FIND_NODE Target: 31d463897fd45ba5... from 31d463897fd45ba511566f1d9422b1cda055ecec
+2026-03-09 19:21:12,164 - INFO - [DHT] FIND_NODE Target: 31d463897fd45ba5... from 31d463897fd45ba511566f1d9422b1cda055ecec
+2026-03-09 19:36:53,146 - INFO - [DHT] FIND_NODE Target: 31d463897fd45ba5... from 31d463897fd45ba511566f1d9422b1cda055ecec
+2026-03-09 19:38:50,129 - INFO - ======================================================================
+2026-03-09 19:38:50,130 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 19:38:50,130 - WARNING - Address: ath183fa8835a7550ade008dd2de1064a36fb7e5454b
+2026-03-09 19:38:50,131 - WARNING - Mnemonic: april mandate icon bronze add ship thing bargain target ripple route hurt
+2026-03-09 19:38:50,131 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 19:38:50,132 - INFO - ======================================================================
+2026-03-09 19:38:50,132 - INFO - Initializing storage node bootstrap-node on port 8001
+2026-03-09 19:38:50,133 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:38:50,134 - INFO - [DHT] Recovered 2 keys and 0 peers from disk
+2026-03-09 19:38:50,138 - INFO - ======================================================================
+2026-03-09 19:38:50,138 - INFO - Storage node bootstrap-node listening on port 8001
+2026-03-09 19:38:50,139 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:38:50,140 - INFO - Endpoints:
+2026-03-09 19:38:50,140 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 19:38:50,140 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 19:38:50,141 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 19:38:50,141 - INFO -   GET    /health                            - Health check
+2026-03-09 19:38:50,142 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 19:38:50,142 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 19:38:50,143 - INFO -   GET    /shards                            - List shards
+2026-03-09 19:38:50,143 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 19:38:50,144 - INFO - ======================================================================

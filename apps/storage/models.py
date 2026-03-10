@@ -60,11 +60,45 @@ class StorageNode(models.Model):
     failed_retrievals = models.BigIntegerField(default=0)
     average_latency_ms = models.IntegerField(default=0)
     
+    # Phase 29: Node Ownership
+    owner_did = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    
     class Meta:
         db_table = 'storage_node'
     
     def __str__(self):
         return self.node_id
+
+
+class MiningReward(models.Model):
+    """Tracks daily/weekly earnings per node (Phase 29)"""
+    id = models.BigAutoField(primary_key=True)
+    node = models.ForeignKey(StorageNode, on_delete=models.CASCADE, related_name='rewards')
+    amount = models.DecimalField(max_digits=20, decimal_places=8)
+    reward_type = models.CharField(max_length=20, choices=[('storage', 'Proof of Storage'), ('service', 'Proof of Service')])
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        db_table = 'storage_mining_reward'
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.reward_type} reward for {self.node.node_id}: {self.amount} ATK"
+
+
+class NetworkParameter(models.Model):
+    """Global admin controls for network parameters (Phase 29)"""
+    key = models.CharField(max_length=50, primary_key=True)
+    value = models.JSONField()
+    description = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        db_table = 'p2p_network_parameter'
+
+    def __str__(self):
+        return f"{self.key}: {self.value}"
 
 
 class StorageQuota(models.Model):
@@ -85,7 +119,7 @@ class StorageQuota(models.Model):
 class AccessLog(models.Model):
     """Access tracking for analytics"""
     id = models.BigAutoField(primary_key=True)
-    object = models.ForeignKey(StorageObject, on_delete=models.CASCADE, null=True, blank=True, related_name='access_logs')
+    object_id = models.UUIDField(null=True, blank=True, db_index=True)
     user_did = models.CharField(max_length=255)
     action = models.CharField(max_length=20)
     bytes_transferred = models.BigIntegerField(default=0)

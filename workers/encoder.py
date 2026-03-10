@@ -168,52 +168,83 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
                 'encryption_strategy': 'per-chunk'
             })
 
-            # Check if logical file exists
-            existing_obj = EncryptedObject.objects.filter(
-                owner_did=owner_did,
-                bucket=bucket,
-                filename=filename,
-                is_deleted=False
-            ).first() if filename else None
-            
-            if existing_obj:
-                # Keep ID, bump version, update fields to latest
-                new_version = existing_obj.version + 1
-                
-                # We could link previous_version if we wanted, but we'll use ObjectVersion history anyway.
-                existing_obj.version = new_version
-                existing_obj.root_hash = merkle_dag.root_hash
-                existing_obj.merkle_dag = merkle_dag_dict
-                existing_obj.chunk_count = merkle_dag.chunk_count
-                existing_obj.chunk_size = merkle_dag.chunk_size
-                existing_obj.original_size = len(data_bytes)
-                existing_obj.original_hash = original_hash
-                existing_obj.mime_type = mime_type
-                existing_obj.shard_map = shard_map
-                existing_obj.key_hash = encryption.get_key_hash()
-                existing_obj.save()
-                
-                obj = existing_obj
-                logger.info(f"Updated logical file {filename} to version {new_version}")
-            else:
-                # Create brand new logical file
-                new_version = 1
-                obj = EncryptedObject.objects.create(
+            # Logical object selection: 
+            # 1. If we have a filename, check if the user already has a matching ACTIVE file.
+            obj = None
+            if filename:
+                obj = EncryptedObject.objects.filter(
                     owner_did=owner_did,
-                    encryption_algorithm='AES-256-GCM',
-                    key_hash=encryption.get_key_hash(),
-                    root_hash=merkle_dag.root_hash,
-                    merkle_dag=merkle_dag_dict,
-                    chunk_count=merkle_dag.chunk_count,
-                    chunk_size=merkle_dag.chunk_size,
-                    original_size=len(data_bytes),
-                    original_hash=original_hash,
-                    mime_type=mime_type,
-                    filename=filename,
                     bucket=bucket,
-                    shard_map=shard_map,
-                    version=new_version
-                )
+                    filename=filename,
+                    is_deleted=False
+                ).first()
+            
+            # 2. If no active file found by name, check if any object (deleted or not) exists with this root_hash.
+            # This handles both recycling deleted files and deduplication if a user re-uploads the exact same content.
+            if not obj:
+                obj = EncryptedObject.objects.filter(root_hash=merkle_dag.root_hash).first()
+            
+            if obj:
+                # Update existing object (Recycle or New Version)
+                logger.info(f"Reusing/Updating existing object {obj.id} for root_hash {merkle_dag.root_hash[:16]}")
+                
+                # If it was deleted, we "restore" it to the current user/bucket/filename context
+                if obj.is_deleted:
+                    obj.is_deleted = False
+                    obj.deleted_at = None
+                    new_version = 1
+                else:
+                    new_version = obj.version + 1
+                
+                obj.owner_did = owner_did
+                obj.bucket = bucket
+                obj.filename = filename or obj.filename
+                obj.version = new_version
+                obj.root_hash = merkle_dag.root_hash
+                obj.merkle_dag = merkle_dag_dict
+                obj.chunk_count = merkle_dag.chunk_count
+                obj.chunk_size = merkle_dag.chunk_size
+                obj.original_size = len(data_bytes)
+                obj.original_hash = original_hash
+                obj.mime_type = mime_type
+                obj.shard_map = shard_map
+                obj.key_hash = encryption.get_key_hash()
+                obj.save()
+            else:
+                # 3. Brand new file
+                logger.info(f"Creating brand new object for root_hash {merkle_dag.root_hash[:16]}")
+                new_version = 1
+                try:
+                    obj = EncryptedObject.objects.create(
+                        owner_did=owner_did,
+                        encryption_algorithm='AES-256-GCM',
+                        key_hash=encryption.get_key_hash(),
+                        root_hash=merkle_dag.root_hash,
+                        merkle_dag=merkle_dag_dict,
+                        chunk_count=merkle_dag.chunk_count,
+                        chunk_size=merkle_dag.chunk_size,
+                        original_size=len(data_bytes),
+                        original_hash=original_hash,
+                        mime_type=mime_type,
+                        filename=filename,
+                        bucket=bucket,
+                        shard_map=shard_map,
+                        version=new_version
+                    )
+                except Exception as e:
+                    # Final fallback: If create failed due to a race, try one last fetch
+                    logger.warning(f"Creation failed (likely race): {e}. Attempting last-second fetch.")
+                    obj = EncryptedObject.objects.filter(root_hash=merkle_dag.root_hash).first()
+                    if not obj:
+                        raise e  # It wasn't a hash collision? Raise it.
+                    
+                    # If we found it now, update it (same logic as above)
+                    obj.is_deleted = False
+                    obj.deleted_at = None
+                    obj.owner_did = owner_did
+                    obj.filename = filename or obj.filename
+                    obj.save()
+
             
             from apps.storage.models import ObjectVersion
             ObjectVersion.objects.create(

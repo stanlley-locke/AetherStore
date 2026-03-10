@@ -1,6 +1,6 @@
 # AetherStore Full Integration Test Guide
 
-Tests 1 through 11 cover every feature end-to-end using `shakespear.txt`.
+Tests 1 through 14 cover every feature end-to-end using `shakespear.txt`.
 
 ---
 
@@ -25,24 +25,87 @@ set_obj_id() {
 > ⚠️ **Critical:** After defining `set_obj_id`, you must also **run it** by typing `set_obj_id`.
 > Every time you delete an object and re-upload, a new UUID is assigned — call `set_obj_id` again!
 
+### Create Your Node Operator Wallet
+Before starting the network, generate your Web3 Non-Custodial wallet. **Save the output!** You will use the `address` to collect ATK mining rewards from your storage nodes.
+```bash
+# Generate Wallet and store the response
+WALLET_JSON=$(curl -s -X POST "http://localhost:8000/api/v1/billing/wallet/generate/" -H "Authorization: $(get_auth)")
+
+# Extract public address, mnemonic, and private key
+NODE_WALLET=$(echo $WALLET_JSON | python -c "import sys,json; print(json.load(sys.stdin).get('address', 'ERROR'))")
+NODE_MNEMONIC=$(echo $WALLET_JSON | python -c "import sys,json; print(json.load(sys.stdin).get('mnemonic', 'ERROR'))")
+NODE_PRIVATE_KEY=$(echo $WALLET_JSON | python -c "import sys,json; print(json.load(sys.stdin).get('private_key', 'ERROR'))")
+
+echo "--- NODE OPERATOR WALLET ---"
+echo "Address: ${NODE_WALLET}"
+echo "Mnemonic: ${NODE_MNEMONIC}"
+echo "Private Key: ${NODE_PRIVATE_KEY}"
+echo "----------------------------"
+
+Address: ath1ff47115449d2e3c6ee8ff4dab3e6a0b18c2fa2ad
+Mnemonic: now pitch now sad atom surprise empty lecture all mass visit hour
+wallet: strong ahead anchor stamp carpet churn mesh gentle owner adjust nothing envelope
+Wallet: ramp when green glance nuclear badge casual hat reveal gain stadium biology
+Private Key: b3b116a21bea655fde2fc1d03a0eee1a6033bb9885eb067564e2032003b8f879
+stanl@stanlley MINGW64 ~/Desktop/vscodeworkspace/pythonplayground/aetherstore (main)
+$ python scripts/init_network_admin.py
+
+============================================================
+  AetherNode Network Admin Wallet Initializer
+============================================================
+
+[!] WARNING: 1 existing admin(s) found:
+    - did:aether:ath14c51bc8ea41ed570097e8ccb6aa16a16bfcdcec2
+
+Do you want to create an ADDITIONAL admin? (yes/no): yes
+
+[*] Generating new admin wallet using BIP-39 derivation...
+
+============================================================
+  ✅  ADMIN WALLET CREATED SUCCESSFULLY
+============================================================
+
+  DID Address    : did:aether:ath1bb0d900a00c89b6e5003aeb3aa4d22c3c4ffd1a1
+  Wallet Address : ath1bb0d900a00c89b6e5003aeb3aa4d22c3c4ffd1a1
+
+  ⚠️  RECOVERY PHRASE (store securely, never share!):
+
+  maximum wild sure act hedgehog pumpkin math camp pudding dial hope spy
+
+============================================================
+
+  Use this mnemonic to log in to the AetherNode Admin Portal.
+  Navigate to /aethernode/login and paste the phrase above.
+============================================================
+
+(aetherstore) 
+stanl@stanlley MINGW64 ~/Desktop/vscodeworkspace/pythonplayground/aetherstore (main)
+$
+```
+
 ---
 
 ## Test #1: Start Storage Nodes (Required first!)
 
-Each node must be started in a **separate terminal**:
+You must start the central API, Redis broker, Celery worker (`celery -A aetherstore worker -l INFO`) and multiple P2P storage nodes.
+Each node must be started in a **separate terminal**.
+
+**Important for Phase 17 Security:**
+Storage node operators can now securely pass their web3 public addresses using the `--wallet-address` flag so that rewards bypass internal node wallets and route straight to their main balance. If they don't provide one, an ephemeral wallet is generated on the console once and *never saved to disk*.
 
 ```bash
-# Terminal 1 — Genesis / bootstrap node
-python apps/p2p/storage_node.py bootstrap-node 8001
+# Terminal 1 — Genesis / bootstrap node (Using your external wallet generated above)
+# Replace ${NODE_WALLET} with the actual string if you are copying/pasting terminals!
+python apps/p2p/storage_node.py bootstrap-node 8001 --wallet-address ${NODE_WALLET}
 
-# Terminals 2–5 — Peer nodes
+# Terminals 2–5 — Peer nodes (Generating secure ephemeral wallets)
 python apps/p2p/storage_node.py peer-node 8002 --bootstrap localhost:8001
 python apps/p2p/storage_node.py peer-node 8003 --bootstrap localhost:8001
 python apps/p2p/storage_node.py peer-node 8004 --bootstrap localhost:8001
 python apps/p2p/storage_node.py peer-node 8005 --bootstrap localhost:8001
 ```
 
-**Expectation:** Each node logs `Storage node ... listening on port 800X`.
+**Expectation:** Each node logs `Storage node ... listening on port 800X` and either announces a newly generated wallet mnemonic (for safekeeping) or configures the external one.
 
 ---
 
@@ -380,6 +443,44 @@ python manage.py shell -c "from workers.message_delivery import sync_dht_to_db; 
 
 ---
 
+## Test #14: Web3 Cryptography, Blockchain Wallets & Mining
+
+AetherStore incorporates true Web3 non-custodial blockchain functionality using Ed25519 signing. The central server doesn't hold the keys.
+
+### 1. Generate Web3 Wallet (Non-Custodial)
+The Private Key and Mnemonic are ONLY returned once. Save your `address`, `private_key` and `mnemonic`.
+```bash
+curl -s -X POST "http://localhost:8000/api/v1/billing/wallet/generate/" \
+  -H "Authorization: $(get_auth)" | jq .
+```
+
+### 2. Run Python Cryptographic Transfer Test
+Run the automated test script to simulate a client-side Web3 app performing secure remote offline signing:
+```bash
+python test_crypto_transfer.py
+```
+
+Under the hood, this simulates:
+1. Re-deriving the Ed25519 keypair.
+2. Generating a validation payload `"{recipient}:{amount}:{timestamp}"`
+3. Running `signature = private_key.sign(payload)`
+4. Passing the Public Key, Address, Amount, Timestamp, and Hex Signature to AetherStore's `LedgerTransaction` verifier endpoint `/api/v1/billing/wallet/transfer/`.
+
+### 3. Trigger Active Mining / Storage Payout Rewards
+Nodes earn coins for storing and serving data. Run the payout calculator to map DHT Node stats to external `NodeWallets` and credit their balances using Phase 17 logic.
+
+```bash
+python manage.py shell -c "from workers.payout_calculator import calculate_payouts; print(calculate_payouts())"
+```
+
+Check your updated wallet balance!
+```bash
+curl -X GET "http://localhost:8000/api/v1/billing/wallet/" \
+  -H "Authorization: $(get_auth)"
+```
+
+---
+
 ## 🛠️ Advanced Tooling: Batch Decryption
 
 Add these functions to your terminal to decrypt multiple messages at once.
@@ -437,4 +538,90 @@ curl -s "http://localhost:8000/api/v1/messaging/conversations/YOUR_CONV_ID/messa
 > [!TIP]
 > **Pro Tip:** If `sync_dht_to_db` previously returned 0 messages, try again now. I've updated the worker to perform a network-wide DHT search (`find_value`) instead of just checking the local node storage.
 
+---
 
+## Test #15: Rigorous Wallet Scenarios (Alice & Bob)
+
+In this test, we will explicitly simulate recovering Bob's wallet using his Mnemonic, and then executing a secure Ed25519-signed transaction transferring 5.0 ATK coins from Alice to Bob.
+
+### 1. Identify Bob's Wallet
+Bob previously generated his non-custodial wallet (and it was not saved to disk). The details are:
+- **Address:** `ath1ff47115449d2e3c6ee8ff4dab3e6a0b18c2fa2ad`
+- **Mnemonic:** `now pitch now sad atom surprise empty lecture all mass visit hour` 
+- **Private Key:** `b3b116a21bea655fde2fc1d03a0eee1a6033bb9885eb067564e2032003b8f879`
+
+### 2. Verify Bob's Wallet Recovery
+We explicitly test our new wallet recovery endpoint. By hitting `/api/v1/billing/wallet/recover/` with Bob's mnemonic, the server explicitly binds his imported Web3 wallet to his DID.
+```bash
+curl -s -X POST "http://localhost:8000/api/v1/billing/wallet/recover/" \
+  -H "Authorization: $(get_bob_auth)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "mnemonic": "now pitch now sad atom surprise empty lecture all mass visit hour"
+  }' | python -m json.tool
+```
+
+### 3. Check Alice's Starting Balance
+Alice is our primary `test_user` who has been paying for storage and messaging. Let's check her current ATK balance:
+```bash
+curl -s -X GET "http://localhost:8000/api/v1/billing/wallet/" \
+  -H "Authorization: $(get_auth)" | python -m json.tool
+```
+
+### 4. Create an Offline Cryptographic Signature for Alice
+Transferring ATK on AetherStore requires the sender (Alice) to mathematically sign a payload of `{recipient}:{amount}:{timestamp}`. 
+
+First, let's grab Alice's active private key. Running generation again overrides her node-linked address mapping, but her `test_user` balances persist:
+```bash
+ALICE_WALLET=$(curl -s -X POST "http://localhost:8000/api/v1/billing/wallet/generate/" -H "Authorization: $(get_auth)")
+ALICE_PRIV=$(echo $ALICE_WALLET | python -c "import sys,json; print(json.load(sys.stdin).get('private_key', ''))")
+ALICE_PUB=$(echo $ALICE_WALLET | python -c "import sys,json; print(json.load(sys.stdin).get('public_key', ''))")
+echo "Alice Public: $ALICE_PUB"
+```
+
+Now, generate the cryptographic signature locally simulating a Web3 frontend:
+```bash
+BOB_ADDRESS="ath1ff47115449d2e3c6ee8ff4dab3e6a0b18c2fa2ad"
+AMOUNT="5.0"
+TIMESTAMP=$(date +%s)
+
+# Python script to generate ed25519 signature
+SIGNATURE=$(python -c "
+from cryptography.hazmat.primitives.asymmetric import ed25519
+import base64
+
+priv_bytes = bytes.fromhex('$ALICE_PRIV')
+private_key = ed25519.Ed25519PrivateKey.from_private_bytes(priv_bytes)
+payload = f'$BOB_ADDRESS:$AMOUNT:$TIMESTAMP'.encode('utf-8')
+signature = private_key.sign(payload)
+print(signature.hex())
+")
+echo "Signature: $SIGNATURE"
+```
+
+### 5. Execute the Decentralized Ledger Transfer
+Alice broadcasts her signature and public key to the verification nodes to execute the transaction:
+```bash
+curl -s -X POST "http://localhost:8000/api/v1/billing/wallet/transfer/" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"public_key\": \"$ALICE_PUB\",
+    \"recipient_address\": \"$BOB_ADDRESS\",
+    \"amount\": \"$AMOUNT\",
+    \"timestamp\": \"$TIMESTAMP\",
+    \"signature\": \"$SIGNATURE\"
+  }" | python -m json.tool
+```
+
+### 6. Verify Balances Post-Transfer
+Check Alice's balance (should be exactly 5.0 less than step 3).
+```bash
+curl -s -X GET "http://localhost:8000/api/v1/billing/wallet/" \
+  -H "Authorization: $(get_auth)" | python -m json.tool
+```
+
+Check Bob's balance! Because Bob explicitly recovered his wallet using his mnemonic and DID in Step 2, he can organically check his balances natively over the network:
+```bash
+curl -s -X GET "http://localhost:8000/api/v1/billing/wallet/" \
+  -H "Authorization: $(get_bob_auth)" | python -m json.tool
+```

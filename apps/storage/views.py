@@ -80,7 +80,7 @@ class UploadView(APIView):
             )
             
             AccessLog.objects.create(
-                object=None,
+                object_id=None,
                 user_did=owner_did,
                 action='upload',
                 bytes_transferred=len(data),
@@ -112,56 +112,73 @@ class PresignedDownloadView(APIView):
     permission_classes = [permissions.AllowAny]
     
     def get(self, request, token):
-        from apps.storage.models import StorageObject, StorageNode
-        from apps.storage.services import PresignedURLService
-        from apps.storage.engine import get_erasure_engine
-        import httpx
-        import io
+        from apps.storage.models import EncryptedObject, AccessLog
+        from apps.storage.presigned_service import PresignedURLService
         
         try:
             payload = PresignedURLService.validate(token)
-            obj = StorageObject.objects.get(id=payload['obj'], is_deleted=False)
+            obj = EncryptedObject.objects.get(id=payload['obj'], is_deleted=False)
             
-            engine = get_erasure_engine()
-            shards_dict = {}
-            
-            with httpx.Client(timeout=30.0) as client:
-                for node_id, shard_index in obj.shard_map.items():
-                    try:
-                        node = StorageNode.objects.get(node_id=node_id, is_active=True)
-                        resp = client.get(f"{node.endpoint}/shard/{obj.content_hash}/{shard_index}")
-                        if resp.status_code == 200:
-                            shards_dict[shard_index] = resp.content
-                    except Exception as e:
-                        logger.warning(f"Failed to fetch shard from {node_id}: {e}")
-            
-            if not shards_dict:
-                raise Exception("No shards could be fetched")
-            
-            max_index = max(shards_dict.keys())
-            shards_list = [shards_dict.get(i, None) for i in range(max_index + 1)]
-            data = engine.decode(shards_list)
-            
-            response = StreamingHttpResponse(
-                io.BytesIO(data),
-                content_type=obj.mime_type
-            )
-            response['Content-Length'] = str(len(data))
-            response['Content-Disposition'] = f'attachment; filename="{obj.id}"'
-            
+            # Log the download
             AccessLog.objects.create(
-                object=obj,
+                object_id=obj.id,
                 user_did=payload.get('did', 'presigned'),
                 action='presigned_download',
-                bytes_transferred=len(data),
+                bytes_transferred=obj.original_size,
                 ip_address=request.META.get('REMOTE_ADDR'),
                 status_code=200
             )
+
+            # Proxy to StreamFileView
+            raw_request = getattr(request, '_request', request)
             
-            return response
+            # Create a dummy user object to pass Django REST Framework's IsAuthenticated check
+            class DummyUser:
+                is_authenticated = True
+                did = obj.owner_did
+                pk = obj.owner_did
+                is_staff = False
+                def __str__(self): return str(self.did)
+                
+            raw_request.user = DummyUser()
             
+            view = StreamFileView.as_view()
+            return view(raw_request, object_id=str(obj.id))
+            
+        except EncryptedObject.DoesNotExist:
+            return Response({'error': 'Object not found', 'code': 'NOT_FOUND'}, status=404)
         except Exception as e:
             logger.error(f"Presigned download error: {e}", exc_info=True)
+            return Response(
+                {'error': str(e), 'code': 'PRESIGNED_ERROR'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+@method_decorator([csrf_exempt], name='dispatch')
+class PresignedInfoView(APIView):
+    """Get metadata for a presigned URL (no auth required)"""
+    permission_classes = [permissions.AllowAny]
+    
+    def get(self, request, token):
+        from apps.storage.models import EncryptedObject
+        from apps.storage.presigned_service import PresignedURLService
+        
+        try:
+            payload = PresignedURLService.validate(token)
+            obj = EncryptedObject.objects.get(id=payload['obj'], is_deleted=False)
+            
+            return Response({
+                'id': str(obj.id),
+                'filename': obj.filename,
+                'mime_type': obj.mime_type,
+                'size': obj.original_size,
+                'created_at': obj.created_at
+            })
+            
+        except EncryptedObject.DoesNotExist:
+            return Response({'error': 'Object not found', 'code': 'NOT_FOUND'}, status=404)
+        except Exception as e:
             return Response(
                 {'error': str(e), 'code': 'PRESIGNED_ERROR'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -237,6 +254,38 @@ class ObjectDetailView(APIView):
         except EncryptedObject.DoesNotExist:
             return Response(
                 {'error': 'Object not found', 'code': 'NOT_FOUND'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+    def post(self, request, object_id):
+        from apps.storage.models import EncryptedObject
+        
+        try:
+            # Get deleted object
+            obj = EncryptedObject.objects.get(id=object_id, is_deleted=True)
+            owner_did = getattr(request.user, 'did', str(request.user))
+            
+            if obj.owner_did != owner_did and not request.user.is_staff:
+                return Response(
+                    {'error': 'Access denied', 'code': 'ACCESS_DENIED'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Restore
+            obj.is_deleted = False
+            obj.deleted_at = None
+            obj.save()
+            
+            logger.info(f"Object {object_id} restored by {owner_did}")
+            
+            return Response(
+                {'status': 'restored', 'object_id': str(obj.id), 'message': 'Object restored from trash'},
+                status=status.HTTP_200_OK
+            )
+            
+        except EncryptedObject.DoesNotExist:
+            return Response(
+                {'error': 'Object not found or not in trash', 'code': 'NOT_FOUND'},
                 status=status.HTTP_404_NOT_FOUND
             )
 
@@ -317,18 +366,33 @@ class NameRecordView(APIView):
             'action': 'created' if created else 'updated'
         })
         
-    def get(self, request, name):
+    def get(self, request, name=None):
         from apps.storage.models import NameRecord
-        try:
-            record = NameRecord.objects.get(name=name)
-            return Response({
-                'name': record.name,
-                'target_object_id': str(record.target_object.id),
-                'owner_did': record.owner_did,
-                'updated_at': record.updated_at.isoformat()
-            })
-        except NameRecord.DoesNotExist:
-            return Response({'error': 'Name not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        if name:
+            try:
+                record = NameRecord.objects.get(name=name)
+                return Response({
+                    'name': record.name,
+                    'target_object_id': str(record.target_object.id),
+                    'owner_did': record.owner_did,
+                    'updated_at': record.updated_at.isoformat()
+                })
+            except NameRecord.DoesNotExist:
+                return Response({'error': 'Name not found'}, status=status.HTTP_404_NOT_FOUND)
+                
+        # List context
+        owner_did = getattr(request.user, 'did', str(request.user))
+        records = NameRecord.objects.filter(owner_did=owner_did).order_by('-updated_at')
+        return Response([
+            {
+                'name': r.name,
+                'target_object_id': str(r.target_object.id),
+                'owner_did': r.owner_did,
+                'updated_at': r.updated_at.isoformat()
+            }
+            for r in records
+        ])
 
 
 @method_decorator([csrf_exempt], name='dispatch')
@@ -363,9 +427,11 @@ class ObjectListView(APIView):
         try:
             owner_did = getattr(request.user, 'did', str(request.user))
             
+            is_deleted = request.query_params.get('deleted', 'false').lower() == 'true'
+            
             # Query EncryptedObject instead of StorageObject
             queryset = EncryptedObject.objects.filter(
-                is_deleted=False,
+                is_deleted=is_deleted,
                 owner_did=owner_did
             ).select_related('bucket')
             
@@ -450,14 +516,14 @@ class PresignedURLView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request, object_id):
-        from apps.storage.models import StorageObject
-        from apps.storage.services import PresignedURLService
+        from apps.storage.models import EncryptedObject
+        from apps.storage.presigned_service import PresignedURLService
         
         try:
-            obj = StorageObject.objects.get(id=object_id, is_deleted=False)
+            obj = EncryptedObject.objects.get(id=object_id, is_deleted=False)
             owner_did = getattr(request.user, 'did', str(request.user))
             
-            if obj.owner_did != owner_did and not request.user.is_staff:
+            if obj.owner_did != owner_did and not getattr(request.user, 'is_staff', False):
                 return Response(
                     {'error': 'Access denied', 'code': 'ACCESS_DENIED'},
                     status=status.HTTP_403_FORBIDDEN
@@ -473,17 +539,17 @@ class PresignedURLView(APIView):
             
             url = PresignedURLService.generate(obj.id, owner_did, ttl=ttl)
             
-            logger.info(f"Presigned URL generated for object {object_id} (TTL: {ttl}s)")
+            logger.info(f"Presigned URL generated for encrypted object {object_id} (TTL: {ttl}s)")
             
             return Response({
                 'url': url,
                 'expires_in': ttl,
                 'expires_at': (timezone.now() + timedelta(seconds=ttl)).isoformat(),
                 'object_id': str(obj.id),
-                'size': obj.size
+                'size': obj.original_size
             })
             
-        except StorageObject.DoesNotExist:
+        except EncryptedObject.DoesNotExist:
             return Response(
                 {'error': 'Object not found', 'code': 'NOT_FOUND'},
                 status=status.HTTP_404_NOT_FOUND
@@ -921,7 +987,7 @@ class DownloadFileView(APIView):
             from apps.storage.models import AccessLog
             owner_did = getattr(request.user, 'did', str(request.user))
             AccessLog.objects.create(
-                object=None,
+                object_id=None,
                 user_did=owner_did,
                 action='download',
                 bytes_transferred=result.get('size', 0),
@@ -1086,10 +1152,14 @@ class StreamFileView(APIView):
                         if bytes_yielded >= max_bytes:
                             break
             
-            response = StreamingHttpResponse(stream_generator(), status=206 if range_header else 200, content_type=obj.mime_type)
+            response = StreamingHttpResponse(
+                stream_generator(), 
+                status=206 if range_match else 200, 
+                content_type=obj.mime_type
+            )
             response['Content-Length'] = str(content_length)
             response['Accept-Ranges'] = 'bytes'
-            if range_header:
+            if range_match:
                 response['Content-Range'] = f'bytes {start_byte}-{end_byte}/{total_size}'
                 
             return response

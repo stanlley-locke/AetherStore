@@ -1,0 +1,38 @@
+# AetherStore Web Dashboard: Tech Stack & Themes
+
+## 1. Technical Stack
+- **Framework:** React with TypeScript (`.tsx`) via Vite.
+- **Styling:** Vanilla CSS (CSS Modules) allowing for total control over the pristine visual components without the overhead of utility classes.
+- **Routing:** React Router DOM (for handling sub-menu navigation and breadcrumbs).
+- **Project Location:** The frontend repository will be initialized at `./aetherstoreweb` (as a sibling or child directory to the backend).
+
+## 2. Layout & Anatomy
+Both the AetherDrive and AetherNode dashboards will share a cohesive structural shell to provide a unified user experience:
+- **Sidebar Menu:** A collapsible sidebar navigation panel containing main sections (e.g., My Drive, Chat, Wallet) and nested sub-menus for deep diving.
+- **Top Header:** Contains a global search bar, user profile summary, and a Theme Toggle (Light/Dark).
+- **Breadcrumb Navigation:** Rendered immediately below the header, allowing users to track their exact path dynamically (e.g., `Home > My Drive > Projects > Secret_Keys`).
+- **Dashboard Landing:** The entry page upon login will feature a grid of statistical cards (e.g., Total Storage Used, Mined ATK, Reputation Score) before the user drills down into specific panels.
+
+## 3. The "Visa" Design System
+The visual language will draw inspiration from clean, premium financial institutions, explicitly styled like a high-end Visa card interface.
+
+### 3.1 Typography
+- **Primary Text:** A clean, modern sans-serif like **Inter** or **Roboto** for maximum legibility in menus and paragraphs.
+- **Numerical & Hash Data:** A monospaced or OCR-style font (similar to the stamped numbers on the back of a credit card, like **Space Mono** or **JetBrains Mono**) to display wallet addresses, ATK balances, and file hashes beautifully.
+
+### 3.2 Light Theme ("Visa White")
+A pristine, highly professional interface optimized for daytime use.
+- **Background:** Pure White (`#FFFFFF`) to off-white (`#F8F9FA`) for depth.
+- **Primary Text:** Very dark slate or charcoal (`#111827`) for high contrast readability.
+- **Accents & Buttons:** A vibrant, trustworthy Green (`#10B981` or `#059669`). Used sparingly for primary call-to-action buttons (e.g., "Upload File", "Send ATK") and active active menu states.
+- **Borders:** Subtle light grey borders (`#E5E7EB`) to separate glass panes.
+
+### 3.3 Dark Theme ("Visa Midnight")
+A sleek, premium night-mode interface that feels like an exclusive black credit card.
+- **Background:** Deep midnight blue/black (`#0F172A` or `#0B0F19`).
+- **Primary Text:** Crisp White (`#FFFFFF`) with muted grey for secondary text (`#94A3B8`).
+- **Accents & Buttons:** An electric Visa Blue (`#3B82F6` or `#2563EB`) that replaces the green from the light theme, providing a cool, terminal-like aesthetic.
+- **Panels:** Slightly elevated dark panels (`#1E293B`) with soft shadows to separate the sidebar from the main content.
+
+---
+*Ready to spin up the codebase? Once approved, we will run the initialization commands for the `/aetherstoreweb` Typescript project!*

@@ -1,0 +1,500 @@
+2026-03-09 18:50:09,348 - INFO - ======================================================================
+2026-03-09 18:50:09,348 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 18:50:09,349 - WARNING - Address: ath13e53c59a161190d310dc1efa2b296962f725dd66
+2026-03-09 18:50:09,349 - WARNING - Mnemonic: happy purpose property firm prevent only antique into donor sausage doctor pear
+2026-03-09 18:50:09,350 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 18:50:09,350 - INFO - ======================================================================
+2026-03-09 18:50:09,350 - INFO - Initializing storage node peer-node on port 8006
+2026-03-09 18:50:09,351 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 18:50:09,352 - INFO - [DHT] Recovered 2 keys and 1 peers from disk
+2026-03-09 18:50:09,357 - INFO - [DHT] Bootstrapping to localhost:8001
+2026-03-09 18:50:10,263 - INFO - ======================================================================
+2026-03-09 18:50:10,264 - INFO - Storage node peer-node listening on port 8006
+2026-03-09 18:50:10,264 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 18:50:10,265 - INFO - Endpoints:
+2026-03-09 18:50:10,265 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 18:50:10,266 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 18:50:10,267 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 18:50:10,268 - INFO -   GET    /health                            - Health check
+2026-03-09 18:50:10,269 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 18:50:10,269 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 18:50:10,270 - INFO -   GET    /shards                            - List shards
+2026-03-09 18:50:10,270 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 18:50:10,270 - INFO - ======================================================================
+2026-03-09 18:50:10,621 - INFO - [DHT] Bootstrapped with 1 peers
+2026-03-09 18:54:00,857 - INFO - [UPLOAD] Receiving shard from 127.0.0.1
+2026-03-09 18:54:00,858 - INFO - [UPLOAD] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 0
+2026-03-09 18:54:00,859 - INFO - [UPLOAD] Received 371 bytes
+2026-03-09 18:54:04,316 - INFO - [UPLOAD] Receiving shard from 127.0.0.1
+2026-03-09 18:54:04,318 - INFO - [UPLOAD] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 1
+2026-03-09 18:54:04,323 - INFO - [UPLOAD] Received 371 bytes
+2026-03-09 18:54:07,401 - INFO - [UPLOAD] Receiving shard from 127.0.0.1
+2026-03-09 18:54:07,404 - INFO - [UPLOAD] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 2
+2026-03-09 18:54:07,406 - INFO - [UPLOAD] Received 371 bytes
+2026-03-09 18:54:10,677 - INFO - [UPLOAD] Receiving shard from 127.0.0.1
+2026-03-09 18:54:10,687 - INFO - [UPLOAD] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 3
+2026-03-09 18:54:10,701 - INFO - [UPLOAD] Received 371 bytes
+2026-03-09 18:54:18,415 - INFO - [UPLOAD] Receiving shard from 127.0.0.1
+2026-03-09 18:54:18,417 - INFO - [UPLOAD] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 5
+2026-03-09 18:54:18,419 - INFO - [UPLOAD] Received 371 bytes
+2026-03-09 18:54:21,394 - INFO - [UPLOAD] Receiving shard from 127.0.0.1
+2026-03-09 18:54:21,394 - INFO - [UPLOAD] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 6
+2026-03-09 18:54:21,395 - INFO - [UPLOAD] Received 371 bytes
+2026-03-09 18:55:33,903 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 18:55:33,908 - INFO - [DOWNLOAD] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 0
+2026-03-09 18:55:42,858 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 18:55:42,859 - INFO - [DOWNLOAD] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 2
+2026-03-09 18:55:45,719 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 18:55:45,719 - INFO - [DOWNLOAD] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 3
+2026-03-09 18:55:51,512 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 18:55:51,513 - INFO - [DOWNLOAD] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 5
+2026-03-09 18:55:54,447 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 18:55:54,447 - INFO - [DOWNLOAD] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 6
+2026-03-09 18:57:56,088 - INFO - [UPLOAD] Receiving shard from 127.0.0.1
+2026-03-09 18:57:56,089 - INFO - [UPLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 1
+2026-03-09 18:57:56,090 - INFO - [UPLOAD] Received 21856 bytes
+2026-03-09 18:57:58,956 - INFO - [UPLOAD] Receiving shard from 127.0.0.1
+2026-03-09 18:57:58,957 - INFO - [UPLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 2
+2026-03-09 18:57:58,958 - INFO - [UPLOAD] Received 21856 bytes
+2026-03-09 18:58:05,902 - INFO - [UPLOAD] Receiving shard from 127.0.0.1
+2026-03-09 18:58:05,902 - INFO - [UPLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 3
+2026-03-09 18:58:05,903 - INFO - [UPLOAD] Received 21856 bytes
+2026-03-09 18:58:06,656 - INFO - [UPLOAD] Receiving shard from 127.0.0.1
+2026-03-09 18:58:06,657 - INFO - [UPLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 4
+2026-03-09 18:58:06,658 - INFO - [UPLOAD] Received 21856 bytes
+2026-03-09 18:58:09,649 - INFO - [UPLOAD] Receiving shard from 127.0.0.1
+2026-03-09 18:58:09,649 - INFO - [UPLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 5
+2026-03-09 18:58:09,651 - INFO - [UPLOAD] Received 21856 bytes
+2026-03-09 18:58:34,804 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 18:58:34,806 - INFO - [DOWNLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 1
+2026-03-09 18:58:38,368 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 18:58:38,368 - INFO - [DOWNLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 2
+2026-03-09 18:58:41,142 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 18:58:41,143 - INFO - [DOWNLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 3
+2026-03-09 18:58:41,912 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 18:58:41,912 - INFO - [DOWNLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 4
+2026-03-09 18:58:44,882 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 18:58:44,882 - INFO - [DOWNLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 5
+2026-03-09 19:03:20,230 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:03:20,251 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:03:23,855 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:04:10,796 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:04:20,303 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:04:20,365 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:04:24,186 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:05:04,258 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 19:05:04,259 - INFO - [DOWNLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 1
+2026-03-09 19:05:07,316 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 19:05:07,317 - INFO - [DOWNLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 2
+2026-03-09 19:05:10,286 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 19:05:10,287 - INFO - [DOWNLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 3
+2026-03-09 19:05:10,826 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:05:11,309 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 19:05:11,309 - INFO - [DOWNLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 4
+2026-03-09 19:05:14,183 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 19:05:14,183 - INFO - [DOWNLOAD] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 5
+2026-03-09 19:05:20,316 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:05:20,377 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:05:24,204 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:06:10,829 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:06:20,320 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:06:20,382 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:06:24,220 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:07:10,833 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:07:20,335 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:07:20,397 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:07:24,233 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:08:10,835 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:08:20,352 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:08:20,414 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:08:24,239 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:09:10,850 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:09:20,360 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:09:20,423 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:09:24,245 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:10:10,858 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:10:14,849 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 19:10:14,850 - INFO - [DOWNLOAD] Hash: b7e3419bb326e95c... Chunk: 0, Shard: 1
+2026-03-09 19:10:18,012 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 19:10:18,012 - INFO - [DOWNLOAD] Hash: b7e3419bb326e95c... Chunk: 0, Shard: 2
+2026-03-09 19:10:20,370 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:10:20,432 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:10:21,102 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 19:10:21,102 - INFO - [DOWNLOAD] Hash: b7e3419bb326e95c... Chunk: 0, Shard: 3
+2026-03-09 19:10:24,260 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:10:28,791 - INFO - [DOWNLOAD] Request from 127.0.0.1
+2026-03-09 19:10:28,791 - INFO - [DOWNLOAD] Hash: b7e3419bb326e95c... Chunk: 0, Shard: 6
+2026-03-09 19:10:34,020 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:10:34,020 - INFO - [DELETE] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 1
+2026-03-09 19:10:36,055 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:10:36,055 - INFO - [DELETE] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 2
+2026-03-09 19:10:38,105 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:10:38,105 - INFO - [DELETE] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 3
+2026-03-09 19:10:38,112 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:10:38,113 - INFO - [DELETE] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 4
+2026-03-09 19:10:40,176 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:10:40,176 - INFO - [DELETE] Hash: dfbbd2090f49da3e... Chunk: 0, Shard: 5
+2026-03-09 19:10:45,083 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:10:45,084 - INFO - [DELETE] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 0
+2026-03-09 19:10:51,238 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:10:51,240 - INFO - [DELETE] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 2
+2026-03-09 19:10:53,276 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:10:53,277 - INFO - [DELETE] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 3
+2026-03-09 19:10:57,397 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:10:57,397 - INFO - [DELETE] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 5
+2026-03-09 19:10:59,452 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:10:59,453 - INFO - [DELETE] Hash: 0b5b44b3a576253d... Chunk: 0, Shard: 6
+2026-03-09 19:11:02,515 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:11:02,516 - INFO - [DELETE] Hash: adad8781b1e039a2... Chunk: 0, Shard: 0
+2026-03-09 19:11:04,560 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:11:04,560 - INFO - [DELETE] Hash: adad8781b1e039a2... Chunk: 0, Shard: 1
+2026-03-09 19:11:10,874 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:11:12,809 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:11:12,809 - INFO - [DELETE] Hash: adad8781b1e039a2... Chunk: 0, Shard: 4
+2026-03-09 19:11:14,859 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:11:14,860 - INFO - [DELETE] Hash: adad8781b1e039a2... Chunk: 0, Shard: 5
+2026-03-09 19:11:16,909 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:11:16,910 - INFO - [DELETE] Hash: adad8781b1e039a2... Chunk: 0, Shard: 6
+2026-03-09 19:11:20,378 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:11:20,442 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:11:24,159 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:11:24,160 - INFO - [DELETE] Hash: b7e3419bb326e95c... Chunk: 0, Shard: 1
+2026-03-09 19:11:24,267 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:11:26,211 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:11:26,212 - INFO - [DELETE] Hash: b7e3419bb326e95c... Chunk: 0, Shard: 2
+2026-03-09 19:11:28,276 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:11:28,277 - INFO - [DELETE] Hash: b7e3419bb326e95c... Chunk: 0, Shard: 3
+2026-03-09 19:11:36,458 - INFO - [DELETE] Request from 127.0.0.1
+2026-03-09 19:11:36,459 - INFO - [DELETE] Hash: b7e3419bb326e95c... Chunk: 0, Shard: 6
+2026-03-09 19:12:10,892 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:12:20,384 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:12:20,446 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:12:24,271 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:13:10,908 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:13:20,387 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:13:20,450 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:13:24,278 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:14:10,918 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:14:20,403 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:14:20,466 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:14:24,289 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:15:10,922 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:15:20,407 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:15:20,470 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:15:24,305 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:16:10,938 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:16:20,417 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:16:20,479 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:16:24,320 - ERROR - [DHT] Persistence failed: [Errno 2] No such file or directory: 'data\\shards\\dht_state.json'
+2026-03-09 19:19:46,877 - INFO - ======================================================================
+2026-03-09 19:19:46,877 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 19:19:46,878 - WARNING - Address: ath13872138bcb6420c63f62013e3bf204f3bbc881ac
+2026-03-09 19:19:46,878 - WARNING - Mnemonic: glass grab erode blame raw arrange chat focus merit strategy surround subject
+2026-03-09 19:19:46,879 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 19:19:46,879 - INFO - ======================================================================
+2026-03-09 19:19:46,879 - INFO - Initializing storage node peer-node on port 8002
+2026-03-09 19:19:46,880 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:19:46,881 - INFO - [DHT] Recovered 2 keys and 1 peers from disk
+2026-03-09 19:19:46,883 - INFO - [DHT] Bootstrapping to localhost:8001
+2026-03-09 19:19:47,881 - INFO - ======================================================================
+2026-03-09 19:19:47,881 - INFO - Storage node peer-node listening on port 8002
+2026-03-09 19:19:47,882 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:19:47,882 - INFO - Endpoints:
+2026-03-09 19:19:47,882 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 19:19:47,883 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 19:19:47,883 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 19:19:47,884 - INFO -   GET    /health                            - Health check
+2026-03-09 19:19:47,884 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 19:19:47,884 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 19:19:47,885 - INFO -   GET    /shards                            - List shards
+2026-03-09 19:19:47,885 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 19:19:47,886 - INFO - ======================================================================
+2026-03-09 19:19:48,182 - INFO - [DHT] Bootstrapped with 1 peers
+2026-03-09 19:19:50,449 - INFO - ======================================================================
+2026-03-09 19:19:50,450 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 19:19:50,450 - WARNING - Address: ath14c969578790d427845d3b19526c39c70ac21b218
+2026-03-09 19:19:50,451 - WARNING - Mnemonic: mention depth vault letter find arrest author mail song tell tray chapter
+2026-03-09 19:19:50,452 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 19:19:50,452 - INFO - ======================================================================
+2026-03-09 19:19:50,453 - INFO - Initializing storage node peer-node on port 8003
+2026-03-09 19:19:50,453 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:19:50,454 - INFO - [DHT] Recovered 2 keys and 1 peers from disk
+2026-03-09 19:19:50,457 - INFO - [DHT] Bootstrapping to localhost:8001
+2026-03-09 19:19:51,363 - INFO - ======================================================================
+2026-03-09 19:19:51,363 - INFO - Storage node peer-node listening on port 8003
+2026-03-09 19:19:51,364 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:19:51,364 - INFO - Endpoints:
+2026-03-09 19:19:51,365 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 19:19:51,366 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 19:19:51,367 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 19:19:51,368 - INFO -   GET    /health                            - Health check
+2026-03-09 19:19:51,369 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 19:19:51,370 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 19:19:51,370 - INFO -   GET    /shards                            - List shards
+2026-03-09 19:19:51,371 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 19:19:51,371 - INFO - ======================================================================
+2026-03-09 19:19:51,670 - INFO - [DHT] Bootstrapped with 1 peers
+2026-03-09 19:19:53,579 - INFO - ======================================================================
+2026-03-09 19:19:53,580 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 19:19:53,580 - WARNING - Address: ath1200fcdf690c918b9d9a60205e4aca0ce658e8f21
+2026-03-09 19:19:53,580 - WARNING - Mnemonic: law wave resemble student couch unknown mail reward slow will predict apple
+2026-03-09 19:19:53,581 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 19:19:53,581 - INFO - ======================================================================
+2026-03-09 19:19:53,583 - INFO - Initializing storage node peer-node on port 8004
+2026-03-09 19:19:53,583 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:19:53,584 - INFO - [DHT] Recovered 2 keys and 1 peers from disk
+2026-03-09 19:19:53,587 - INFO - [DHT] Bootstrapping to localhost:8001
+2026-03-09 19:19:54,628 - INFO - ======================================================================
+2026-03-09 19:19:54,628 - INFO - Storage node peer-node listening on port 8004
+2026-03-09 19:19:54,629 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:19:54,630 - INFO - Endpoints:
+2026-03-09 19:19:54,631 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 19:19:54,632 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 19:19:54,632 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 19:19:54,633 - INFO -   GET    /health                            - Health check
+2026-03-09 19:19:54,635 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 19:19:54,636 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 19:19:54,637 - INFO -   GET    /shards                            - List shards
+2026-03-09 19:19:54,637 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 19:19:54,638 - INFO - ======================================================================
+2026-03-09 19:19:54,924 - INFO - [DHT] Bootstrapped with 1 peers
+2026-03-09 19:20:02,475 - INFO - ======================================================================
+2026-03-09 19:20:02,476 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 19:20:02,476 - WARNING - Address: ath1a47e01ffcaffc4473f034993c2aeda1fe650d3fb
+2026-03-09 19:20:02,477 - WARNING - Mnemonic: rule pigeon birth drama knee shoe abuse grain face supreme tip control
+2026-03-09 19:20:02,477 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 19:20:02,477 - INFO - ======================================================================
+2026-03-09 19:20:02,477 - INFO - Initializing storage node peer-node on port 8005
+2026-03-09 19:20:02,478 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:20:02,479 - INFO - [DHT] Recovered 2 keys and 1 peers from disk
+2026-03-09 19:20:02,481 - INFO - [DHT] Bootstrapping to localhost:8001
+2026-03-09 19:20:03,435 - INFO - ======================================================================
+2026-03-09 19:20:03,436 - INFO - Storage node peer-node listening on port 8005
+2026-03-09 19:20:03,436 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:20:03,437 - INFO - Endpoints:
+2026-03-09 19:20:03,437 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 19:20:03,438 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 19:20:03,438 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 19:20:03,439 - INFO -   GET    /health                            - Health check
+2026-03-09 19:20:03,439 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 19:20:03,440 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 19:20:03,441 - INFO -   GET    /shards                            - List shards
+2026-03-09 19:20:03,441 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 19:20:03,442 - INFO - ======================================================================
+2026-03-09 19:20:03,726 - INFO - [DHT] Bootstrapped with 1 peers
+2026-03-09 19:20:44,596 - INFO - ======================================================================
+2026-03-09 19:20:44,597 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 19:20:44,598 - WARNING - Address: ath1a42269e1239e81fb902c02128ff5915c1232d2b9
+2026-03-09 19:20:44,598 - WARNING - Mnemonic: fantasy swim echo behind learn eyebrow stick blast split enough summer hospital
+2026-03-09 19:20:44,599 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 19:20:44,599 - INFO - ======================================================================
+2026-03-09 19:20:44,600 - INFO - Initializing storage node peer-node on port 8006
+2026-03-09 19:20:44,600 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:20:44,601 - INFO - [DHT] Recovered 2 keys and 1 peers from disk
+2026-03-09 19:20:44,604 - INFO - [DHT] Bootstrapping to localhost:8001
+2026-03-09 19:20:45,441 - INFO - ======================================================================
+2026-03-09 19:20:45,441 - INFO - Storage node peer-node listening on port 8006
+2026-03-09 19:20:45,442 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:20:45,443 - INFO - Endpoints:
+2026-03-09 19:20:45,443 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 19:20:45,444 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 19:20:45,444 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 19:20:45,444 - INFO -   GET    /health                            - Health check
+2026-03-09 19:20:45,445 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 19:20:45,446 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 19:20:45,446 - INFO -   GET    /shards                            - List shards
+2026-03-09 19:20:45,447 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 19:20:45,448 - INFO - ======================================================================
+2026-03-09 19:20:45,724 - INFO - [DHT] Bootstrapped with 1 peers
+2026-03-09 19:21:10,826 - INFO - ======================================================================
+2026-03-09 19:21:10,827 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 19:21:10,827 - WARNING - Address: ath1c9c8d98f23355e5951de09730ad0a2e895ec75e7
+2026-03-09 19:21:10,828 - WARNING - Mnemonic: festival exotic fold evoke hidden swear medal cake gadget edge grass wave
+2026-03-09 19:21:10,828 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 19:21:10,828 - INFO - ======================================================================
+2026-03-09 19:21:10,828 - INFO - Initializing storage node peer-node on port 8007
+2026-03-09 19:21:10,829 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:21:10,829 - INFO - [DHT] Recovered 2 keys and 0 peers from disk
+2026-03-09 19:21:10,831 - INFO - [DHT] Bootstrapping to localhost:8001
+2026-03-09 19:21:11,878 - INFO - ======================================================================
+2026-03-09 19:21:11,878 - INFO - Storage node peer-node listening on port 8007
+2026-03-09 19:21:11,880 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:21:11,880 - INFO - Endpoints:
+2026-03-09 19:21:11,881 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 19:21:11,882 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 19:21:11,883 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 19:21:11,883 - INFO -   GET    /health                            - Health check
+2026-03-09 19:21:11,884 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 19:21:11,886 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 19:21:11,888 - INFO -   GET    /shards                            - List shards
+2026-03-09 19:21:11,889 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 19:21:11,890 - INFO - ======================================================================
+2026-03-09 19:21:12,170 - INFO - [DHT] Bootstrapped with 1 peers
+2026-03-09 19:36:51,753 - INFO - ======================================================================
+2026-03-09 19:36:51,754 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 19:36:51,754 - WARNING - Address: ath117179dda91e692742537c4e5201419c994017fe4
+2026-03-09 19:36:51,754 - WARNING - Mnemonic: inject release dizzy relief wool consider midnight blanket worry cushion ramp broken
+2026-03-09 19:36:51,754 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 19:36:51,755 - INFO - ======================================================================
+2026-03-09 19:36:51,755 - INFO - Initializing storage node peer-node on port 8007
+2026-03-09 19:36:51,755 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:36:51,756 - INFO - [DHT] Recovered 2 keys and 0 peers from disk
+2026-03-09 19:36:51,758 - INFO - [DHT] Bootstrapping to localhost:8001
+2026-03-09 19:36:52,827 - INFO - ======================================================================
+2026-03-09 19:36:52,828 - INFO - Storage node peer-node listening on port 8007
+2026-03-09 19:36:52,828 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:36:52,829 - INFO - Endpoints:
+2026-03-09 19:36:52,829 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 19:36:52,830 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 19:36:52,830 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 19:36:52,831 - INFO -   GET    /health                            - Health check
+2026-03-09 19:36:52,831 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 19:36:52,831 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 19:36:52,832 - INFO -   GET    /shards                            - List shards
+2026-03-09 19:36:52,832 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 19:36:52,832 - INFO - ======================================================================
+2026-03-09 19:36:53,156 - INFO - [DHT] Bootstrapped with 1 peers
+2026-03-09 19:38:03,863 - INFO - ======================================================================
+2026-03-09 19:38:03,864 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 19:38:03,864 - WARNING - Address: ath146584b999334f8ab91942e0b51f741994e657ed7
+2026-03-09 19:38:03,865 - WARNING - Mnemonic: super seminar sister obscure dune bicycle decrease hospital onion pilot uphold emerge
+2026-03-09 19:38:03,865 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 19:38:03,865 - INFO - ======================================================================
+2026-03-09 19:38:03,866 - INFO - Initializing storage node peer-node on port 8007
+2026-03-09 19:38:03,866 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:38:03,867 - INFO - [DHT] Recovered 2 keys and 0 peers from disk
+2026-03-09 19:38:03,870 - INFO - [DHT] Bootstrapping to localhost:8001
+2026-03-09 19:38:05,017 - INFO - ======================================================================
+2026-03-09 19:38:05,018 - INFO - Storage node peer-node listening on port 8007
+2026-03-09 19:38:05,018 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:38:05,019 - INFO - Endpoints:
+2026-03-09 19:38:05,020 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 19:38:05,020 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 19:38:05,020 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 19:38:05,021 - INFO -   GET    /health                            - Health check
+2026-03-09 19:38:05,021 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 19:38:05,022 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 19:38:05,022 - INFO -   GET    /shards                            - List shards
+2026-03-09 19:38:05,022 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 19:38:05,023 - INFO - ======================================================================
+2026-03-09 19:38:07,349 - ERROR - [DHT] Bootstrap failed: All connection attempts failed
+2026-03-09 19:38:22,279 - INFO - ======================================================================
+2026-03-09 19:38:22,280 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 19:38:22,281 - WARNING - Address: ath11112d5ccbc7f9a2d60fc96e330f079d3eeac2f24
+2026-03-09 19:38:22,281 - WARNING - Mnemonic: latin vibrant language chaos yellow uphold olive chair hold close stereo course
+2026-03-09 19:38:22,282 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 19:38:22,282 - INFO - ======================================================================
+2026-03-09 19:38:22,283 - INFO - Initializing storage node peer-node on port 8006
+2026-03-09 19:38:22,283 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:38:22,284 - INFO - [DHT] Recovered 2 keys and 0 peers from disk
+2026-03-09 19:38:22,288 - INFO - [DHT] Bootstrapping to localhost:8001
+2026-03-09 19:38:23,998 - INFO - ======================================================================
+2026-03-09 19:38:23,999 - INFO - Storage node peer-node listening on port 8006
+2026-03-09 19:38:24,000 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:38:24,001 - INFO - Endpoints:
+2026-03-09 19:38:24,002 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 19:38:24,003 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 19:38:24,004 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 19:38:24,004 - INFO -   GET    /health                            - Health check
+2026-03-09 19:38:24,005 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 19:38:24,006 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 19:38:24,006 - INFO -   GET    /shards                            - List shards
+2026-03-09 19:38:24,007 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 19:38:24,009 - INFO - ======================================================================
+2026-03-09 19:38:25,097 - INFO - ======================================================================
+2026-03-09 19:38:25,098 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 19:38:25,098 - WARNING - Address: ath1f7c093581d4c7a20719885add00aa7c4c82654a6
+2026-03-09 19:38:25,098 - WARNING - Mnemonic: retire general luggage hazard ten human never december brick upgrade hair lobster
+2026-03-09 19:38:25,099 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 19:38:25,099 - INFO - ======================================================================
+2026-03-09 19:38:25,100 - INFO - Initializing storage node peer-node on port 8005
+2026-03-09 19:38:25,101 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:38:25,102 - INFO - [DHT] Recovered 2 keys and 0 peers from disk
+2026-03-09 19:38:25,105 - INFO - [DHT] Bootstrapping to localhost:8001
+2026-03-09 19:38:26,071 - INFO - ======================================================================
+2026-03-09 19:38:26,072 - INFO - Storage node peer-node listening on port 8005
+2026-03-09 19:38:26,073 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:38:26,073 - INFO - Endpoints:
+2026-03-09 19:38:26,075 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 19:38:26,075 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 19:38:26,076 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 19:38:26,076 - INFO -   GET    /health                            - Health check
+2026-03-09 19:38:26,077 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 19:38:26,078 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 19:38:26,078 - INFO -   GET    /shards                            - List shards
+2026-03-09 19:38:26,079 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 19:38:26,080 - INFO - ======================================================================
+2026-03-09 19:38:26,324 - ERROR - [DHT] Bootstrap failed: All connection attempts failed
+2026-03-09 19:38:28,384 - ERROR - [DHT] Bootstrap failed: All connection attempts failed
+2026-03-09 19:38:34,855 - INFO - ======================================================================
+2026-03-09 19:38:34,856 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 19:38:34,857 - WARNING - Address: ath1d6073d0daca082d97395be89fc247522dada6ccc
+2026-03-09 19:38:34,857 - WARNING - Mnemonic: lab crystal margin birth tunnel laptop rude armed comic tissue good garment
+2026-03-09 19:38:34,858 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 19:38:34,860 - INFO - ======================================================================
+2026-03-09 19:38:34,861 - INFO - Initializing storage node peer-node on port 8004
+2026-03-09 19:38:34,867 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:38:34,869 - INFO - [DHT] Recovered 2 keys and 0 peers from disk
+2026-03-09 19:38:34,873 - INFO - [DHT] Bootstrapping to localhost:8001
+2026-03-09 19:38:36,235 - INFO - ======================================================================
+2026-03-09 19:38:36,236 - INFO - Storage node peer-node listening on port 8004
+2026-03-09 19:38:36,237 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:38:36,238 - INFO - Endpoints:
+2026-03-09 19:38:36,238 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 19:38:36,238 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 19:38:36,239 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 19:38:36,240 - INFO -   GET    /health                            - Health check
+2026-03-09 19:38:36,240 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 19:38:36,241 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 19:38:36,242 - INFO -   GET    /shards                            - List shards
+2026-03-09 19:38:36,243 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 19:38:36,243 - INFO - ======================================================================
+2026-03-09 19:38:38,563 - ERROR - [DHT] Bootstrap failed: All connection attempts failed
+2026-03-09 19:38:40,124 - INFO - ======================================================================
+2026-03-09 19:38:40,125 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 19:38:40,125 - WARNING - Address: ath132e8ec00a163a609baf17bd235e633b76e0aa4d5
+2026-03-09 19:38:40,126 - WARNING - Mnemonic: obscure tongue bridge similar merge own pioneer salt card hungry size apology
+2026-03-09 19:38:40,126 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 19:38:40,127 - INFO - ======================================================================
+2026-03-09 19:38:40,127 - INFO - Initializing storage node peer-node on port 8003
+2026-03-09 19:38:40,128 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:38:40,129 - INFO - [DHT] Recovered 2 keys and 0 peers from disk
+2026-03-09 19:38:40,133 - INFO - [DHT] Bootstrapping to localhost:8001
+2026-03-09 19:38:41,211 - INFO - ======================================================================
+2026-03-09 19:38:41,212 - INFO - Storage node peer-node listening on port 8003
+2026-03-09 19:38:41,213 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:38:41,214 - INFO - Endpoints:
+2026-03-09 19:38:41,214 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 19:38:41,215 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 19:38:41,215 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 19:38:41,216 - INFO -   GET    /health                            - Health check
+2026-03-09 19:38:41,216 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 19:38:41,217 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 19:38:41,217 - INFO -   GET    /shards                            - List shards
+2026-03-09 19:38:41,218 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 19:38:41,218 - INFO - ======================================================================
+2026-03-09 19:38:43,541 - ERROR - [DHT] Bootstrap failed: All connection attempts failed
+2026-03-09 19:38:44,746 - INFO - ======================================================================
+2026-03-09 19:38:44,747 - WARNING - GENERATED NEW EPHEMERAL NODE WALLET!
+2026-03-09 19:38:44,747 - WARNING - Address: ath16bb4d6b27202b80fc708176c5645062d5103735a
+2026-03-09 19:38:44,748 - WARNING - Mnemonic: country defense place exchange resemble flush canvas sausage ring pass win turkey
+2026-03-09 19:38:44,749 - WARNING - PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.
+2026-03-09 19:38:44,749 - INFO - ======================================================================
+2026-03-09 19:38:44,750 - INFO - Initializing storage node peer-node on port 8002
+2026-03-09 19:38:44,750 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:38:44,751 - INFO - [DHT] Recovered 2 keys and 0 peers from disk
+2026-03-09 19:38:44,755 - INFO - [DHT] Bootstrapping to localhost:8001
+2026-03-09 19:38:45,713 - INFO - ======================================================================
+2026-03-09 19:38:45,714 - INFO - Storage node peer-node listening on port 8002
+2026-03-09 19:38:45,714 - INFO - Storage path: C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\data\shards
+2026-03-09 19:38:45,715 - INFO - Endpoints:
+2026-03-09 19:38:45,715 - INFO -   PUT    /shard/{hash}/{chunk}/{shard}  - Store shard
+2026-03-09 19:38:45,716 - INFO -   GET    /shard/{hash}/{chunk}/{shard}  - Retrieve shard
+2026-03-09 19:38:45,716 - INFO -   DELETE /shard/{hash}/{chunk}/{shard}  - Delete shard
+2026-03-09 19:38:45,717 - INFO -   GET    /health                            - Health check
+2026-03-09 19:38:45,717 - INFO -   GET    /stats                             - Storage stats
+2026-03-09 19:38:45,718 - INFO -   GET    /metrics                           - Prometheus metrics
+2026-03-09 19:38:45,718 - INFO -   GET    /shards                            - List shards
+2026-03-09 19:38:45,719 - INFO -   POST   /gossip                            - Gossip protocol
+2026-03-09 19:38:45,719 - INFO - ======================================================================
+2026-03-09 19:38:48,016 - ERROR - [DHT] Bootstrap failed: All connection attempts failed

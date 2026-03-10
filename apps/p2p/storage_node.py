@@ -7,9 +7,11 @@ Supports chunk-based Merkle DAG storage
 import asyncio
 import aiofiles
 from aiohttp import web
+import logging
+import logging.handlers
 import hashlib
 import json
-import logging
+import uuid
 import psutil
 from pathlib import Path
 from datetime import datetime
@@ -23,10 +25,16 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from apps.core.dht import DHTNode, Peer
 
 # Configure logging
+LOG_DIR = Path(__file__).resolve().parent.parent.parent / 'logs'
+LOG_DIR.mkdir(exist_ok=True)
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    datefmt='%Y-%m-%d %H:%M:%S',
+    handlers=[
+        logging.StreamHandler(),
+    ]
 )
 logger = logging.getLogger(__name__)
 
@@ -44,13 +52,20 @@ class StorageNodeServer:
     - Storage statistics and monitoring
     """
     
-    def __init__(self, node_id: str, port: int, storage_path: str = './data/shards', bootstrap_node: str = None):
+    def __init__(self, node_id: str, port: int, storage_path: str = './data/shards', bootstrap_node: str = None, wallet_address: str = None):
         self.node_id = node_id
         self.port = port
         self.storage_path = Path(storage_path)
         self.dht_path = self.storage_path / 'dht_state.json'
         self.bootstrap_node = bootstrap_node
         self.storage_path.mkdir(parents=True, exist_ok=True)
+        
+        # Configure per-node log file
+        self.log_file = LOG_DIR / f"node_{self.node_id}.log"
+        file_handler = logging.handlers.RotatingFileHandler(self.log_file, maxBytes=5*1024*1024, backupCount=2)
+        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        logger.addHandler(file_handler)
+
         self.app = web.Application(client_max_size=256 * 1024 * 1024)  # 256MB max body
         self._setup_routes()
         
@@ -59,6 +74,10 @@ class StorageNodeServer:
         
         # Initialize DHT Node
         self.dht = DHTNode(node_id=self.dht_node_id, address='127.0.0.1', port=port)
+        
+        # Initialize Node Wallet (Phase 16 -> 17 Security Update)
+        self.wallet_address = wallet_address
+        self._init_wallet()
         
         # Metrics
         self.stats = {
@@ -76,7 +95,24 @@ class StorageNodeServer:
         
         # Load previous DHT state if exists
         self._load_dht_state()
-    
+        
+    def _init_wallet(self):
+        """Initializes the node's BIP-39 non-custodial wallet securely."""
+        if self.wallet_address:
+            self.wallet = {'address': self.wallet_address}
+            logger.info(f"Node configured with external wallet address: {self.wallet_address}")
+            return
+
+        from apps.core import crypto_wallet
+        mnemonic = crypto_wallet.generate_mnemonic()
+        self.wallet = crypto_wallet.derive_keypair(mnemonic)
+        logger.info("=" * 70)
+        logger.warning("GENERATED NEW EPHEMERAL NODE WALLET!")
+        logger.warning(f"Address: {self.wallet['address']}")
+        logger.warning(f"Mnemonic: {self.wallet['mnemonic']}")
+        logger.warning("PLEASE SAVE THIS MNEMONIC! Private keys are NOT saved to disk for security.")
+        logger.info("=" * 70)
+
     def _setup_routes(self):
         # NEW: Chunk-based URLs for Merkle DAG support
         self.app.router.add_put('/shard/{content_hash}/{chunk_index}/{shard_index}', self.store_shard)
@@ -94,6 +130,7 @@ class StorageNodeServer:
         self.app.router.add_post('/gossip', self.gossip_handler)
         self.app.router.add_get('/shards', self.list_shards)
         self.app.router.add_delete('/shards/{content_hash}', self.delete_all_shards)
+        self.app.router.add_get('/logs', self.get_logs)
         
         # DHT Endpoints
         self.app.router.add_get('/dht/ping', self.dht_ping)
@@ -364,7 +401,9 @@ class StorageNodeServer:
                     'memory_available_mb': round(memory.available / 1024 / 1024, 2),
                     'disk_percent': disk.percent,
                     'disk_free_gb': round(disk.free / 1024 / 1024 / 1024, 2)
-                }
+                },
+                'dht_peers': len(self.dht.peers),
+                'node_uptime': round((datetime.now() - datetime.fromisoformat(self.stats['started_at'])).total_seconds(), 2)
             })
         except Exception as e:
             return web.json_response({
@@ -372,6 +411,25 @@ class StorageNodeServer:
                 'node_id': self.node_id,
                 'error': str(e)
             }, status=500)
+    
+    async def get_logs(self, request: web.Request) -> web.Response:
+        """Stream the last 100 lines of the current node log"""
+        lines_count = int(request.query.get('lines', 100))
+        if not self.log_file.exists():
+            return web.json_response({'logs': []})
+            
+        try:
+            async with aiofiles.open(self.log_file, mode='r') as f:
+                content = await f.read()
+                lines = content.splitlines()
+                tail = lines[-lines_count:]
+                return web.json_response({
+                    'node_id': self.node_id,
+                    'count': len(tail),
+                    'logs': tail
+                })
+        except Exception as e:
+            return web.json_response({'error': str(e)}, status=500)
     
     async def get_stats(self, request: web.Request) -> web.Response:
         """Get storage statistics"""
@@ -390,6 +448,7 @@ class StorageNodeServer:
         
         return web.json_response({
             'node_id': self.node_id,
+            'wallet_address': self.wallet.get('address'),
             'dht_node_id': self.dht_node_id, # Added for DHT node ID
             'port': self.port,
             'shard_count': shard_count,
@@ -607,9 +666,18 @@ class StorageNodeServer:
 
         while True:
             await asyncio.sleep(60) # Maintenance every 60s
-            # Refresh buckets by pinging peers could be added here
+            
+            # Publish/Refresh node wallet address into the DHT network
+            key = f"node_wallet:{self.node_id}"
+            self.dht.data_store[key] = {
+                'value': self.wallet.get('address'),
+                'expires': time.time() + 86400 * 30, # 30 days
+                'publisher': self.node_id,
+                'created_at': time.time()
+            }
+            
+            # Save state
             self._save_dht_state()
-            pass
             
     def _save_dht_state(self):
         """Persist DHT data_store and peers to disk"""
@@ -651,6 +719,15 @@ class StorageNodeServer:
             
     async def start(self):
         """Start the storage node server"""
+        # Publish node wallet address to DHT immediately on boot
+        key = f"node_wallet:{self.node_id}"
+        self.dht.data_store[key] = {
+            'value': self.wallet.get('address'),
+            'expires': time.time() + 86400 * 30,
+            'publisher': self.node_id,
+            'created_at': time.time()
+        }
+        
         # Start DHT maintenance loop
         asyncio.create_task(self._dht_maintenance_loop())
         
@@ -688,5 +765,12 @@ if __name__ == '__main__':
         if len(sys.argv) > idx + 1:
             bootstrap_node = sys.argv[idx + 1]
             
-    server = StorageNodeServer(node_id, port, bootstrap_node=bootstrap_node)
+    # Optional --wallet-address
+    wallet_address = None
+    if '--wallet-address' in sys.argv:
+        idx = sys.argv.index('--wallet-address')
+        if len(sys.argv) > idx + 1:
+            wallet_address = sys.argv[idx + 1]
+            
+    server = StorageNodeServer(node_id, port, bootstrap_node=bootstrap_node, wallet_address=wallet_address)
     asyncio.run(server.start())

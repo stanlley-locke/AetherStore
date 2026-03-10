@@ -1,0 +1,62 @@
+# AetherStore Frontend Dashboards Configuration
+
+To ensure AetherStore scales gracefully for both consumers, infrastructure providers, and network administrators, we will build two distinct frontend dashboards. Below is an expanded and highly comprehensive breakdown of features for both dashboards.
+
+---
+
+## 1. The "AetherDrive" Portal (For Everyday Users)
+This dashboard is the primary interface for users to consume the decentralized network. It provides cloud storage, secure messaging, and a crypto wallet in one cohesive experience, much like Google Drive mixed with Discord and Phantom Wallet.
+
+### 1.1 Authentication & Onboarding
+* **Wallet Generation:** New users click "Create Wallet", generating a raw 12-word BIP-39 mnemonic locally in their browser. 
+* **Wallet Recovery:** Returning users paste their 12-word mnemonic to regain access to their storage and funds on any device.
+* **DID Binding (Invisible Auth):** The frontend automatically derives the `did:example:...` identity and the Ed25519 keypair from the mnemonic for session authentication. *No passwords, no emails, no central database records required.*
+* **Cross-Device Sync:** Manage and revoke active sessions on other authenticated devices directly from the settings.
+
+### 1.2 The Storage Explorer (My Drive)
+* **File Grid/List View:** Visual display of all encrypted files and folders, with sortable columns.
+* **Upload Manager Widget:** Persistent widget showing multipart upload progress, local chunking/Merkle DAG generation, and P2P shard distribution.
+* **Media Preview:** In-app streaming of audio/video using HTTP Range API, locally decoding/decrypting chunks on the fly.
+* **Recycle Bin (Trash):** A dedicated view for soft-deleted files, allowing users to restore data before the Kademlia Garbage Collector permanently sweeps the network shards.
+* **Shared Workspaces:** Create collaborative encrypted folders where multiple DIDs are granted explicit symmetric key access with granular Read/Write permissions.
+* **IPNS Public Websites:** A 1-click feature to publish a static HTML folder to an IPNS NameRecord, turning AetherStore into a decentralized web hosting platform (accessible via public gateways).
+* **Bandwidth & Storage Analytics:** Visual circular gauges showing exactly how much of their `StorageQuota` is currently utilized and the amount of ATK being burned daily for storage rent.
+
+### 1.3 The AetherChat Hub (Messaging)
+* **Conversation Sidebar:** Active direct messages and group chats (sorted by recent activity) with unread badges.
+* **Real-Time Chat Window:** Displays "typing..." indicators, "online" status via WebSocket presence, and inline read receipts.
+* **Secure Attachments:** Button to attach and upload AetherStore files directly into the E2E encrypted chat stream.
+* **Wallet Integration Tracking:** Ability to "Send ATK" directly within a conversation to a friend, generating an inline transfer receipt card in the chat history.
+
+### 1.4 The Billing & Web3 Wallet Portal
+* **Balance Overview:** Big, bold display of current ATK Token balance in the User Wallet.
+* **Deposit/Withdraw:** Interfaces to deposit fiat (via payment gateways) to buy ATK, and withdraw unspent ATK to an external wallet address.
+* **Ledger History:** Comprehensive, paginated table of `Transaction` records.
+* **Send/Receive Crypto:** A clean interface to paste an `ath1...` address and amount, triggering the offline Ed25519 signature in-browser and broadcasting it to the network.
+* **Data DAOs (Funding Pools):** A feature to pool ATK together with other users to collaboratively fund the perpetual storage of massive public datasets (like AI models or scientific data).
+
+---
+
+## 2. The "AetherNode" Console (For Miners & Network Admins)
+This dashboard serves dual purposes. For standard miners, it acts as an orchestration and analytics command center for their infrastructure. For super-users/creators, it acts as the **Global Admin Management Dashboard**.
+
+### 2.1 Fleet & Miner Management
+* **Node Claiming:** Interface to input IP, Port, and Node ID of headless servers they have spun up, linking them to their dashboard profile.
+* **Fleet Global Map:** View all active nodes connected to their wallet in a single geographical or tabular view.
+* **Status Indicators:** Live green/red dots showing Kademlia DHT heartbeat status, uptime percentage, and active WebSocket connections.
+* **Capacity Metrics:** Visual progress bars displaying `used_bytes` vs `capacity_bytes` across their fleet.
+* **Log Viewer:** A real-time tail of node events and Kademlia routing activity, streamed via WebSockets directly from the server to the dashboard for remote debugging.
+
+### 2.2 Financial Analytics (Mining)
+* **Earnings Chart:** Interactive line charts plotting daily/weekly ATK mined through "Proof of Storage" and "Proof of Service".
+* **Reputation Tracker:** Live gauge (0-100) showing the node's current reputation score based on successful/failed retrieval requests from the network.
+* **Payout Management:** A 1-click "Claim Earnings" button that withdraws accumulated ATK from the network's `NodeWallet` into their primary `UserWallet` balance.
+
+### 2.3 Global Administration Management (Admin-Only)
+*For users authenticated with Admin privileges, a dedicated "Network Control" tab appears:*
+* **Live P2P Network Topology:** A stunning interactive 3D map or node graph showing *all* connected servers globally, visualizing network health, DHT routing connections, and real-time shard migrations.
+* **Network Parameter Controls (God-Mode):** Ability to instantly adjust core network parameters without redeploying code: Minimum Shard Replication Factor (Erasure Coding), daily ATK block reward emissions, or the base cost of storage per GB.
+* **Data Moderation & Takedowns:** Tools to scan for publicly shared (unencrypted) malicious root hashes and issue network-wide takedown broadcasts to compliant nodes.
+* **User Quota Control:** Interface to search for users by DID and manually adjust or explicitly revoke their `StorageQuota`.
+* **Treasury Analytics:** Deep insights into the AetherStore Central Treasury, showing the exact circulating ATK supply vs the locked ATK supply, total fiat deposits, and global storage consumption across the entire ecosystem.
+* **Shard Repair Orchestration:** Manual override triggers to force the network to aggressively rebuild degraded shards if a large data center drops offline suddenly.

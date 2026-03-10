@@ -1,0 +1,255 @@
+/* ── Sidebar Shell ── */
+.sidebar {
+  width: 72px; /* Standard collapsed width */
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 0; /* Vertical padding only, let items handle horizontal centering */
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  white-space: nowrap;
+  z-index: 100;
+  position: relative;
+  flex-shrink: 0;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.sidebar:hover,
+.sidebar.pinned {
+  width: 260px;
+}
+
+/* ── Logo Section ── */
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem; /* Base padding for alignment */
+  height: 54px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 2rem;
+  color: var(--text-primary);
+  transition: color 0.2s;
+  overflow: hidden;
+}
+
+/* Wrapper to ensure icon is ALWAYS centered in 72px mode */
+.logo-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+  color: #fff;
+  flex-shrink: 0;
+  margin: 0 auto; /* Centers in collapsed state */
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb, 16, 185, 129), 0.3);
+  transition: transform 0.2s;
+}
+
+.sidebar:hover .logo-icon-wrapper,
+.sidebar.pinned .logo-icon-wrapper {
+  margin: 0; /* Shifts to left when expanded */
+}
+
+.sidebar-logo-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: brightness(0) invert(1); /* Make it white to match the accent background */
+}
+
+.brand-name {
+  margin-left: 1rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.pin-arrow {
+  margin-left: auto;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.sidebar:hover .pin-arrow,
+.sidebar.pinned .pin-arrow { opacity: 1; }
+.pin-arrow.rotated { transform: rotate(180deg); }
+
+/* ── Navigation ── */
+.sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 0.5rem; /* Padding for the item hover backgrounds */
+}
+
+/* Custom Scrollbar */
+.sidebar-nav::-webkit-scrollbar { width: 0; }
+
+.nav-section-label {
+  height: 20px;
+  margin: 1.5rem 0 0.5rem 1rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.sidebar:hover .nav-section-label,
+.sidebar.pinned .nav-section-label { opacity: 1; }
+
+/* ── Nav Items ── */
+.nav-item {
+  display: flex;
+  align-items: center;
+  height: 46px;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.nav-icon {
+  width: 54px; /* Matches Sidebar's items alignment */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.nav-item:hover .nav-icon { transform: scale(1.1); }
+
+/* Text & Sub-items */
+.sidebar-text {
+  opacity: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.sidebar:hover .sidebar-text,
+.sidebar.pinned .sidebar-text { opacity: 1; }
+
+/* Active Indicator */
+.nav-item.active {
+  background: var(--accent);
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb, 16, 185, 129), 0.2);
+}
+
+[data-theme='dark'] .nav-item.active {
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Sub-items */
+.nav-sub {
+  margin-top: -2px;
+}
+
+.sidebar:not(:hover):not(.pinned) .nav-sub {
+  display: flex;
+  justify-content: center;
+}
+
+.sidebar:hover .nav-sub,
+.sidebar.pinned .nav-sub {
+  padding-left: 0; 
+}
+
+/* ── Portal Transition & Badges ── */
+.portal-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: rgba(var(--accent-rgb, 16, 185, 129), 0.1);
+  color: var(--accent);
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  margin-left: 0.75rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+  border: 1px solid rgba(var(--accent-rgb, 16, 185, 129), 0.2);
+}
+
+.sidebar:hover .portal-badge,
+.sidebar.pinned .portal-badge {
+  opacity: 1;
+}
+
+.portal-switch-btn {
+  margin-bottom: 0.5rem;
+  background: rgba(var(--text-muted-rgb, 156, 163, 175), 0.05);
+  border: 1px dashed var(--border-color);
+  position: relative;
+}
+
+.portal-switch-btn:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.switch-label {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.switch-target {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.zap-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.portal-switch-btn:hover .zap-icon {
+  opacity: 1;
+  transform: translateY(-50%) scale(1.2);
+}
+
+.sidebar-bottom {
+  border-top: 1px solid var(--border-color);
+  padding: 1rem 0.5rem;
+  margin-top: auto; /* Push to bottom if flex-1 used */
+  display: flex;
+  flex-direction: column;
+}

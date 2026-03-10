@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\debug_test.py", line 12, in <module>
+    calculate_payouts()
+    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\.venv\Lib\site-packages\celery\local.py", line 182, in __call__
+    return self._get_current_object()(*a, **kw)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\.venv\Lib\site-packages\celery\app\task.py", line 411, in __call__
+    return self.run(*args, **kwargs)
+           ~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\workers\payout_calculator.py", line 31, in calculate_payouts
+    _reward_nodes_for_storage()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\stanl\Desktop\vscodeworkspace\pythonplayground\aetherstore\workers\payout_calculator.py", line 105, in _reward_nodes_for_storage
+    wallet.earned_balance += total_reward
+TypeError: unsupported operand type(s) for +=: 'float' and 'decimal.Decimal'
