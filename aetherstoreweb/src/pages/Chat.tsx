@@ -313,7 +313,7 @@ export const Chat: React.FC = () => {
         </div>
         <div className="chat-search-wrap">
           <Search size={15} className="chat-search-icon" />
-          <input type="text" placeholder="Search conversations..." className="chat-search-input" />
+          <input type="text" placeholder="Search files, chats, transactions..." className="chat-search-input" />
         </div>
         <div className="convo-list">
           {loading ? (
@@ -362,17 +362,37 @@ export const Chat: React.FC = () => {
                   <p className="chat-contact-id">{activeConvoId?.slice(0, 12)}... · E2E Encrypted</p>
                 </div>
               </div>
-              <button className="chat-atk-btn" onClick={() => setShowSendAtk(!showSendAtk)}>
-                <Wallet size={15} /> Send ATK
-              </button>
+              <div className="chat-header-actions">
+                <button 
+                  className={`chat-atk-btn ${showSendAtk ? 'active' : ''}`} 
+                  onClick={() => setShowSendAtk(!showSendAtk)}
+                >
+                  <Wallet size={15} /> 
+                  {showSendAtk ? 'Cancel' : 'Send ATK'}
+                </button>
+              </div>
             </div>
 
             {showSendAtk && (
               <div className="atk-panel">
-                <input type="number" placeholder="Amount (ATK)" value={atkAmount} onChange={e => setAtkAmount(e.target.value)} className="atk-input" />
-                <button className="chat-send-main" onClick={sendAtk} disabled={isSendingAtk}>
-                  {isSendingAtk ? <Loader size={16} className="spinner-icon" /> : 'Send'}
-                </button>
+                <div className="atk-panel-content">
+                  <div className="atk-input-group">
+                    <label className="atk-label">Amount to Send</label>
+                    <div className="atk-input-wrapper">
+                      <input 
+                        type="number" 
+                        placeholder="0.00" 
+                        value={atkAmount} 
+                        onChange={e => setAtkAmount(e.target.value)} 
+                        className="atk-input" 
+                      />
+                      <span className="atk-currency">ATK</span>
+                    </div>
+                  </div>
+                  <button className="chat-send-main" onClick={sendAtk} disabled={isSendingAtk || !atkAmount}>
+                    {isSendingAtk ? <Loader size={16} className="spinner-icon" /> : <Send size={16} />}
+                  </button>
+                </div>
               </div>
             )}
 
@@ -404,7 +424,7 @@ export const Chat: React.FC = () => {
                       ) : (
                         <div className="msg-bubble-wrap">
                           <div className={`msg-bubble ${!msg.isDecrypted ? 'encrypted' : ''}`}>
-                            <p>{msg.isDecrypted ? msg.plaintext : `Encrypted: ${msg.encrypted_body?.slice(0, 20)}...`}</p>
+                            <p>{msg.isDecrypted ? msg.plaintext : 'Encrypted Message'}</p>
                             <span className="msg-time">{msg.timestamp}</span>
                           </div>
                           {!msg.isDecrypted && (
