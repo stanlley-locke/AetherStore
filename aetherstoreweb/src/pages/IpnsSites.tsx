@@ -172,7 +172,7 @@ export const IpnsSites: React.FC = () => {
                   <span style={{ color: '#10b981', fontWeight: 600 }}>Propagated</span>
                 </div>
                 <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Updated {formatDate(site.updated_at)}</span>
-                <a href={`http://localhost:8000/api/v1/storage/resolve/${site.name}/`} target="_blank" rel="noopener noreferrer" className="drive-btn-secondary" style={{ textDecoration: 'none' }}>
+                <a href={`/api/v1/storage/resolve/${site.name}/`} target="_blank" rel="noopener noreferrer" className="drive-btn-secondary" style={{ textDecoration: 'none' }}>
                   <ExternalLink size={14} /> Visit IPNS
                 </a>
               </div>
