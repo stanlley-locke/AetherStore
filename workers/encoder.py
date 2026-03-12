@@ -46,33 +46,27 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
             raise Exception(error_msg)
         
         logger.info(f"✓ {node_verification['available_nodes']} healthy nodes available")
-               # 2. Extract salt for user encryption
+               # 2. Build Merkle DAG on PLAINTEXT data
+        logger.info("Building Merkle DAG...")
+        merkle_dag = MerkleService.build_merkle_dag(data_bytes)
+        original_hash = merkle_dag.root_hash
+        logger.info(f"Merkle root: {original_hash[:16]}...")
+        
+        # 3. Setup convergent encryption using the Merkle root
         logger.info("Setting up encryption...")
         from apps.core.crypto import ClientEncryption
         # Using convergent encryption by default for global deduplication
-        encryption = EncryptionService.get_convergent_encryption(hashlib.sha256(data_bytes).hexdigest())
+        encryption = EncryptionService.get_convergent_encryption(original_hash)
         salt = encryption.salt
-        
-        # 3. Build Merkle DAG on PLAINTEXT data
-        logger.info("Building Merkle DAG...")
-        merkle_dag = MerkleService.build_merkle_dag(data_bytes)
-        logger.info(f"Merkle root: {merkle_dag.root_hash[:16]}...")
         
         # 4. Check global deduplication on PLAINTEXT root hash
         global_existing = EncryptedObject.objects.filter(
-            original_hash=merkle_dag.root_hash,
+            original_hash=original_hash,
             is_deleted=False
         ).first()
         
-        # 5. Assign original hash
-        original_hash = merkle_dag.root_hash
-        logger.info(f"Original file hash: {original_hash[:16]}...")
-
-        shard_map = {}
-        shards_stored = 0
-
         if global_existing:
-            logger.info(f"Global deduplication hit for {merkle_dag.root_hash[:16]}. Reusing existing shards.")
+            logger.info(f"Global deduplication hit for {original_hash[:16]}. Reusing existing shards.")
             shard_map = global_existing.shard_map
             # We skip the sharding process entirely
         else:

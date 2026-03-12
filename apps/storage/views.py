@@ -1144,8 +1144,9 @@ class StreamFileView(APIView):
                             try:
                                 plaintext_chunk = encryption.decrypt(encrypted_package)
                             except Exception as e:
-                                logger.error(f"Decryption failed for chunk {chunk_index}: {e}")
-                                break
+                                error_msg = f"Decryption failed for chunk {chunk_index}: {e}"
+                                logger.error(error_msg)
+                                raise Exception(error_msg)
                         else:
                             # Legacy strategy requires full file for decryption
                             # This is a fallback for older files
