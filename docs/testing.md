@@ -624,4 +624,8 @@ Check Bob's balance! Because Bob explicitly recovered his wallet using his mnemo
 ```bash
 curl -s -X GET "http://localhost:8000/api/v1/billing/wallet/" \
   -H "Authorization: $(get_bob_auth)" | python -m json.tool
+
+
+edge:   harvest height ribbon make spoil quote cycle genius setup ceiling creek safe 
+chrome: black flavor young ugly culture domain excite drama famous private unusual smoke
 ```

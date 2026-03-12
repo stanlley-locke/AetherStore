@@ -162,7 +162,8 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
                 'salt': base64.b64encode(salt).decode('utf-8'),
                 'algorithm': 'AES-256-GCM',
                 'encryption_strategy': 'per-chunk',
-                'convergent': True
+                'convergent': True,
+                'original_hash': original_hash
             })
 
             # Check if THIS user already owns THIS content

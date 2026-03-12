@@ -73,15 +73,8 @@ def process_download(self, object_id, owner_did, version_number=None):
         metadata = active_merkle_dag.get('metadata', {}) or {}
         strategy = metadata.get('encryption_strategy', 'legacy')
         
-        # Setup decryption for per-chunk or legacy
-        salt_b64 = metadata.get('salt')
-        if not salt_b64:
-            # Fallback for old files without explicit salt
-            encryption_fallback = ClientEncryption.for_user(owner_did)
-            salt_b64 = base64.b64encode(encryption_fallback.salt).decode('utf-8')
-            
-        salt = base64.b64decode(salt_b64)
-        encryption = ClientEncryption(password=f'{owner_did}:{salt.hex()}', salt=salt)
+        from apps.storage.services.encryption_service import EncryptionService
+        encryption = EncryptionService.get_encryption_instance(metadata, owner_did, fallback_hash=active_root_hash)
         
         logger.info(f"Fetching {obj.chunk_count} chunks (strategy: {strategy})...")
         with httpx.Client(timeout=30.0) as client:

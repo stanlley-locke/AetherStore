@@ -103,12 +103,12 @@ class EncryptionService:
         return encryption.decrypt(encrypted_package)
     
     @staticmethod
-    def get_encryption_instance(metadata: dict, owner_did: str) -> ClientEncryption:
+    def get_encryption_instance(metadata: dict, owner_did: str, fallback_hash: str = None) -> ClientEncryption:
         """
         Get the correct ClientEncryption instance based on metadata.
         """
         if metadata.get('convergent'):
-            original_hash = metadata.get('original_hash')
+            original_hash = metadata.get('original_hash') or fallback_hash
             if not original_hash:
                 raise ValueError("Original hash missing from metadata for convergent decryption")
             return EncryptionService.get_convergent_encryption(original_hash)

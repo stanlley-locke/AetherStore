@@ -1079,7 +1079,7 @@ class StreamFileView(APIView):
             if strategy == 'legacy' and range_match:
                 return Response({'error': 'Instant seeking is not mathematically possible for legacy whole-file encryption. Use standard download.'}, status=400)
                 
-            encryption = EncryptionService.get_encryption_instance(metadata, owner_did)
+            encryption = EncryptionService.get_encryption_instance(metadata, owner_did, fallback_hash=active_root_hash)
             salt_b64 = metadata.get('salt')
             engine = get_erasure_engine()
             
