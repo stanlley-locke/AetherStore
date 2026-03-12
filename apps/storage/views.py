@@ -144,7 +144,11 @@ class PresignedDownloadView(APIView):
             raw_request.user = DummyUser()
             
             view = StreamFileView.as_view()
-            return view(raw_request, object_id=str(obj.id))
+            response = view(raw_request, object_id=str(obj.id))
+            
+            # Reset user to None to avoid leaking state
+            raw_request.user = None
+            return response
             
         except EncryptedObject.DoesNotExist:
             return Response({'error': 'Object not found', 'code': 'NOT_FOUND'}, status=404)
@@ -1016,6 +1020,7 @@ class StreamFileView(APIView):
         from apps.core.merkle import MerkleDAG
         from apps.core.crypto import ClientEncryption
         from django.http import StreamingHttpResponse, HttpResponse
+        from asgiref.sync import async_to_sync, sync_to_async
         import httpx
         import base64
         import re
@@ -1078,7 +1083,6 @@ class StreamFileView(APIView):
             salt_b64 = metadata.get('salt')
             engine = get_erasure_engine()
             
-            from asgiref.sync import async_to_sync
             from apps.core.dht import dht_service
             dht = dht_service.get_node()
             

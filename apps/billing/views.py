@@ -20,23 +20,25 @@ class WalletBalanceView(APIView):
 
     def get(self, request):
         owner_did = getattr(request.user, 'did', str(request.user))
-        wallet, created = UserWallet.objects.get_or_create(did=owner_did)
-        
-        # Get last 10 transactions
-        transactions = Transaction.objects.filter(user_wallet=wallet)[:10]
-        tx_data = [{
-            'id': str(tx.id),
-            'type': tx.tx_type,
-            'amount': float(tx.amount),
-            'description': tx.description,
-            'date': tx.created_at.isoformat()
-        } for tx in transactions]
+        with transaction.atomic():
+            wallet, created = UserWallet.get_or_create_linked(did=owner_did)
+            
+            # Get last 10 transactions
+            transactions = Transaction.objects.filter(user_wallet=wallet)[:10]
+            tx_data = [{
+                'id': str(tx.id),
+                'type': tx.tx_type,
+                'amount': float(tx.amount),
+                'description': tx.description,
+                'date': tx.created_at.isoformat()
+            } for tx in transactions]
 
-        return Response({
-            'did': wallet.did,
-            'balance': float(wallet.balance),
-            'recent_transactions': tx_data
-        })
+            return Response({
+                'did': wallet.did,
+                'address': wallet.address,
+                'balance': float(wallet.balance),
+                'recent_transactions': tx_data
+            })
 
 
 @method_decorator([csrf_exempt], name='dispatch')
@@ -61,7 +63,8 @@ class DepositFundsView(APIView):
         except:
             return Response({'error': 'amount must be a positive number'}, status=400)
 
-        wallet, _ = UserWallet.objects.get_or_create(did=owner_did)
+        with transaction.atomic():
+            wallet, _ = UserWallet.get_or_create_linked(did=owner_did)
         
         wallet.balance += amount_decimal
         wallet.save()
@@ -403,15 +406,23 @@ class WalletTransferView(APIView):
 
                 # 4. State Transitions
                 if is_node_sender:
+                    old_bal = sender_wallet.earned_balance
                     sender_wallet.earned_balance -= total_needed
+                    logger.info(f"Deducting {total_needed} from sender node {sender_wallet.node_id}. Balance: {old_bal} -> {sender_wallet.earned_balance}")
                 else:
+                    old_bal = sender_wallet.balance
                     sender_wallet.balance -= total_needed
+                    logger.info(f"Deducting {total_needed} from sender user {sender_wallet.did}. Balance: {old_bal} -> {sender_wallet.balance}")
                 sender_wallet.save()
                 
                 if is_node_recipient:
+                    old_bal = recipient_wallet.earned_balance
                     recipient_wallet.earned_balance += amount_decimal
+                    logger.info(f"Adding {amount_decimal} to recipient node {recipient_wallet.node_id}. Balance: {old_bal} -> {recipient_wallet.earned_balance}")
                 else:
+                    old_bal = recipient_wallet.balance
                     recipient_wallet.balance += amount_decimal
+                    logger.info(f"Adding {amount_decimal} to recipient user {recipient_wallet.did}. Balance: {old_bal} -> {recipient_wallet.balance}")
                 recipient_wallet.save()
                 
                 # Record exactly in Ledger

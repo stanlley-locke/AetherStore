@@ -68,10 +68,10 @@ def _charge_wallet(did: str, amount: float, description: str) -> bool:
     from decimal import Decimal
     from apps.billing.models import UserWallet, Transaction
     try:
-        wallet, _ = UserWallet.objects.get_or_create(
-            did=did,
-            defaults={'balance': Decimal('100.00')}
-        )
+        wallet, _ = UserWallet.get_or_create_linked(did=did)
+        if _: # If created, set default balance
+            wallet.balance = Decimal('100.00')
+            wallet.save()
         amt = Decimal(str(amount))
         if wallet.balance < amt:
             return False

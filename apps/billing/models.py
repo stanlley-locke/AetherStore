@@ -14,6 +14,43 @@ class UserWallet(models.Model):
     def __str__(self):
         return f"{self.did} - Balance: {self.balance} ATK"
 
+    @classmethod
+    def get_or_create_linked(cls, did: str):
+        """
+        Retrieves or creates a UserWallet and auto-links it to any pending 
+        address-based wallets.
+        """
+        from .models import Transaction
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        wallet, created = cls.objects.get_or_create(did=did)
+        
+        # Only attempt to link if address is missing and it's a real Aether DID
+        if not wallet.address and did.startswith('did:aether:ath1'):
+            extracted_address = did.replace('did:aether:', '')
+            wallet.address = extracted_address
+            wallet.save()
+            
+            # Check for "pending" wallet created via WalletTransferView
+            pending_wallets = cls.objects.filter(address=extracted_address).exclude(did=did)
+            for pending in pending_wallets:
+                if pending.balance > 0:
+                    old_balance = wallet.balance
+                    wallet.balance += pending.balance
+                    logger.info(f"Merging pending wallet {pending.did} into {wallet.did}. Balance: {old_balance} -> {wallet.balance}")
+                    
+                    # Move transactions
+                    Transaction.objects.filter(user_wallet=pending).update(user_wallet=wallet)
+                    
+                    # Set pending balance to 0 and delete
+                    pending.balance = 0
+                    pending.save()
+                    pending.delete()
+                    wallet.save()
+        
+        return wallet, created
+
 
 class NodeWallet(models.Model):
     """Tracks the token earnings for a P2P Storage Node."""

@@ -154,7 +154,7 @@ class NodePayoutView(APIView):
         try:
             with transaction.atomic():
                 # Get or create user wallet
-                user_wallet, _ = UserWallet.objects.get_or_create(did=did)
+                user_wallet, _ = UserWallet.get_or_create_linked(did=did)
                 
                 # Perform the transfer
                 user_wallet.balance += total_payout
