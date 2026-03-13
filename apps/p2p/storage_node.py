@@ -22,7 +22,7 @@ import time
 
 # Ensure project root is in path so we can import apps
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-from apps.core.dht import DHTNode, Peer, get_full_url
+from apps.core.dht import DHTNode, Peer, get_full_url, safe_url_join
 
 # Configure logging
 LOG_DIR = Path(__file__).resolve().parent.parent.parent / 'logs'
