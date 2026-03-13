@@ -41,7 +41,8 @@ services:
       - SERVICE_TYPE=web
       - DB_HOST=db
       - REDIS_HOST=redis
-      - BOOTSTRAP_NODE=node-1:8001
+      - BOOTSTRAP_NODE=${BOOTSTRAP_NODE:-node-1:8001}
+      - FEDERATION_SECRET=${FEDERATION_SECRET}
       - DB_NAME=${DB_NAME:-aether}
       - DB_USER=${DB_USER:-aether}
       - DB_PASSWORD=${DB_PASSWORD:-secret}
@@ -70,7 +71,8 @@ services:
       - SERVICE_TYPE=worker
       - DB_HOST=db
       - REDIS_HOST=redis
-      - BOOTSTRAP_NODE=node-1:8001
+      - BOOTSTRAP_NODE=${BOOTSTRAP_NODE:-node-1:8001}
+      - FEDERATION_SECRET=${FEDERATION_SECRET}
       - DB_NAME=${DB_NAME:-aether}
       - DB_USER=${DB_USER:-aether}
       - DB_PASSWORD=${DB_PASSWORD:-secret}
@@ -89,7 +91,8 @@ services:
     environment:
       - SERVICE_TYPE=beat
       - REDIS_HOST=redis
-      - BOOTSTRAP_NODE=node-1:8001
+      - BOOTSTRAP_NODE=${BOOTSTRAP_NODE:-node-1:8001}
+      - FEDERATION_SECRET=${FEDERATION_SECRET}
     volumes:
       - .:/app
     depends_on:
@@ -111,6 +114,8 @@ services:
       - DB_NAME=aether
       - DB_USER=aether
       - DB_PASSWORD=secret
+      - BOOTSTRAP_NODE=${BOOTSTRAP_NODE}
+      - FEDERATION_SECRET=${FEDERATION_SECRET}
     ports:
       - "8001:8001"
     volumes:
@@ -136,7 +141,8 @@ services:
       - NODE_ID=node-2
       - NODE_PORT=8002
       - NODE_ADDRESS=node-2
-      - BOOTSTRAP_NODE=node-1:8001
+      - BOOTSTRAP_NODE=${BOOTSTRAP_NODE:-node-1:8001}
+      - FEDERATION_SECRET=${FEDERATION_SECRET}
       - REDIS_HOST=redis
       - DB_HOST=db
       - DB_NAME=aether
@@ -167,7 +173,8 @@ services:
       - NODE_ID=node-3
       - NODE_PORT=8003
       - NODE_ADDRESS=node-3
-      - BOOTSTRAP_NODE=node-1:8001
+      - BOOTSTRAP_NODE=${BOOTSTRAP_NODE:-node-1:8001}
+      - FEDERATION_SECRET=${FEDERATION_SECRET}
       - REDIS_HOST=redis
       - DB_HOST=db
       - DB_NAME=aether
@@ -198,7 +205,8 @@ services:
       - NODE_ID=node-4
       - NODE_PORT=8004
       - NODE_ADDRESS=node-4
-      - BOOTSTRAP_NODE=node-1:8001
+      - BOOTSTRAP_NODE=${BOOTSTRAP_NODE:-node-1:8001}
+      - FEDERATION_SECRET=${FEDERATION_SECRET}
       - REDIS_HOST=redis
       - DB_HOST=db
       - DB_NAME=aether
@@ -229,7 +237,8 @@ services:
       - NODE_ID=node-5
       - NODE_PORT=8005
       - NODE_ADDRESS=node-5
-      - BOOTSTRAP_NODE=node-1:8001
+      - BOOTSTRAP_NODE=${BOOTSTRAP_NODE:-node-1:8001}
+      - FEDERATION_SECRET=${FEDERATION_SECRET}
       - REDIS_HOST=redis
       - DB_HOST=db
       - DB_NAME=aether
@@ -260,7 +269,8 @@ services:
       - NODE_ID=node-6
       - NODE_PORT=8006
       - NODE_ADDRESS=node-6
-      - BOOTSTRAP_NODE=node-1:8001
+      - BOOTSTRAP_NODE=${BOOTSTRAP_NODE:-node-1:8001}
+      - FEDERATION_SECRET=${FEDERATION_SECRET}
       - REDIS_HOST=redis
       - DB_HOST=db
       - DB_NAME=aether
