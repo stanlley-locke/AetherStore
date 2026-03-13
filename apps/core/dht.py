@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 def get_full_url(address: str, port: int) -> str:
     """Intelligently construct a full URL from an address and port."""
     if address.startswith(('http://', 'https://')):
-        return address
+        return address.rstrip('/')
     
     # Handle Docker service names/IPs
     return f"http://{address}:{port}"
