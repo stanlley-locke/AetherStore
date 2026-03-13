@@ -27,6 +27,11 @@ def get_full_url(address: str, port: int) -> str:
     return f"http://{address}:{port}"
 
 
+def safe_url_join(baseUrl: str, path: str) -> str:
+    """Combines a base URL and a path safely without double slashes."""
+    return f"{baseUrl.rstrip('/')}/{path.lstrip('/')}"
+
+
 @dataclass
 class Peer:
     """Represents a peer in the DHT"""
@@ -212,7 +217,7 @@ class DHTNode:
         async with httpx.AsyncClient(timeout=5.0) as client:
             for peer in closest:
                 try:
-                    url = f"{peer.endpoint}/dht/store"
+                    url = safe_url_join(peer.endpoint, "dht/store")
                     logger.info(f"[DHT] Replicating key {key[:8]} to {url}")
                     await client.post(
                         url,
@@ -261,7 +266,7 @@ class DHTNode:
         async with httpx.AsyncClient(timeout=5.0) as client:
             for peer in closest:
                 try:
-                    url = f"{peer.endpoint}/dht/get/{key}"
+                    url = safe_url_join(peer.endpoint, f"dht/get/{key}")
                     logger.debug(f"[DHT] Querying {url}")
                     response = await client.get(url)
                     if response.status_code == 200:
@@ -429,7 +434,7 @@ class DHTService:
                 try:
                     if env_bootstrap.startswith(('http://', 'https://')):
                         # It's a full URL
-                        b_address = env_bootstrap
+                        b_address = env_bootstrap.rstrip('/')
                         b_port = 80 # Dummy port for URL
                         # For URLs, use the full string as hash basis
                         b_node_id = hashlib.sha1(env_bootstrap.encode()).hexdigest()

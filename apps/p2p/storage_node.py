@@ -692,13 +692,13 @@ class StorageNodeServer:
                 try:
                     # Ping bootstrap node to introduce ourselves
                     await client.get(
-                        f"{bootstrap_url}/dht/ping",
+                        safe_url_join(bootstrap_url, "dht/ping"),
                         params={'node_id': self.dht_node_id, 'port': self.port}
                     )
                     
                     # Find our own node_id to populate buckets
                     resp = await client.post(
-                        f"{bootstrap_url}/dht/find_node",
+                        safe_url_join(bootstrap_url, "dht/find_node"),
                         json={'target_id': self.dht_node_id, 'node_id': self.dht_node_id, 'port': self.port}
                     )
                     if resp.status_code == 200:
