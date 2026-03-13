@@ -435,9 +435,16 @@ class ObjectListView(APIView):
             # Trigger Background Metadata Sync for Federation
             try:
                 from apps.storage.services.metadata_sync import MetadataSyncService
+                import threading
                 import asyncio
-                # Use a task to not block the response
-                asyncio.create_task(MetadataSyncService.discover_remote_files(owner_did))
+                
+                def run_sync():
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    loop.run_until_complete(MetadataSyncService.discover_remote_files(owner_did))
+                    loop.close()
+                
+                threading.Thread(target=run_sync, daemon=True).start()
             except Exception as e:
                 logger.warning(f"Failed to trigger metadata sync: {e}")
             

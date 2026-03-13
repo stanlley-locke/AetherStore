@@ -60,6 +60,9 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
         salt = encryption.salt
         
         # 4. Check global deduplication on PLAINTEXT root hash
+        shard_map = {}
+        shards_stored = 0
+        
         global_existing = EncryptedObject.objects.filter(
             original_hash=original_hash,
             is_deleted=False
