@@ -13,6 +13,18 @@ from dataclasses import dataclass, field
 from collections import OrderedDict
 import json
 import httpx
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def get_full_url(address: str, port: int) -> str:
+    """Intelligently construct a full URL from an address and port."""
+    if address.startswith(('http://', 'https://')):
+        return address
+    
+    # Handle Docker service names/IPs
+    return f"http://{address}:{port}"
 
 
 @dataclass
@@ -38,6 +50,11 @@ class Peer:
     @classmethod
     def from_dict(cls, data: Dict) -> 'Peer':
         return cls(**data)
+
+    @property
+    def endpoint(self) -> str:
+        """Helper to get full URL for this peer"""
+        return get_full_url(self.address, self.port)
 
 
 class KBucket:
@@ -195,8 +212,10 @@ class DHTNode:
         async with httpx.AsyncClient(timeout=5.0) as client:
             for peer in closest:
                 try:
+                    url = f"{peer.endpoint}/dht/store"
+                    logger.info(f"[DHT] Replicating key {key[:8]} to {url}")
                     await client.post(
-                        f"http://{peer.address}:{peer.port}/dht/store",
+                        url,
                         json={
                             'key': key,
                             'value': value,
@@ -205,7 +224,8 @@ class DHTNode:
                             'publisher_port': self.port
                         }
                     )
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"[DHT] Replication failed for {peer.node_id}: {e}")
                     continue
     
     def get(self, key: str) -> Optional[Any]:
@@ -241,14 +261,15 @@ class DHTNode:
         async with httpx.AsyncClient(timeout=5.0) as client:
             for peer in closest:
                 try:
-                    response = await client.get(
-                        f"http://{peer.address}:{peer.port}/dht/get/{key}"
-                    )
+                    url = f"{peer.endpoint}/dht/get/{key}"
+                    logger.debug(f"[DHT] Querying {url}")
+                    response = await client.get(url)
                     if response.status_code == 200:
                         data = response.json()
                         if data.get('found'):
                             return data.get('value')
-                except Exception:
+                except Exception as e:
+                    logger.debug(f"[DHT] Query failed for {peer.node_id}: {e}")
                     continue
         
         return None
@@ -258,8 +279,10 @@ class DHTNode:
         async with httpx.AsyncClient(timeout=3.0) as client:
             try:
                 start_time = time.time()
+                url = f"{peer.endpoint}/dht/ping"
+                logger.info(f"[DHT] Pinging peer {peer.node_id[:8]} at {url}")
                 response = await client.get(
-                    f"http://{peer.address}:{peer.port}/dht/ping",
+                    url,
                     params={'node_id': self.node_id, 'port': self.port}
                 )
                 if response.status_code == 200:
@@ -267,7 +290,8 @@ class DHTNode:
                     peer.latency_ms = int((time.time() - start_time) * 1000)
                     self.add_peer(peer)
                     return True
-            except Exception:
+            except Exception as e:
+                logger.warning(f"[DHT] Ping failed for {peer.node_id[:8]}: {e}")
                 self.remove_peer(peer.node_id)
         return False
         
@@ -279,19 +303,22 @@ class DHTNode:
         async with httpx.AsyncClient(timeout=5.0) as client:
             for peer in closest:
                 try:
+                    url = f"{peer.endpoint}/dht/find_node"
+                    logger.info(f"[DHT] Finding nodes near {target_id[:8]} at {url}")
                     response = await client.post(
-                        f"http://{peer.address}:{peer.port}/dht/find_node",
+                        url,
                         json={'target_id': target_id, 'node_id': self.node_id, 'port': self.port}
                     )
                     if response.status_code == 200:
                         data = response.json()
-                        peers_data = data.get('peers', [])
+                        peers_data = data.get('peers', []) or data.get('closest_peers', [])
                         for p_data in peers_data:
                             new_peer = Peer.from_dict(p_data)
                             if new_peer.node_id != self.node_id:
                                 self.add_peer(new_peer)
                                 new_peers_found.append(new_peer)
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"[DHT] Find nodes failed for {peer.node_id}: {e}")
                     continue
                     
         return self.find_closest_peers(target_id, count=20)
@@ -396,23 +423,30 @@ class DHTService:
             if bootstrap_nodes:
                 self.node.bootstrap(bootstrap_nodes)
             
-            # Additional bootstrap from environment (e.g., "node-1:8001")
+            # Additional bootstrap from environment (e.g., "node-1:8001" or "https://...")
             env_bootstrap = os.environ.get('BOOTSTRAP_NODE')
             if env_bootstrap:
                 try:
-                    b_host, b_port = env_bootstrap.split(':')
-                    # Use SHA-1 of host to guarantee hex node_id (Kademlia requirement)
-                    b_node_id = hashlib.sha1(b_host.encode()).hexdigest()
+                    if env_bootstrap.startswith(('http://', 'https://')):
+                        # It's a full URL
+                        b_address = env_bootstrap
+                        b_port = 80 # Dummy port for URL
+                        # For URLs, use the full string as hash basis
+                        b_node_id = hashlib.sha1(env_bootstrap.encode()).hexdigest()
+                    else:
+                        b_host, b_port = env_bootstrap.split(':')
+                        b_address = b_host
+                        b_port = int(b_port)
+                        b_node_id = hashlib.sha1(b_host.encode()).hexdigest()
+                    
                     self.node.bootstrap([{
                         'node_id': b_node_id,
-                        'address': b_host,
-                        'port': int(b_port)
+                        'address': b_address,
+                        'port': b_port
                     }])
-                    import logging
-                    logging.getLogger(__name__).info(f"DHT bootstrapped to {env_bootstrap} (ID: {b_node_id[:8]})")
+                    logger.info(f"DHT bootstrapped to {env_bootstrap} (ID: {b_node_id[:8]})")
                 except Exception as e:
-                    import logging
-                    logging.getLogger(__name__).warning(f"Failed to parse BOOTSTRAP_NODE {env_bootstrap}: {e}")
+                    logger.warning(f"Failed to parse BOOTSTRAP_NODE {env_bootstrap}: {e}")
             
             self.initialized = True
         

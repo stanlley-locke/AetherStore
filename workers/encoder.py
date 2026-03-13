@@ -236,6 +236,13 @@ def process_upload(self, object_id, data_bytes, mime_type, bucket_id, owner_did,
         
         logger.info(f"✓ Upload complete: {merkle_dag.root_hash[:16]}")
         
+        # 10. Publish Metadata for Federation
+        try:
+            from apps.storage.services.metadata_sync import MetadataSyncService
+            MetadataSyncService.publish_file_metadata(obj)
+        except Exception as e:
+            logger.warning(f"Metadata sync failed: {e}")
+            
         # Cleanup temp directory if this was a multipart upload
         if upload_session_id:
             try:

@@ -2,7 +2,7 @@ import os
 import hashlib
 from pathlib import Path
 from cryptography.hazmat.primitives.asymmetric import ed25519
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import serialization, hmac, hashes
 
 # Path to the user-provided wordlist
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -100,6 +100,21 @@ def verify_signature(public_key_hex: str, message: str, signature_hex: str) -> b
         public_key = ed25519.Ed25519PublicKey.from_public_bytes(pub_bytes)
         sig_bytes = bytes.fromhex(signature_hex)
         public_key.verify(sig_bytes, message.encode('utf-8'))
+        return True
+    except Exception:
+        return False
+def sign_with_secret(secret_key: str, message: str) -> str:
+    """Sign a message using an HMAC secret key (System-level trust)."""
+    h = hmac.HMAC(secret_key.encode('utf-8'), hashes.SHA256())
+    h.update(message.encode('utf-8'))
+    return h.finalize().hex()
+
+def verify_with_secret(secret_key: str, message: str, signature_hex: str) -> bool:
+    """Verify an HMAC signature using a shared secret."""
+    try:
+        h = hmac.HMAC(secret_key.encode('utf-8'), hashes.SHA256())
+        h.update(message.encode('utf-8'))
+        h.verify(bytes.fromhex(signature_hex))
         return True
     except Exception:
         return False

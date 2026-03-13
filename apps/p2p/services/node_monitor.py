@@ -75,7 +75,7 @@ class NodeMonitor:
         
         # 2. Query DHT For Peers
         for peer in peers:
-            endpoint = f"http://{peer.address}:{peer.port}"
+            endpoint = peer.endpoint
             health = self.check_node_health(peer.node_id, endpoint)
             
             if health['healthy']:

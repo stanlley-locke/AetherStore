@@ -432,6 +432,15 @@ class ObjectListView(APIView):
         try:
             owner_did = getattr(request.user, 'did', str(request.user))
             
+            # Trigger Background Metadata Sync for Federation
+            try:
+                from apps.storage.services.metadata_sync import MetadataSyncService
+                import asyncio
+                # Use a task to not block the response
+                asyncio.create_task(MetadataSyncService.discover_remote_files(owner_did))
+            except Exception as e:
+                logger.warning(f"Failed to trigger metadata sync: {e}")
+            
             is_deleted = request.query_params.get('deleted', 'false').lower() == 'true'
             
             # Query EncryptedObject instead of StorageObject

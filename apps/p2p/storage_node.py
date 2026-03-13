@@ -22,7 +22,7 @@ import time
 
 # Ensure project root is in path so we can import apps
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-from apps.core.dht import DHTNode, Peer
+from apps.core.dht import DHTNode, Peer, get_full_url
 
 # Configure logging
 LOG_DIR = Path(__file__).resolve().parent.parent.parent / 'logs'
@@ -121,7 +121,7 @@ class StorageNodeServer:
             # Use the provided address or default to 'localhost'
             # In Docker, NODE_ADDRESS should be the container name
             host = self.address if self.address != '127.0.0.1' else 'localhost'
-            endpoint = f"http://{host}:{self.port}"
+            endpoint = get_full_url(host, self.port)
             
             StorageNode.objects.update_or_create(
                 node_id=self.node_id,
@@ -680,29 +680,33 @@ class StorageNodeServer:
         """Periodically ping peers and refresh buckets"""
         # If we have a bootstrap node, ping it first to join network
         if self.bootstrap_node:
-            bootstrap_ip, bootstrap_port = self.bootstrap_node.split(':')
-            logger.info(f"[DHT] Bootstrapping to {bootstrap_ip}:{bootstrap_port}")
+            bootstrap_url = self.bootstrap_node
+            if not bootstrap_url.startswith(('http://', 'https://')):
+                b_host, b_port = bootstrap_url.split(':')
+                bootstrap_url = f"http://{b_host}:{b_port}"
+            
+            logger.info(f"[DHT] Bootstrapping to {bootstrap_url}")
             import httpx
-            async with httpx.AsyncClient(timeout=5.0) as client:
+            async with httpx.AsyncClient(timeout=10.0) as client:
                 try:
                     # Ping bootstrap node to introduce ourselves
                     await client.get(
-                        f"http://{bootstrap_ip}:{bootstrap_port}/dht/ping",
+                        f"{bootstrap_url}/dht/ping",
                         params={'node_id': self.dht_node_id, 'port': self.port}
                     )
                     
                     # Find our own node_id to populate buckets
                     resp = await client.post(
-                        f"http://{bootstrap_ip}:{bootstrap_port}/dht/find_node",
+                        f"{bootstrap_url}/dht/find_node",
                         json={'target_id': self.dht_node_id, 'node_id': self.dht_node_id, 'port': self.port}
                     )
                     if resp.status_code == 200:
-                        peers = resp.json().get('closest_peers', [])
+                        peers = resp.json().get('closest_peers', []) or resp.json().get('peers', [])
                         for p in peers:
                             self.dht.add_peer(Peer.from_dict(p))
-                        logger.info(f"[DHT] Bootstrapped with {len(peers)} peers")
+                        logger.info(f"[DHT] Bootstrapped with {len(peers)} peers from {bootstrap_url}")
                 except Exception as e:
-                    logger.error(f"[DHT] Bootstrap failed: {e}")
+                    logger.error(f"[DHT] Bootstrap failed for {bootstrap_url}: {e}")
 
         while True:
             await asyncio.sleep(60) # Maintenance every 60s
