@@ -685,6 +685,7 @@ class StorageNodeServer:
                 b_host, b_port = bootstrap_url.split(':')
                 bootstrap_url = f"http://{b_host}:{b_port}"
             
+            bootstrap_url = bootstrap_url.rstrip('/')
             logger.info(f"[DHT] Bootstrapping to {bootstrap_url}")
             import httpx
             async with httpx.AsyncClient(timeout=10.0) as client:
