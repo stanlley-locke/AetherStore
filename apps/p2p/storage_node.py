@@ -24,6 +24,10 @@ import time
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 from apps.core.dht import DHTNode, Peer, get_full_url, safe_url_join
 
+def safe_url_join(baseUrl: str, path: str) -> str:
+    """Combines a base URL and a path safely without double slashes."""
+    return f"{baseUrl.rstrip('/')}/{path.lstrip('/')}"
+
 # Configure logging
 LOG_DIR = Path(__file__).resolve().parent.parent.parent / 'logs'
 LOG_DIR.mkdir(exist_ok=True)
